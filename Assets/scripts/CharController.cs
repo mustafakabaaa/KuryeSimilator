@@ -5,7 +5,7 @@ using UnityEngine;
 public class CharrController : MonoBehaviour
 {
     [Header("Player Settings")]
-    public float moveSpeed = 5f; // Hareket hýzý
+    public float moveSpeed = 6f; // Hareket hýzý
     public float mouseSensitivity = 100f; // Fare hassasiyeti
 
     [Header("References")]
