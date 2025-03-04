@@ -1,34 +1,35 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CharrController : MonoBehaviour
 {
     [Header("Player Settings")]
-    public float moveSpeed = 5f; // Hareket hýzý
+    public float moveSpeed = 5f; // Hareket hï¿½zï¿½
     public float mouseSensitivity = 100f; // Fare hassasiyeti
-    public float jumpForce = 1.5f; // Zýplama kuvveti
-    private bool isJumping = false; // Zýplama durumu
+    public float jumpForce = 1.5f; // Zï¿½plama kuvveti
+    private bool isJumping = false; // Zï¿½plama durumu
 
     [Header("References")]
-    public Transform playerCamera; // Kamera referansý
+    public Transform playerCamera; // Kamera referansï¿½
 
     private CharacterController characterController;
     private float xRotation = 0f; // Kamera X rotasyonu
-    private Vector3 velocity; // Yerçekimi için hýz
+    private Vector3 velocity; // Yerï¿½ekimi iï¿½in hï¿½z
 
-    private bool canInteract = false; // Etkileþime girilebilecek mi?
-    public TextMeshProUGUI interactText; // Etkileþim metni
+    private bool canInteract = false; // Etkileï¿½ime girilebilecek mi?
+    public TextMeshProUGUI interactText; // Etkileï¿½im metni
 
     private Animator animator;
 
 
     private Transform _cameraTarget; // Kamera hedefi (oyuncu veya bisiklet)
-    private bool _isControlEnabled = true; // Oyuncu kontrolü etkin mi?
+    private bool _isControlEnabled = true; // Oyuncu kontrolï¿½ etkin mi?
 
 
     void Start()
     {
-        // Component kontrolü
+        // Component kontrolï¿½
         characterController = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
 
@@ -53,39 +54,49 @@ public class CharrController : MonoBehaviour
 
     void RaycastController()
     {
+        float raycastDistance = 3f; // Raycast'in maksimum mesafesi
         Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit;
 
-        // Raycast'i görsel olarak çizin (örneðin kýrmýzý renk)
-        Debug.DrawRay(ray.origin, ray.direction * 10f, Color.red);
+        // Raycast'i gï¿½rsel olarak ï¿½izin (ï¿½rneï¿½in kï¿½rmï¿½zï¿½ renk)
+        Debug.DrawRay(ray.origin, ray.direction * raycastDistance, Color.red);
 
-        if (Physics.Raycast(ray, out hit))
+        // Raycast'i belirli bir mesafeye kadar kontrol et
+        if (Physics.Raycast(ray, out hit, raycastDistance))
         {
-            if (hit.collider.TryGetComponent(out Iinterectable interactObjects))
-            {
-                if (Input.GetKeyDown(KeyCode.E))
-                {
-                    interactObjects.Interact();
-                }
-            }
-
-            // Eðer bakýlan nesne etkileþime girilebilir bir nesne ise
+            // E tuï¿½u ile etkileï¿½im (ï¿½rneï¿½in kapï¿½ aï¿½ma)
             if (hit.collider.TryGetComponent(out Iinterectable interactable))
             {
-                // Mesajý göster
+                // Mesajï¿½ gï¿½ster
                 interactText.gameObject.SetActive(true);
                 canInteract = true;
+
+                // E tuï¿½una basï¿½ldï¿½ï¿½ï¿½nda etkileï¿½ime gir
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    interactable.Interact();
+                }
             }
             else
             {
-                // Etkileþime girilebilecek nesne deðilse mesajý gizle
+                // Etkileï¿½ime girilebilecek nesne deï¿½ilse mesajï¿½ gizle
                 interactText.gameObject.SetActive(false);
                 canInteract = false;
+            }
+
+            // Fare sol tï¿½klamasï¿½ ile saldï¿½rï¿½ (ï¿½rneï¿½in NPC'ye saldï¿½rma)
+            if (hit.collider.TryGetComponent(out IAttackable attackable))
+            {
+                // Sol tï¿½klama ile saldï¿½r
+                if (Input.GetMouseButtonDown(0)) // Sol tï¿½klama
+                {
+                    attackable.Attack();
+                }
             }
         }
         else
         {
-            // Hiçbir nesneye bakýlmýyorsa mesajý gizle
+            // Hiï¿½bir nesneye bakï¿½lmï¿½yorsa mesajï¿½ gizle
             interactText.gameObject.SetActive(false);
             canInteract = false;
         }
@@ -109,9 +120,9 @@ public class CharrController : MonoBehaviour
 
         // Kamera rotasyonu (X ekseni)
         xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f); // Yukarý-aþaðý bakýþ limiti
+        xRotation = Mathf.Clamp(xRotation, -90f, 90f); // Yukarï¿½-aï¿½aï¿½ï¿½ bakï¿½ï¿½ limiti
 
-        // Kamera ve oyuncu dönüþü
+        // Kamera ve oyuncu dï¿½nï¿½ï¿½ï¿½
         playerCamera.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
         transform.Rotate(Vector3.up * mouseX);
 
@@ -123,60 +134,60 @@ public class CharrController : MonoBehaviour
     void HandleMovement()
     {
         // Klavye girdisi
-        float moveX = Input.GetAxis("Horizontal"); // A/D veya Sol/Sað ok tuþlarý
-        float moveZ = Input.GetAxis("Vertical");   // W/S veya Yukarý/Aþaðý ok tuþlarý
+        float moveX = Input.GetAxis("Horizontal"); // A/D veya Sol/Saï¿½ ok tuï¿½larï¿½
+        float moveZ = Input.GetAxis("Vertical");   // W/S veya Yukarï¿½/Aï¿½aï¿½ï¿½ ok tuï¿½larï¿½
 
-        // Hareket yönü (normalize edilmiþ)
+        // Hareket yï¿½nï¿½ (normalize edilmiï¿½)
         Vector3 move = (transform.right * moveX + transform.forward * moveZ).normalized;
 
         // Hareketi uygula
         characterController.Move(move * moveSpeed * Time.deltaTime);
         //Debug.Log("Move Magnitude: " + move.magnitude);
 
-        // Yürüme animasyonunu kontrol et
-        if (move.magnitude > 0.1f) // Eðer karakter hareket ediyorsa
+        // Yï¿½rï¿½me animasyonunu kontrol et
+        if (move.magnitude > 0.1f) // Eï¿½er karakter hareket ediyorsa
         {
-            animator.SetBool("isWalking", true); // Yürüme animasyonunu baþlat
+            animator.SetBool("isWalking", true); // Yï¿½rï¿½me animasyonunu baï¿½lat
         }
         else
         {
-            animator.SetBool("isWalking", false); // Yürüme animasyonunu durdur
+            animator.SetBool("isWalking", false); // Yï¿½rï¿½me animasyonunu durdur
         }
 
-        // Yerçekimi kontrolü
+        // Yerï¿½ekimi kontrolï¿½
         if (IsGrounded() && velocity.y < 0)
         {
-            velocity.y = -2f; // Hafif bir sabit kuvvet uygulayýn
+            velocity.y = -2f; // Hafif bir sabit kuvvet uygulayï¿½n
 
-            // Zýplama tuþuna basýldýðýnda
+            // Zï¿½plama tuï¿½una basï¿½ldï¿½ï¿½ï¿½nda
             if (Input.GetButtonDown("Jump"))
             {
                 Debug.Log("Jump Force: " + jumpForce);
                 Debug.Log("Gravity: " + Physics.gravity.y);
                 Debug.Log("Velocity Y: " + velocity.y);
-                velocity.y = Mathf.Sqrt(jumpForce * -2f * Physics.gravity.y); // Zýplama kuvveti uygula
-                animator.SetBool("isJumping", true); // Zýplama animasyonunu baþlat
+                velocity.y = Mathf.Sqrt(jumpForce * -2f * Physics.gravity.y); // Zï¿½plama kuvveti uygula
+                animator.SetBool("isJumping", true); // Zï¿½plama animasyonunu baï¿½lat
                 isJumping = true;
             }
             else if (isJumping)
             {
-                animator.SetBool("isJumping", false); // Zýplama animasyonunu durdur
+                animator.SetBool("isJumping", false); // Zï¿½plama animasyonunu durdur
                 isJumping = false;
             }
         }
         else
         {
-            velocity.y += Physics.gravity.y * Time.deltaTime; // Yerçekimi ekleyin
+            velocity.y += Physics.gravity.y * Time.deltaTime; // Yerï¿½ekimi ekleyin
         }
 
-        // Yerçekimini uygula
+        // Yerï¿½ekimini uygula
         characterController.Move(velocity * Time.deltaTime);
     }
 
     bool IsGrounded()
     {
-        // Karakterin altýna bir Raycast gönder
-        float raycastDistance = 0.2f; // Karakterin ayaklarýndan ne kadar aþaðýya bakýlacaðý
+        // Karakterin altï¿½na bir Raycast gï¿½nder
+        float raycastDistance = 0.2f; // Karakterin ayaklarï¿½ndan ne kadar aï¿½aï¿½ï¿½ya bakï¿½lacaï¿½ï¿½
         return Physics.Raycast(transform.position, Vector3.down, raycastDistance);
     }
 }
