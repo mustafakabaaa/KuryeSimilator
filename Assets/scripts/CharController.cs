@@ -1,12 +1,13 @@
 using TMPro;
-using UnityEditor.PackageManager;
 using UnityEngine;
 
 public class CharrController : MonoBehaviour
 {
     [Header("Player Settings")]
-    public float moveSpeed = 6f; // Hareket hýzý
+    public float moveSpeed = 5f; // Hareket hýzý
     public float mouseSensitivity = 100f; // Fare hassasiyeti
+    public float jumpForce = 1.5f; // Zýplama kuvveti
+    private bool isJumping = false; // Zýplama durumu
 
     [Header("References")]
     public Transform playerCamera; // Kamera referansý
@@ -15,12 +16,21 @@ public class CharrController : MonoBehaviour
     private float xRotation = 0f; // Kamera X rotasyonu
     private Vector3 velocity; // Yerçekimi için hýz
 
-    private bool canInteract = false; // Etkileþime girilebileceý?
-    public TextMeshProUGUI interactText; // Tex
+    private bool canInteract = false; // Etkileþime girilebilecek mi?
+    public TextMeshProUGUI interactText; // Etkileþim metni
+
+    private Animator animator;
+
+
+    private Transform _cameraTarget; // Kamera hedefi (oyuncu veya bisiklet)
+    private bool _isControlEnabled = true; // Oyuncu kontrolü etkin mi?
+
+
     void Start()
     {
         // Component kontrolü
         characterController = GetComponent<CharacterController>();
+        animator = GetComponent<Animator>();
 
         if (playerCamera == null)
         {
@@ -30,6 +40,8 @@ public class CharrController : MonoBehaviour
         // Fareyi kilitle
         Cursor.lockState = CursorLockMode.Locked;
         interactText.gameObject.SetActive(false);
+
+        _cameraTarget = transform;
     }
 
     void Update()
@@ -79,6 +91,16 @@ public class CharrController : MonoBehaviour
         }
     }
 
+    public void SetCameraTarget(Transform target)
+    {
+        _cameraTarget = target;
+    }
+
+    public void SetControlEnabled(bool isEnabled)
+    {
+        _isControlEnabled = isEnabled;
+    }
+
     void HandleMouseLook()
     {
         // Fare girdisi
@@ -92,7 +114,11 @@ public class CharrController : MonoBehaviour
         // Kamera ve oyuncu dönüþü
         playerCamera.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
         transform.Rotate(Vector3.up * mouseX);
+
+        
     }
+
+   
 
     void HandleMovement()
     {
@@ -100,16 +126,43 @@ public class CharrController : MonoBehaviour
         float moveX = Input.GetAxis("Horizontal"); // A/D veya Sol/Sað ok tuþlarý
         float moveZ = Input.GetAxis("Vertical");   // W/S veya Yukarý/Aþaðý ok tuþlarý
 
-        // Hareket yönü
-        Vector3 move = transform.right * moveX + transform.forward * moveZ;
+        // Hareket yönü (normalize edilmiþ)
+        Vector3 move = (transform.right * moveX + transform.forward * moveZ).normalized;
 
         // Hareketi uygula
         characterController.Move(move * moveSpeed * Time.deltaTime);
+        //Debug.Log("Move Magnitude: " + move.magnitude);
+
+        // Yürüme animasyonunu kontrol et
+        if (move.magnitude > 0.1f) // Eðer karakter hareket ediyorsa
+        {
+            animator.SetBool("isWalking", true); // Yürüme animasyonunu baþlat
+        }
+        else
+        {
+            animator.SetBool("isWalking", false); // Yürüme animasyonunu durdur
+        }
 
         // Yerçekimi kontrolü
-        if (characterController.isGrounded)
+        if (IsGrounded() && velocity.y < 0)
         {
             velocity.y = -2f; // Hafif bir sabit kuvvet uygulayýn
+
+            // Zýplama tuþuna basýldýðýnda
+            if (Input.GetButtonDown("Jump"))
+            {
+                Debug.Log("Jump Force: " + jumpForce);
+                Debug.Log("Gravity: " + Physics.gravity.y);
+                Debug.Log("Velocity Y: " + velocity.y);
+                velocity.y = Mathf.Sqrt(jumpForce * -2f * Physics.gravity.y); // Zýplama kuvveti uygula
+                animator.SetBool("isJumping", true); // Zýplama animasyonunu baþlat
+                isJumping = true;
+            }
+            else if (isJumping)
+            {
+                animator.SetBool("isJumping", false); // Zýplama animasyonunu durdur
+                isJumping = false;
+            }
         }
         else
         {
@@ -118,5 +171,12 @@ public class CharrController : MonoBehaviour
 
         // Yerçekimini uygula
         characterController.Move(velocity * Time.deltaTime);
+    }
+
+    bool IsGrounded()
+    {
+        // Karakterin altýna bir Raycast gönder
+        float raycastDistance = 0.2f; // Karakterin ayaklarýndan ne kadar aþaðýya bakýlacaðý
+        return Physics.Raycast(transform.position, Vector3.down, raycastDistance);
     }
 }

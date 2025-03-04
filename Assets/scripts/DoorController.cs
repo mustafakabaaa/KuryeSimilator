@@ -17,8 +17,8 @@ public class DoorController : MonoBehaviour,Iinterectable
 
     private void ToogleDoor()
     {
-        isOpen = !isOpen;
-        doorZValue=isOpen ? 0 : 3;
-        door.DOMoveZ(doorZValue, 1f);
+        isOpen = !isOpen; 
+        doorZValue=isOpen ? 0 : 3; // 0'dan 3'e gidecek 
+        door.DOMoveZ(doorZValue, 1f); // Z ekseninde nereye gideceði ve ne kadar süreceðini belirtiyoruz
     }
 }
