@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEditor.PackageManager;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CharrController : MonoBehaviour
 {
@@ -41,34 +42,44 @@ public class CharrController : MonoBehaviour
 
     void RaycastController()
     {
+        float raycastDistance = 3f; // Raycast'in maksimum mesafesi
         Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit;
 
         // Raycast'i görsel olarak çizin (örneðin kýrmýzý renk)
-        Debug.DrawRay(ray.origin, ray.direction * 10f, Color.red);
+        Debug.DrawRay(ray.origin, ray.direction * raycastDistance, Color.red);
 
-        if (Physics.Raycast(ray, out hit))
+        // Raycast'i belirli bir mesafeye kadar kontrol et
+        if (Physics.Raycast(ray, out hit, raycastDistance))
         {
-            if (hit.collider.TryGetComponent(out Iinterectable interactObjects))
-            {
-                if (Input.GetKeyDown(KeyCode.E))
-                {
-                    interactObjects.Interact();
-                }
-            }
-
-            // Eðer bakýlan nesne etkileþime girilebilir bir nesne ise
+            // E tuþu ile etkileþim (örneðin kapý açma)
             if (hit.collider.TryGetComponent(out Iinterectable interactable))
             {
                 // Mesajý göster
                 interactText.gameObject.SetActive(true);
                 canInteract = true;
+
+                // E tuþuna basýldýðýnda etkileþime gir
+                if (Input.GetKeyDown(KeyCode.E))
+                {
+                    interactable.Interact();
+                }
             }
             else
             {
                 // Etkileþime girilebilecek nesne deðilse mesajý gizle
                 interactText.gameObject.SetActive(false);
                 canInteract = false;
+            }
+
+            // Fare sol týklamasý ile saldýrý (örneðin NPC'ye saldýrma)
+            if (hit.collider.TryGetComponent(out IAttackable attackable))
+            {
+                // Sol týklama ile saldýr
+                if (Input.GetMouseButtonDown(0)) // Sol týklama
+                {
+                    attackable.Attack();
+                }
             }
         }
         else
@@ -78,7 +89,6 @@ public class CharrController : MonoBehaviour
             canInteract = false;
         }
     }
-
     void HandleMouseLook()
     {
         // Fare girdisi
