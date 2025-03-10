@@ -19,6 +19,6 @@ public class DoorController : MonoBehaviour,Iinterectable
     {
         isOpen = !isOpen; 
         doorZValue=isOpen ? 0 : 3; // 0'dan 3'e gidecek 
-        door.DOMoveZ(doorZValue, 1f); // Z ekseninde nereye gideceði ve ne kadar süreceðini belirtiyoruz
+        door.DOMoveZ(doorZValue, 1f); // Z ekseninde nereye gidecegi ve ne kadar surecegini belirtiyoruz
     }
 }
