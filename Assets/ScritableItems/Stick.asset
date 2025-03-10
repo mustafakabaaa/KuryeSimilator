@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: Stick
   itemDescription: For damage
-  canStackable: 0
+  canStackable: 1
   itemIcon: {fileID: 10915, guid: 0000000000000000f000000000000000, type: 0}
   itemPrefab: {fileID: 3731396856757911336, guid: 716e13ff51d60be42a4b7888c0112543, type: 3}
   damage: 1

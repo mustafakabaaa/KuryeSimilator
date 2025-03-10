@@ -7,28 +7,46 @@ public class WalkingState : INPCState
     public void EnterState(NPCController npc)
     {
         Debug.Log("Entering Walking State");
-        npc.animator.SetBool("IsWalking", true);
     }
 
-    public void UpdateState(NPCController npc)
+    public void Update()
     {
-        float distanceToPlayer = Vector3.Distance(npc.transform.position, npc.player.position);
+        if (pathList.waypoints.Count == 0)
+        {
+            Debug.LogWarning("No waypoints assigned!");
+            return;
+        }
 
-        if (distanceToPlayer <= npc.attackRange)
+        Transform targetWaypoint = pathList.waypoints[currentWaypointIndex];
+        if (targetWaypoint == null)
+            return;
+
+        // Waypoint'e do�ru hareket et
+        npc.transform.position = Vector3.MoveTowards(npc.transform.position, targetWaypoint.position, walkingSpeed * Time.deltaTime);
+
+        // X ve Z eksenlerindeki mesafeyi hesapla
+        float distanceXZ = CalculateXZDistance(npc.transform.position, targetWaypoint.position);
+        //Debug.Log("XZ Distance: " + distanceXZ);
+
+        // Waypoint'e ula��ld���nda bir sonraki waypoint'e ge�
+        if (distanceXZ <= 0.2f) 
         {
-            npc.TransitionToState(new AttackingState());
-        }
-        else if (distanceToPlayer > npc.detectionRange)
-        {
-            npc.TransitionToState(new IdleState());
-        }
-        else
-        {
-            npc.MoveTowardsPlayer(npc.walkSpeed);
+            timer += Time.deltaTime;
+            if (timer > waitingWayPointTime)
+            {
+                currentWaypointIndex = (currentWaypointIndex + 1) % pathList.waypoints.Count;
+                timer = 0;
+            }
         }
     }
-
-    public void ExitState(NPCController npc)
+    private float CalculateXZDistance(Vector3 pos1, Vector3 pos2)
+    {
+        // Y�kseklik (y) fark�n� g�z ard� et, sadece x ve z eksenlerindeki fark� hesapla
+        float dx = pos1.x - pos2.x;
+        float dz = pos1.z - pos2.z;
+        return Mathf.Sqrt(dx * dx + dz * dz);
+    }
+    public void Exit()
     {
         Debug.Log("Exiting Walking State");
         npc.animator.SetBool("IsWalking", false);
