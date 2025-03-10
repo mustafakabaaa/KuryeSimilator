@@ -2439,8 +2439,11 @@ GameObject:
   - component: {fileID: 2049601061}
   - component: {fileID: 2049601060}
   - component: {fileID: 2049601059}
+<<<<<<< Updated upstream:Assets/Scenes/Scene 0.unity
   - component: {fileID: 2049601065}
   - component: {fileID: 2049601064}
+=======
+>>>>>>> Stashed changes:Assets/Scenes/SampleScene.unity
   - component: {fileID: 2049601063}
   m_Layer: 0
   m_Name: NPC
@@ -2531,7 +2534,11 @@ Transform:
   m_GameObject: {fileID: 2049601058}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+<<<<<<< Updated upstream:Assets/Scenes/Scene 0.unity
   m_LocalPosition: {x: 18.85, y: 1.35, z: -5.96}
+=======
+  m_LocalPosition: {x: 12.90688, y: 1.35, z: -5.315328}
+>>>>>>> Stashed changes:Assets/Scenes/SampleScene.unity
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2546,6 +2553,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2049601058}
   m_Enabled: 1
   m_EditorHideFlags: 0
+<<<<<<< Updated upstream:Assets/Scenes/Scene 0.unity
   m_Script: {fileID: 11500000, guid: ba1a3287f5f4a0c4e85503fed1f462c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
@@ -2588,6 +2596,17 @@ NavMeshAgent:
   m_BaseOffset: 1.03
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+=======
+  m_Script: {fileID: 11500000, guid: d1c44120cfc2fab44a67abca4a214eed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  walkSpeed: 2
+  runSpeed: 5
+  attackRange: 2
+  detectionRange: 10
+  player: {fileID: 1672299966}
+  animator: {fileID: 0}
+>>>>>>> Stashed changes:Assets/Scenes/SampleScene.unity
 --- !u!1 &2059620303
 GameObject:
   m_ObjectHideFlags: 0
@@ -2821,9 +2840,12 @@ SceneRoots:
   - {fileID: 2059620304}
   - {fileID: 1589788425}
   - {fileID: 2049601062}
+<<<<<<< Updated upstream:Assets/Scenes/Scene 0.unity
   - {fileID: 1483389542}
   - {fileID: 1294276646}
   - {fileID: 719887028}
+=======
+>>>>>>> Stashed changes:Assets/Scenes/SampleScene.unity
   - {fileID: 528831784}
   - {fileID: 1638525130}
   - {fileID: 629561856}

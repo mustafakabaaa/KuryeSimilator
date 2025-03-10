@@ -2,12 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WalkingState : INPCState
+public class RunningState : INPCState
 {
     public void EnterState(NPCController npc)
     {
-        Debug.Log("Entering Walking State");
-        npc.animator.SetBool("IsWalking", true);
+        Debug.Log("Entering Running State");
+        npc.animator.SetBool("IsRunning", true);
     }
 
     public void UpdateState(NPCController npc)
@@ -24,13 +24,13 @@ public class WalkingState : INPCState
         }
         else
         {
-            npc.MoveTowardsPlayer(npc.walkSpeed);
+            npc.MoveTowardsPlayer(npc.runSpeed);
         }
     }
 
     public void ExitState(NPCController npc)
     {
-        Debug.Log("Exiting Walking State");
-        npc.animator.SetBool("IsWalking", false);
+        Debug.Log("Exiting Running State");
+        npc.animator.SetBool("IsRunning", false);
     }
 }
