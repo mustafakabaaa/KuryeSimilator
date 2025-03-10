@@ -7,29 +7,29 @@ public class InventoryUIController : MonoBehaviour
 {
     public List<SlotUI> uiList = new List<SlotUI>(); // Slot UI elementleri
     public SCInventory playerInventory; // Oyuncunun envanteri
-    public SCBagInventory bagInventory; // Çantanýn envanteri
-    private bool isShowingBag = false; // Çanta envanteri mi gösteriliyor?
+    public SCBagInventory bagInventory; // ï¿½antanï¿½n envanteri
+    private bool isShowingBag = false; // ï¿½anta envanteri mi gï¿½steriliyor?
 
     private void Start()
     {
         
-        UpdateUI(playerInventory); // Baþlangýçta oyuncunun envanterini göster
+        UpdateUI(playerInventory); // Baï¿½langï¿½ï¿½ta oyuncunun envanterini gï¿½ster
     }
 
     public void OnChangeButtonClicked(int slotIndex)
     {
         if (isShowingBag)
         {
-            // Çantanýn envanteri açýksa, çantadan oyuncuya taþý
+            // ï¿½antanï¿½n envanteri aï¿½ï¿½ksa, ï¿½antadan oyuncuya taï¿½ï¿½
             GetComponent<Inventory>().MoveItemFromBagToPlayer(slotIndex);
         }
         else
         {
-            // Oyuncunun envanteri açýksa, oyuncudan çantaya taþý
+            // Oyuncunun envanteri aï¿½ï¿½ksa, oyuncudan ï¿½antaya taï¿½ï¿½
             GetComponent<Inventory>().MoveItemFromPlayerToBag(slotIndex);
         }
 
-        // Envanter UI'sýný güncelle
+        // Envanter UI'sï¿½nï¿½ gï¿½ncelle
         UpdateUI(isShowingBag ? bagInventory : playerInventory);
     }
 
@@ -37,23 +37,23 @@ public class InventoryUIController : MonoBehaviour
     {
         if (isShowingBag)
         {
-            // Çantanýn envanteri açýksa, çantadan slotu temizle
+            // ï¿½antanï¿½n envanteri aï¿½ï¿½ksa, ï¿½antadan slotu temizle
             GetComponent<Inventory>().ClearSlot(slotIndex);
         }
         else
         {
-            // Oyuncunun envanteri açýksa, oyuncunun slotunu temizle
+            // Oyuncunun envanteri aï¿½ï¿½ksa, oyuncunun slotunu temizle
             GetComponent<Inventory>().ClearSlot(slotIndex);
         }
 
-        // Envanter UI'sýný güncelle
+        // Envanter UI'sï¿½nï¿½ gï¿½ncelle
         UpdateUI(isShowingBag ? bagInventory : playerInventory);
     }
     private void Update()
     {
         Debug.Log(isShowingBag);
     }
-    // Çantanýn envanterine geç
+    // ï¿½antanï¿½n envanterine geï¿½
     public void SwitchToBagInventory(SCBagInventory bagInventory)
     {
         this.bagInventory = bagInventory;
@@ -61,14 +61,14 @@ public class InventoryUIController : MonoBehaviour
         UpdateUI(bagInventory);
     }
 
-    // Oyuncunun envanterine geri dön
+    // Oyuncunun envanterine geri dï¿½n
     public void SwitchToPlayerInventory()
     {
         isShowingBag = false;
         UpdateUI(playerInventory);
     }
 
-    // UI'ý güncelle (SCInventory için)
+    // UI'ï¿½ gï¿½ncelle (SCInventory iï¿½in)
     public void UpdateUI(SCInventory inventory)
     {
         for (int i = 0; i < uiList.Count; i++)
@@ -78,7 +78,7 @@ public class InventoryUIController : MonoBehaviour
                 uiList[i].itemImage.sprite = inventory.inventorySlots[i].item.itemIcon;
                 uiList[i].itemCountText.text = inventory.inventorySlots[i].itemCount.ToString();
 
-                // Drop ve Change butonlarýný göster
+                // Drop ve Change butonlarï¿½nï¿½ gï¿½ster
                 uiList[i].DroppedButton.SetActive(true);
                 if (uiList[i].ChangeButton != null)
                 {
@@ -95,7 +95,7 @@ public class InventoryUIController : MonoBehaviour
                 uiList[i].itemImage.sprite = null;
                 uiList[i].itemCountText.text = "";
 
-                // Drop ve Change butonlarýný gizle
+                // Drop ve Change butonlarï¿½nï¿½ gizle
                 uiList[i].DroppedButton.SetActive(false);
                 if (uiList[i].ChangeButton != null)
                 {
@@ -105,7 +105,7 @@ public class InventoryUIController : MonoBehaviour
         }
     }
 
-    // UI'ý güncelle (SCBagInventory için)
+    // UI'ï¿½ gï¿½ncelle (SCBagInventory iï¿½in)
     public void UpdateUI(SCBagInventory bagInventory)
     {
         for (int i = 0; i < uiList.Count; i++)
@@ -115,7 +115,7 @@ public class InventoryUIController : MonoBehaviour
                 uiList[i].itemImage.sprite = bagInventory.inventorySlots[i].item.itemIcon;
                 uiList[i].itemCountText.text = bagInventory.inventorySlots[i].itemCount.ToString();
 
-                // Drop ve Change butonlarýný göster
+                // Drop ve Change butonlarï¿½nï¿½ gï¿½ster
                 uiList[i].DroppedButton.SetActive(true);
                 if (uiList[i].ChangeButton != null)
                 {
@@ -132,7 +132,7 @@ public class InventoryUIController : MonoBehaviour
                 uiList[i].itemImage.sprite = null;
                 uiList[i].itemCountText.text = "";
 
-                // Drop ve Change butonlarýný gizle
+                // Drop ve Change butonlarï¿½nï¿½ gizle
                 uiList[i].DroppedButton.SetActive(false);
                 if (uiList[i].ChangeButton != null)
                 {
@@ -142,32 +142,34 @@ public class InventoryUIController : MonoBehaviour
         }
     }
 
-    // Hangi envanterin açýk olduðunu döndür
+    // Hangi envanterin aï¿½ï¿½k olduï¿½unu dï¿½ndï¿½r
     public bool IsShowingBag()
     {
         return isShowingBag;
     }
-    public bool IsShowBagýngFNC(bool isShow)
+
+    // buradaki fonksiyonun ismi farklÄ± olabilir dikkat et COMMIT sÄ±rasÄ±nda deÄŸiÅŸtirildi.
+    public bool IsShowBagingFNC(bool isShow)
     {
         isShowingBag=isShow; 
         return isShowingBag;
     }
-    // Çantanýn envanterini döndür
+    // ï¿½antanï¿½n envanterini dï¿½ndï¿½r
     public SCBagInventory GetBagInventory()
     {
         return bagInventory;
     }
 
-    // Oyuncunun envanterini aç
+    // Oyuncunun envanterini aï¿½
     public void OpenPlayerInventory()
     {
        
-        UpdateUI(playerInventory); // Oyuncunun envanterini güncelle
+        UpdateUI(playerInventory); // Oyuncunun envanterini gï¿½ncelle
     }
 
-    // Butonlarýn Selected durumunu sýfýrla
+    // Butonlarï¿½n Selected durumunu sï¿½fï¿½rla
     public void ClearSelectedButton()
     {
-        EventSystem.current.SetSelectedGameObject(null); // Seçili butonu sýfýrla
+        EventSystem.current.SetSelectedGameObject(null); // Seï¿½ili butonu sï¿½fï¿½rla
     }
 }
