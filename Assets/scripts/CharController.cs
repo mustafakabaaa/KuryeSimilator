@@ -9,6 +9,7 @@ public class CharrController : MonoBehaviour
     public float mouseSensitivity = 100f; // Fare hassasiyeti
     public float jumpForce = 1.5f; // Z�plama kuvveti
     private bool isJumping = false; // Z�plama durumu
+    private InventoryUIController inventoryUIController;
 
     [Header("References")]
     public Transform playerCamera; // Kamera referans�
@@ -21,12 +22,16 @@ public class CharrController : MonoBehaviour
     public TextMeshProUGUI interactText; // Etkile�im metni
 
     private Animator animator;
-
+    public GameObject inventoryGameobject;
 
     private Transform _cameraTarget; // Kamera hedefi (oyuncu veya bisiklet)
     private bool _isControlEnabled = true; // Oyuncu kontrol� etkin mi?
+    public SCInventory playerInventory;
 
-
+    private void Awake()
+    {
+        inventoryUIController = GetComponent<InventoryUIController>();
+    }
     void Start()
     {
         // Component kontrol�
@@ -43,6 +48,10 @@ public class CharrController : MonoBehaviour
         interactText.gameObject.SetActive(false);
 
         _cameraTarget = transform;
+
+        inventoryGameobject.SetActive(false );
+        Cursor.visible = false;
+        
     }
 
     void Update()
@@ -50,8 +59,43 @@ public class CharrController : MonoBehaviour
         HandleMouseLook();
         HandleMovement();
         RaycastController();
+        InventoryOpenAndClose();
     }
+    public void InventoryOpenAndClose()
+    {
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            if (inventoryGameobject.activeSelf == false)
+            {
+                // Envanteri aç
+                
+                inventoryGameobject.SetActive(true);
+                inventoryUIController.OpenPlayerInventory();
+                inventoryUIController.SwitchToPlayerInventory();
+                // İmleci serbest bırak ve görünür yap
+                Cursor.lockState = CursorLockMode.None; // İmleci serbest bırak
+                Cursor.visible = true; // İmleci göster
+                inventoryUIController.ClearSelectedButton();
+            }
+            else
+            {
+                // Envanteri kapat
+                inventoryGameobject.SetActive(false);
+                inventoryUIController.OpenPlayerInventory();
 
+
+                // İmleci kilitle ve gizle
+                Cursor.lockState = CursorLockMode.Locked; // İmleci kilitle
+                Cursor.visible = false; // İmleci gizle
+                inventoryUIController.ClearSelectedButton(); // Butonların Selected durumunu sıfırla
+                Inventory inventory = GetComponent<Inventory>();
+                if (inventory != null)
+                {
+                    inventory.ResetSwap();
+                }
+            }
+        }
+    }
     void RaycastController()
     {
         float raycastDistance = 3f; // Raycast'in maksimum mesafesi
