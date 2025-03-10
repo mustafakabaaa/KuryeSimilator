@@ -37,7 +37,7 @@ public class WalkingState : IState
 
         // X ve Z eksenlerindeki mesafeyi hesapla
         float distanceXZ = CalculateXZDistance(npc.transform.position, targetWaypoint.position);
-        Debug.Log("XZ Distance: " + distanceXZ);
+        //Debug.Log("XZ Distance: " + distanceXZ);
 
         // Waypoint'e ulaþýldýðýnda bir sonraki waypoint'e geç
         if (distanceXZ <= 0.2f) 
