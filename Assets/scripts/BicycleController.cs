@@ -26,6 +26,9 @@ public class BicycleController : MonoBehaviour, Iinterectable
             Debug.LogError("Rigidbody component not found.");
         }
 
+        // Player objesini başlangıçta atayın
+        player = GameObject.FindGameObjectWithTag("Player");
+
         // Başlangıçta bisiklet kamerasını devre dışı bırak
         if (vehicleCamera != null)
             vehicleCamera.SetActive(false);
