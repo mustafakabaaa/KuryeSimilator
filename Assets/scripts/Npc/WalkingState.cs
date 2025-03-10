@@ -7,46 +7,28 @@ public class WalkingState : INPCState
     public void EnterState(NPCController npc)
     {
         Debug.Log("Entering Walking State");
+        npc.animator.SetBool("IsWalking", true);
     }
 
-    public void Update()
+    public void UpdateState(NPCController npc)
     {
-        if (pathList.waypoints.Count == 0)
+        float distanceToPlayer = Vector3.Distance(npc.transform.position, npc.player.position);
+
+        if (distanceToPlayer <= npc.attackRange)
         {
-            Debug.LogWarning("No waypoints assigned!");
-            return;
+            npc.TransitionToState(new AttackingState());
         }
-
-        Transform targetWaypoint = pathList.waypoints[currentWaypointIndex];
-        if (targetWaypoint == null)
-            return;
-
-        // Waypoint'e do�ru hareket et
-        npc.transform.position = Vector3.MoveTowards(npc.transform.position, targetWaypoint.position, walkingSpeed * Time.deltaTime);
-
-        // X ve Z eksenlerindeki mesafeyi hesapla
-        float distanceXZ = CalculateXZDistance(npc.transform.position, targetWaypoint.position);
-        //Debug.Log("XZ Distance: " + distanceXZ);
-
-        // Waypoint'e ula��ld���nda bir sonraki waypoint'e ge�
-        if (distanceXZ <= 0.2f) 
+        else if (distanceToPlayer > npc.detectionRange)
         {
-            timer += Time.deltaTime;
-            if (timer > waitingWayPointTime)
-            {
-                currentWaypointIndex = (currentWaypointIndex + 1) % pathList.waypoints.Count;
-                timer = 0;
-            }
+            npc.TransitionToState(new IdleState());
+        }
+        else
+        {
+            npc.MoveTowardsPlayer(npc.walkSpeed);
         }
     }
-    private float CalculateXZDistance(Vector3 pos1, Vector3 pos2)
-    {
-        // Y�kseklik (y) fark�n� g�z ard� et, sadece x ve z eksenlerindeki fark� hesapla
-        float dx = pos1.x - pos2.x;
-        float dz = pos1.z - pos2.z;
-        return Mathf.Sqrt(dx * dx + dz * dz);
-    }
-    public void Exit()
+
+    public void ExitState(NPCController npc)
     {
         Debug.Log("Exiting Walking State");
         npc.animator.SetBool("IsWalking", false);
