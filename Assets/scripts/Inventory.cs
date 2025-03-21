@@ -4,13 +4,26 @@ using UnityEngine;
 
 public class Inventory : MonoBehaviour
 {
+    public static Inventory Instance; // Singleton örneði
+
     public SCInventory playerInventory; // Oyuncunun envanteri
     public SCBagInventory bagInventory; // Çantanýn envanteri
     private InventoryUIController inventoryUIController;
     bool isSwapping;
     int tempIndex;
     Slot tempSlot;
-
+   
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
     private void Start()
     {
         inventoryUIController = GetComponent<InventoryUIController>();
@@ -28,7 +41,70 @@ public class Inventory : MonoBehaviour
         }
         return -1; // Stacklenebilir slot yok
     }
+    public bool HasItem(string itemID)
+    {
+        // Oyuncunun envanterini kontrol et
+        foreach (Slot slot in playerInventory.inventorySlots)
+        {
+            if (slot.item != null && slot.item.itemID == itemID && slot.itemCount > 0)
+            {
+                return true; // Item bulundu
+            }
+        }
 
+        // Çantanýn envanterini kontrol et (eðer çanta açýksa)
+        if (inventoryUIController.IsShowingBag())
+        {
+            foreach (Slot slot in bagInventory.inventorySlots)
+            {
+                if (slot.item != null && slot.item.itemID == itemID && slot.itemCount > 0)
+                {
+                    return true; // Item bulundu
+                }
+            }
+        }
+
+        return false; // Item bulunamadý
+    }
+    public void RemoveItem(string itemID)
+    {
+        // Oyuncunun envanterinden item'i kaldýr
+        foreach (Slot slot in playerInventory.inventorySlots)
+        {
+            if (slot.item != null && slot.item.itemID == itemID && slot.itemCount > 0)
+            {
+                slot.itemCount--; // Item sayýsýný azalt
+                if (slot.itemCount <= 0)
+                {
+                    slot.item = null; // Slotu boþalt
+                    slot.isFull = false;
+                }
+                Debug.Log("Item removed from player inventory: " + itemID);
+                return; // Item bulundu ve kaldýrýldý
+            }
+        }
+
+        // Çantanýn envanterinden item'i kaldýr (eðer çanta açýksa)
+        if (inventoryUIController.IsShowingBag())
+        {
+            foreach (Slot slot in bagInventory.inventorySlots)
+            {
+                if (slot.item != null && slot.item.itemID == itemID && slot.itemCount > 0)
+                {
+                    slot.itemCount--; // Item sayýsýný azalt
+                    if (slot.itemCount <= 0)
+                    {
+                        slot.item = null; // Slotu boþalt
+                        slot.isFull = false;
+                    }
+                    Debug.Log("Item removed from bag inventory: " + itemID);
+                    return; // Item bulundu ve kaldýrýldý
+                }
+            }
+        }
+
+        Debug.LogWarning("Item not found in any inventory: " + itemID);
+    }
     // Stack'e ekle
     private bool AddToStack(SCInventory inventory, SCItem item, int amount)
     {

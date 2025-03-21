@@ -37,7 +37,7 @@ public class InventoryUIController : MonoBehaviour
     {
         if (isShowingBag)
         {
-            // �antan�n envanteri a��ksa, �antadan slotu temizle
+            // cantanin envanteri aciksa, cantadan slotu temizle
             GetComponent<Inventory>().ClearSlot(slotIndex);
         }
         else

@@ -12,8 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b35f4b5e24b809408a7ecfa58ff8645, type: 3}
   m_Name: Ball
   m_EditorClassIdentifier: 
-  itemName: BAll
+  itemID: 
+  itemName: Ball
   itemDescription: shoot
   canStackable: 0
+  maxStackSize: 4
   itemIcon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   itemPrefab: {fileID: 6188728807921486984, guid: 19153d49dbd7ff04389b10e23715d6a4, type: 3}

@@ -5,6 +5,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Item", menuName = "Scriptable/Item")]
 public class SCItem : ScriptableObject
 {
+    public string itemID; // Nesnenin benzersiz kimliði
+
     public string itemName;
     public string itemDescription;
     public bool canStackable; // Stacklenebilir mi?
