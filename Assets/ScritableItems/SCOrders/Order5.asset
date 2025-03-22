@@ -18,4 +18,5 @@ MonoBehaviour:
   requiredItems:
   - {fileID: 11400000, guid: 4034b4dca03e1a54a8c7aa804d10bbcc, type: 2}
   deliveryAddress: asdasd
+  deliveryPosition: {x: 60, y: 2, z: 20}
   reward: 12

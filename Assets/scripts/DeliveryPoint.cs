@@ -16,6 +16,11 @@ public class DeliveryPoint : MonoBehaviour
     private Coroutine blinkCoroutine;
     private Coroutine rotateCoroutine;
 
+    public void SetOrderID(string id)
+    {
+        orderID = id; // OrderID'yi ayarla
+    }
+
     private void Start()
     {
         // Iþýk ve metni baþlangýçta gizle
@@ -35,16 +40,6 @@ public class DeliveryPoint : MonoBehaviour
         else
         {
             Debug.LogError("Delivery Text is not assigned!");
-        }
-
-        // Teslimat noktasýný OrderManager'a kaydet
-        if (OrderManager.Instance != null)
-        {
-            OrderManager.Instance.RegisterDeliveryPoint(orderID, this);
-        }
-        else
-        {
-            Debug.LogError("OrderManager.Instance is null!");
         }
     }
 

@@ -19,4 +19,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4034b4dca03e1a54a8c7aa804d10bbcc, type: 2}
   - {fileID: 11400000, guid: 9648a4c33bdf1094b9c17f3bed92ff3e, type: 2}
   deliveryAddress: ev
+  deliveryPosition: {x: 65, y: 2, z: -24}
   reward: 10

@@ -3,15 +3,16 @@ using UnityEngine;
 
 public class OrderManager : MonoBehaviour
 {
-    public static OrderManager Instance; // Singleton örneði
-   
-    public SCDayData[] days; // Tüm günlerin SC'leri
-    private int currentDayIndex = 0; // Þu anki günün index'i
+    public static OrderManager Instance;
 
-    public List<SCOrderData> availableOrders = new List<SCOrderData>(); // Mevcut sipariþler
-    public List<SCOrderData> activeOrders = new List<SCOrderData>(); // Aktif sipariþler
+    public SCDayData[] days;
+    private int currentDayIndex = 0;
 
-    private Dictionary<string, DeliveryPoint> deliveryPoints = new Dictionary<string, DeliveryPoint>(); // Teslimat noktalarý
+    public List<SCOrderData> availableOrders = new List<SCOrderData>();
+    public List<SCOrderData> activeOrders = new List<SCOrderData>();
+
+    private Dictionary<string, DeliveryPoint> deliveryPoints = new Dictionary<string, DeliveryPoint>();
+    public GameObject deliveryPointPrefab; // DeliveryPoint prefab'ý
 
     private void Awake()
     {
@@ -24,12 +25,12 @@ public class OrderManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
     private void Start()
     {
-        StartNewDay(); // Oyun baþladýðýnda ilk günü baþlat
+        StartNewDay();
     }
 
-    // Yeni bir gün baþlat
     public void StartNewDay()
     {
         if (currentDayIndex >= days.Length)
@@ -38,11 +39,9 @@ public class OrderManager : MonoBehaviour
             return;
         }
 
-        // Mevcut ve aktif orderlarý temizle
         availableOrders.Clear();
         activeOrders.Clear();
 
-        // Þu anki günün orderlarýný yükle
         SCDayData currentDay = days[currentDayIndex];
         foreach (var order in currentDay.orders)
         {
@@ -50,31 +49,19 @@ public class OrderManager : MonoBehaviour
         }
 
         Debug.Log($"Yeni gün baþladý: {currentDay.dayName}");
-        currentDayIndex++; // Bir sonraki güne geç
+        currentDayIndex++;
     }
-    // Mevcut sipariþleri döndür
+
     public List<SCOrderData> GetAvailableOrders()
     {
         return availableOrders;
     }
 
-    // Aktif sipariþleri döndür
     public List<SCOrderData> GetActiveOrders()
     {
         return activeOrders;
     }
 
-    // Teslimat noktasýný kaydet
-    public void RegisterDeliveryPoint(string orderID, DeliveryPoint deliveryPoint)
-    {
-        if (!deliveryPoints.ContainsKey(orderID))
-        {
-            deliveryPoints.Add(orderID, deliveryPoint);
-            deliveryPoint.gameObject.SetActive(false); // Baþlangýçta teslimat noktasýný devre dýþý býrak
-        }
-    }
-
-    // Sipariþi kabul et
     public void AcceptOrder(string orderID)
     {
         SCOrderData order = availableOrders.Find(o => o.orderID == orderID);
@@ -84,20 +71,42 @@ public class OrderManager : MonoBehaviour
             availableOrders.Remove(order);
             Debug.Log("Order accepted: " + order.orderName);
 
-            // Teslimat noktasýný aktif hale getir ve ýþýðý yanýp söndür
-            if (deliveryPoints.ContainsKey(orderID))
-            {
-                DeliveryPoint deliveryPoint = deliveryPoints[orderID];
-                deliveryPoint.gameObject.SetActive(true); // Teslimat noktasýný aktif hale getir
-                deliveryPoint.StartBlinking(); // Iþýðý yanýp söndür
-            }
+            // DeliveryPoint prefab'ýný oluþtur
+            CreateDeliveryPoint(order);
         }
     }
+
+    private void CreateDeliveryPoint(SCOrderData order)
+    {
+        if (deliveryPointPrefab == null)
+        {
+            Debug.LogError("DeliveryPoint prefab'ý atanmamýþ!");
+            return;
+        }
+
+        // Prefab'ý yükle ve oluþtur
+        GameObject deliveryPointObject = Instantiate(deliveryPointPrefab, order.deliveryPosition, Quaternion.identity);
+        DeliveryPoint deliveryPoint = deliveryPointObject.GetComponent<DeliveryPoint>();
+
+        if (deliveryPoint != null)
+        {
+            // DeliveryPoint'i kaydet
+            deliveryPoints.Add(order.orderID, deliveryPoint);
+            deliveryPoint.SetOrderID(order.orderID); // OrderID'yi DeliveryPoint'e atama
+            deliveryPoint.gameObject.SetActive(true); // Teslimat noktasýný aktif hale getir
+            deliveryPoint.StartBlinking(); // Iþýðý yanýp söndür
+        }
+        else
+        {
+            Debug.LogError("DeliveryPoint bileþeni bulunamadý!");
+        }
+    }
+
     public bool AreAllOrdersCompleted()
     {
-        return activeOrders.Count == 0; // Aktif görev yoksa true döner
+        return activeOrders.Count == 0;
     }
-    // Sipariþi tamamla
+
     public void CompleteOrder(string orderID)
     {
         SCOrderData order = activeOrders.Find(o => o.orderID == orderID);
