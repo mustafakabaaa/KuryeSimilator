@@ -1,21 +1,22 @@
 using UnityEngine;
-using System.Collections; 
+using System.Collections;
 public class BicycleController : MonoBehaviour, Iinterectable
 {
-    [Header("Araba Ozellikleri")]
-    [SerializeField] private float _speed = 10f; // Bisiklet hizi
+    [Header("Bisiklet Ozellikleri")]
+    [SerializeField] private float _maxSpeed = 10f; // Maksimum hiz
+    [SerializeField] private float _acceleration = 5f; // Hizlanma ivmesi
+    [SerializeField] private float _deceleration = 2f; // Yavaslama ivmesi
     [SerializeField] private float _handling = 5f; // Manevra hassasiyeti
     [SerializeField] private float _brakePower = 5f; // Fren gucu
-    [SerializeField] private float _gravity = -9.81f; // Yerçekimi kuvveti
+    [SerializeField] private float _gravity = -9.81f; // Yercekimi kuvveti
     [SerializeField] private float _cameraSensitivity = 100f; // Kamera hassasiyeti
-
-    public bool playerOnboard = false;
+    [SerializeField] private bool playerOnboard = false;
     public Transform dropOfPoint;
     public GameObject vehicleCamera;
     public GameObject player;
 
     private Rigidbody _rb;
-    private Vector3 _velocity; // Yerçekimi için hız vektörü
+    private float _currentSpeed = 0f; // Mevcut hiz
     private float _xRotation = 0f; // Kamera X rotasyonu
 
     private void Start()
@@ -26,10 +27,14 @@ public class BicycleController : MonoBehaviour, Iinterectable
             Debug.LogError("Rigidbody component not found.");
         }
 
-        // Player objesini başlangıçta atayın
+        // Rigidbody ayarlari
+        _rb.interpolation = RigidbodyInterpolation.Interpolate; // Titremeyi azaltir
+        _rb.freezeRotation = true; // Fizik motorunun rotasyonu degistirmesini engeller
+
+        // Player objesini baslangicta atayin
         player = GameObject.FindGameObjectWithTag("Player");
 
-        // Başlangıçta bisiklet kamerasını devre dışı bırak
+        // Baslangicta bisiklet kamerasini devre disi birak
         if (vehicleCamera != null)
             vehicleCamera.SetActive(false);
     }
@@ -44,7 +49,7 @@ public class BicycleController : MonoBehaviour, Iinterectable
     {
         playerOnboard = true;
 
-        // Karakteri devre dışı bırak
+        // Karakteri devre disi birak
         if (player != null)
         {
             player.transform.parent = dropOfPoint;
@@ -53,11 +58,11 @@ public class BicycleController : MonoBehaviour, Iinterectable
             player.SetActive(false);
         }
 
-        // Bisiklet kamerasını aktif hale getir
+        // Bisiklet kamerasini aktif hale getir
         if (vehicleCamera != null)
             vehicleCamera.SetActive(true);
 
-        // Karakter kontrolünü devre dışı bırak
+        // Karakter kontrolunu devre disi birak
         if (player != null)
         {
             CharrController charController = player.GetComponent<CharrController>();
@@ -67,30 +72,30 @@ public class BicycleController : MonoBehaviour, Iinterectable
             }
         }
 
-        // Bisikletin fizik motoru tarafından kontrol edilmesini sağla
-        _rb.isKinematic = false; // Bu satırı ekleyin
+        // Bisikletin fizik motoru tarafindan kontrol edilmesini sagla
+        _rb.isKinematic = false;
     }
 
     private void ExitVehicle()
     {
-        if (!playerOnboard) return; // Eğer zaten bisiklette değilse çıkış yap
+        if (!playerOnboard) return; // Eger zaten bisiklette degilse cikis yap
 
         playerOnboard = false;
 
-        // Bisikletin Rigidbody'sini geçici olarak kinematic yap
+        // Bisikletin Rigidbody'sini gecici olarak kinematic yap
         _rb.isKinematic = true;
 
         // Karakteri aktif hale getir
         if (player != null)
         {
-            // Karakteri bisikletin yanında belirle
+            // Karakteri bisikletin yaninda belirle
             player.transform.parent = null;
-            player.transform.position = dropOfPoint.position + transform.right * 2f; // Bisikletin yanında belirle (2 birim sağa)
-            player.transform.rotation = dropOfPoint.rotation; // Bisikletin yönüne göre ayarla
+            player.transform.position = dropOfPoint.position + transform.right * 2f; // Bisikletin yaninda belirle (2 birim saga)
+            player.transform.rotation = dropOfPoint.rotation; // Bisikletin yonune gore ayarla
             player.SetActive(true);
         }
 
-        // Karakter kontrolünü aktif hale getir
+        // Karakter kontrolunu aktif hale getir
         if (player != null)
         {
             CharrController charController = player.GetComponent<CharrController>();
@@ -100,11 +105,11 @@ public class BicycleController : MonoBehaviour, Iinterectable
             }
         }
 
-        // Bisiklet kamerasını devre dışı bırak
+        // Bisiklet kamerasini devre disi birak
         if (vehicleCamera != null)
             vehicleCamera.SetActive(false);
 
-        // Bisikletin Rigidbody'sini tekrar kinematic olmaktan çıkar
+        // Bisikletin Rigidbody'sini tekrar kinematic olmaktan cikar
         StartCoroutine(DisableKinematicAfterDelay(0.5f)); // 0.5 saniye sonra kinematic'i kapat
     }
 
@@ -122,7 +127,7 @@ public class BicycleController : MonoBehaviour, Iinterectable
             HandleVehicleMovement();
             HandleCameraLook();
 
-            // Bisikletteyken "E" tuşuna basıldığında in
+            // Bisikletteyken "E" tusuna basildiginda in
             if (Input.GetKeyDown(KeyCode.E))
             {
                 ExitVehicle();
@@ -131,37 +136,84 @@ public class BicycleController : MonoBehaviour, Iinterectable
     }
 
     private void HandleVehicleMovement()
-{
-    // Bisiklet hareketi
-    float moveZ = Input.GetAxis("Vertical"); // W/S veya Yukari/Asagi ok tuslari
-    float moveX = Input.GetAxis("Horizontal"); // A/D veya Sol/Sag ok tuslari
-
-    // Hareket yonu
-    Vector3 move = transform.forward * moveZ * _speed;
-
-    // Yatay hareketi uygula (X ve Z eksenleri)
-    _rb.velocity = new Vector3(move.x, _rb.velocity.y, move.z);
-
-    // Bisiklet donusu
-    float turn = moveX * _handling;
-    transform.Rotate(0, turn, 0);
-
-    // Bisikletin eğimini hesapla
-   float tiltAngle = moveX * 30f * (_rb.velocity.magnitude / _speed); // Eğim açısı (örneğin, 30 derece maksimum eğim)
-    Quaternion targetRotation = Quaternion.Euler(0, transform.eulerAngles.y, -tiltAngle); // Eğim rotasyonu
-
-    // Eğimi yumuşak bir şekilde uygula
-    transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
-
-    // Frenleme
-    if (Input.GetKey(KeyCode.Space))
     {
-        _rb.velocity = Vector3.Lerp(_rb.velocity, Vector3.zero, _brakePower * Time.deltaTime);
-    }
+        // Bisiklet hareketi
+        float moveZ = Input.GetAxis("Vertical"); // W/S veya Yukari/Asagi ok tuslari
+        float moveX = Input.GetAxis("Horizontal"); // A/D veya Sol/Sag ok tuslari
 
-    // Yerçekimi uygula
-    ApplyGravity();
-}
+        // Hizlanma ve yavaslama mantigi
+        if (moveZ > 0)
+        {
+            // Hizlanma
+            _currentSpeed = Mathf.Min(_currentSpeed + _acceleration * Time.deltaTime, _maxSpeed);
+        }
+        else if (moveZ < 0)
+        {
+            // Geri gitme (yavaslama)
+            _currentSpeed = Mathf.Max(_currentSpeed - _deceleration * Time.deltaTime, -_maxSpeed / 2);
+        }
+        else
+        {
+            // Yavaslama (hicbir tusa basilmiyorsa)
+            if (_currentSpeed > 0)
+            {
+                _currentSpeed = Mathf.Max(_currentSpeed - _deceleration * Time.deltaTime, 0);
+            }
+            else if (_currentSpeed < 0)
+            {
+                _currentSpeed = Mathf.Min(_currentSpeed + _deceleration * Time.deltaTime, 0);
+            }
+        }
+
+        // Hiza bagli donus hassasiyeti
+        float minHandling = 0.5f; // Yavasken donus hassasiyeti
+        float maxHandling = 2f;   // Hizliyken maksimum donus hassasiyeti
+        float handlingThreshold = 3f; // Hizin bu degerin altinda olmasi durumunda minHandling kullanilir
+
+        if (Mathf.Abs(_currentSpeed) < handlingThreshold)
+        {
+            // Hiz 3f'den dusukse, handling sabit 0.5f olur
+            _handling = minHandling;
+        }
+        else
+        {
+            // Hiz 3f'den yuksekse, handling hiza gore azalir (ters orantili)
+            float handlingRange = maxHandling - minHandling;
+            _handling = maxHandling - (Mathf.Abs(_currentSpeed) - handlingThreshold) / (_maxSpeed - handlingThreshold) * handlingRange;
+        }
+
+        // Bisiklet durdugunda donmesin
+        if (Mathf.Abs(_currentSpeed) < 0.1f) // Hiz cok dusukse (neredeyse duruyorsa)
+        {
+            _handling = 0f; // Donus hassasiyetini sifirla
+        }
+
+        // Hareket yonu
+        Vector3 move = transform.forward * _currentSpeed;
+
+        // Yatay hareketi uygula (X ve Z eksenleri)
+        _rb.velocity = new Vector3(move.x, _rb.velocity.y, move.z);
+
+        // Bisiklet donusu
+        float turn = moveX * _handling;
+        transform.Rotate(0, turn, 0);
+
+        // Bisikletin egimini hesapla
+        float tiltAngle = moveX * 30f * (_rb.velocity.magnitude / _maxSpeed); // Egim acisi (ornegin, 30 derece maksimum egim)
+        Quaternion targetRotation = Quaternion.Euler(0, transform.eulerAngles.y, -tiltAngle); // Egim rotasyonu
+
+        // Egimi yumusak bir sekilde uygula
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 5f);
+
+        // Frenleme
+        if (Input.GetKey(KeyCode.Space))
+        {
+            _currentSpeed = Mathf.Lerp(_currentSpeed, 0, _brakePower * Time.deltaTime);
+        }
+
+        // Yercekimi uygula
+        ApplyGravity();
+    }
 
     private void HandleCameraLook()
     {
@@ -175,19 +227,19 @@ public class BicycleController : MonoBehaviour, Iinterectable
 
         // Kamera ve bisiklet donusu
         vehicleCamera.transform.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
-        transform.Rotate(Vector3.up * mouseX);
+        //transform.Rotate(Vector3.up * mouseX);
     }
 
     private void ApplyGravity()
     {
         if (IsGrounded())
         {
-            // Yere temas ettiğinde yerçekimini sıfırla
+            // Yere temas ettiginde yercekimini sifirla
             _rb.velocity = new Vector3(_rb.velocity.x, 0, _rb.velocity.z);
         }
         else
         {
-            // Yere temas etmiyorsa yerçekimini uygula
+            // Yere temas etmiyorsa yercekimini uygula
             _rb.velocity += Vector3.up * _gravity * Time.deltaTime;
         }
     }

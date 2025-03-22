@@ -8,7 +8,7 @@ public class LightManager : MonoBehaviour
     [SerializeField] private Light DirectionalLight;
     [SerializeField] private SCLight Preset;
 
-    [SerializeField, Range(0f, 24)] private float TimeOfDay;
+    [SerializeField, Range(0f, 24)] private float TimeOfDay; // Günün saati
     [SerializeField] private float timeMultiplier = 1f; // Gün döngüsü hýzýný kontrol eder
 
     private void FixedUpdate()
@@ -40,7 +40,14 @@ public class LightManager : MonoBehaviour
             DirectionalLight.transform.localRotation = Quaternion.Euler(new Vector3((timePreset * 360) - 90f, 170f, 0));
         }
     }
-
+    public void SetTimeOfDay(float time)
+    {
+        TimeOfDay = time;
+    }
+    public float GetTimeOfDay()
+    {
+        return TimeOfDay;
+    }
     private void OnValidate()
     {
         if (DirectionalLight != null)
