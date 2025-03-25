@@ -49,10 +49,7 @@ public class InventoryUIController : MonoBehaviour
         // Envanter UI's�n� g�ncelle
         UpdateUI(isShowingBag ? bagInventory : playerInventory);
     }
-    private void Update()
-    {
-        Debug.Log(isShowingBag);
-    }
+   
     // �antan�n envanterine ge�
     public void SwitchToBagInventory(SCBagInventory bagInventory)
     {

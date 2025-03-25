@@ -10,15 +10,15 @@ public class SleepManager : MonoBehaviour
     public float sleepStartTime = 20f; // Uyku baþlangýç saati
 
     public SleepEffect sleepEffect; // SleepEffect script'i
-    private void Update()
-    {
-        // Uyku saati kontrolü (akþam 20:00'den sonra)
-        if (lightManager.GetTimeOfDay() >= sleepStartTime)
-        {
-            Debug.Log("Uyku saati! Yataða gitmek için bir yere týklayýn.");
-            // Uyku tetikleme mekaniði burada olacak
-        }
-    }
+    //private void Update()
+    //{
+    //    // Uyku saati kontrolü (akþam 20:00'den sonra)
+    //    if (lightManager.GetTimeOfDay() >= sleepStartTime)
+    //    {
+    //        Debug.Log("Uyku saati! Yataða gitmek için bir yere týklayýn.");
+    //        // Uyku tetikleme mekaniði burada olacak
+    //    }
+    //}
 
     public void TriggerSleep()
     {

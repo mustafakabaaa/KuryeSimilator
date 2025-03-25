@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class Inventory : MonoBehaviour
 {
@@ -125,7 +126,6 @@ public class Inventory : MonoBehaviour
     {
         if (inventoryUIController.IsShowingBag())
         {
-            // Çantanýn envanteri açýksa, çantanýn envanteri üzerinde swap iþlemi yap
             if (isSwapping == false)
             {
                 tempIndex = index;
@@ -137,14 +137,14 @@ public class Inventory : MonoBehaviour
                 bagInventory.inventorySlots[tempIndex] = bagInventory.inventorySlots[index];
                 bagInventory.inventorySlots[index] = tempSlot;
                 isSwapping = false;
-            }
 
-            // Çantanýn envanterini güncelle
+                // EKLENEN SATIR: Seçimi sýfýrla
+                EventSystem.current.SetSelectedGameObject(null);
+            }
             inventoryUIController.UpdateUI(bagInventory);
         }
         else
         {
-            // Oyuncunun envanteri açýksa, oyuncunun envanteri üzerinde swap iþlemi yap
             if (isSwapping == false)
             {
                 tempIndex = index;
@@ -156,9 +156,10 @@ public class Inventory : MonoBehaviour
                 playerInventory.inventorySlots[tempIndex] = playerInventory.inventorySlots[index];
                 playerInventory.inventorySlots[index] = tempSlot;
                 isSwapping = false;
-            }
 
-            // Oyuncunun envanterini güncelle
+                // EKLENEN SATIR: Seçimi sýfýrla
+                EventSystem.current.SetSelectedGameObject(null);
+            }
             inventoryUIController.UpdateUI(playerInventory);
         }
     }
@@ -227,6 +228,8 @@ public class Inventory : MonoBehaviour
         isSwapping = false;
         tempIndex = -1;
         tempSlot = null;
+        EventSystem.current.SetSelectedGameObject(null);
+
         Debug.Log("Swap iþlemi sýfýrlandý.");
     }
 
