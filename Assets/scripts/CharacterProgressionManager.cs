@@ -13,8 +13,13 @@ public class CharacterProgressionManager : MonoBehaviour
 
     private Dictionary<CharacterStat, float> activeStats = new Dictionary<CharacterStat, float>();
 
+    private SCInventory playerInventory;
+    private InventoryUIController inventoryUIController;
+
     private void Awake()
     {
+        Debug.Log("CharacterProgressionManager Awake called"); // Bunu ekleyin
+
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -23,6 +28,10 @@ public class CharacterProgressionManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        // Diðer baþlangýç ayarlarý
+        playerInventory = FindObjectOfType<Inventory>()?.playerInventory;
+        inventoryUIController = FindObjectOfType<InventoryUIController>();
         InitializeStats();
     }
 
@@ -42,6 +51,30 @@ public class CharacterProgressionManager : MonoBehaviour
     public float GetCurrentStatValue(CharacterStat stat)
     {
         return activeStats.ContainsKey(stat) ? activeStats[stat] : stat.baseValue;
+    }
+    public void ApplyInventoryUpgrade(InventoryUpgrade upgrade)
+    {
+        if (gameData.CanApplyUpgrade(upgrade))
+        {
+            gameData.ApplyUpgrade(upgrade);
+
+            // Inventory referansýný doðru þekilde al
+            Inventory inventory = FindObjectOfType<Inventory>();
+            if (inventory != null && inventory.playerInventory != null)
+            {
+                inventory.playerInventory.UnlockAdditionalSlots(upgrade.unlockedSlotsCount);
+
+                // UI güncellemesi için doðru controller'ý bul
+                InventoryUIController uiController = FindObjectOfType<InventoryUIController>();
+                if (uiController != null)
+                {
+                    uiController.UpdateUI(inventory.playerInventory);
+                    Debug.Log($"Yeni açýlan slot sayýsý: {inventory.playerInventory.maxUnlockedSlots}");
+                }
+            }
+
+            GameEvents.Instance.TriggerPointsUpdate();
+        }
     }
 
     public void ApplyUpgrade(StatUpgrade upgrade)

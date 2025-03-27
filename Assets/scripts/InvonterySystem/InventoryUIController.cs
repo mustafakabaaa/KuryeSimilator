@@ -12,6 +12,7 @@ public class InventoryUIController : MonoBehaviour
 
     private void Start()
     {
+        playerInventory.maxUnlockedSlots = 8;
         
         UpdateUI(playerInventory); // Ba�lang��ta oyuncunun envanterini g�ster
     }
@@ -68,9 +69,14 @@ public class InventoryUIController : MonoBehaviour
     // UI'� g�ncelle (SCInventory i�in)
     public void UpdateUI(SCInventory inventory)
     {
+        Debug.Log($"UI Güncelleniyor. Açık slot sayısı: {inventory.maxUnlockedSlots}");
+
         for (int i = 0; i < uiList.Count; i++)
         {
-            if (i < inventory.inventorySlots.Count && inventory.inventorySlots[i].itemCount > 0)
+            bool slotUnlocked = inventory.IsSlotUnlocked(i);
+            uiList[i].gameObject.SetActive(slotUnlocked); // Slotun kilidini kontrol et
+
+            if (slotUnlocked && i < inventory.inventorySlots.Count && inventory.inventorySlots[i].itemCount > 0)
             {
                 uiList[i].itemImage.sprite = inventory.inventorySlots[i].item.itemIcon;
                 uiList[i].itemCountText.text = inventory.inventorySlots[i].itemCount.ToString();
@@ -105,6 +111,7 @@ public class InventoryUIController : MonoBehaviour
     // UI'� g�ncelle (SCBagInventory i�in)
     public void UpdateUI(SCBagInventory bagInventory)
     {
+
         for (int i = 0; i < uiList.Count; i++)
         {
             if (i < bagInventory.inventorySlots.Count && bagInventory.inventorySlots[i].itemCount > 0)

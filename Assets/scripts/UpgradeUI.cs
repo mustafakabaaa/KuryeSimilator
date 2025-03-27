@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using System.Linq;
 
 public class UpgradeUI : MonoBehaviour
 {
@@ -74,7 +75,8 @@ public class UpgradeUI : MonoBehaviour
         GameObject buttonPrefab = LoadButtonPrefab();
         if (buttonPrefab == null) return;
 
-        foreach (var upgrade in gameData.availableUpgrades)
+        // Tüm upgrade tiplerini göster
+        foreach (var upgrade in gameData.availableUpgrades) // OfType<InventoryUpgrade>() kaldýrýldý
         {
             GameObject buttonObj = CreateButton(buttonPrefab, upgrade);
             if (buttonObj != null)
@@ -156,14 +158,29 @@ public class UpgradeUI : MonoBehaviour
     {
         if (gameData.CanApplyUpgrade(upgrade))
         {
-            gameData.ApplyUpgrade(upgrade);
-            RefreshAllButtons();
+            if (upgrade is InventoryUpgrade inventoryUpgrade)
+            {
+                if (CharacterProgressionManager.Instance != null)
+                {
+                    CharacterProgressionManager.Instance.ApplyInventoryUpgrade(inventoryUpgrade);
+                }
+                else
+                {
+                    Debug.LogError("CharacterProgressionManager.Instance is null!");
+                    return;
+                }
+            }
+            else
+            {
+                gameData.ApplyUpgrade(upgrade);
+                GameEvents.Instance?.TriggerStatUpdate(
+                    upgrade.affectedStat,
+                    gameData.GetCurrentStatValue(upgrade.affectedStat)
+                );
+            }
 
-            GameEvents.Instance.TriggerStatUpdate(
-                upgrade.affectedStat,
-                gameData.GetCurrentStatValue(upgrade.affectedStat)
-            );
-            GameEvents.Instance.TriggerPointsUpdate();
+            RefreshAllButtons();
+            GameEvents.Instance?.TriggerPointsUpdate();
         }
     }
 

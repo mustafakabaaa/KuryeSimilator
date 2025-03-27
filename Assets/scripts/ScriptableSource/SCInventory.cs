@@ -8,6 +8,8 @@ using UnityEngine;
 public class SCInventory : ScriptableObject
 {
    public List<Slot> inventorySlots = new List<Slot>();
+    public int maxUnlockedSlots = 8; // Baþlangýçta açýk olan slot sayýsý
+
     int stackLimit = 4;
 
     public bool AddItem(SCItem item) 
@@ -37,6 +39,14 @@ public class SCInventory : ScriptableObject
             }
         }
         return false;
+    }
+    public bool IsSlotUnlocked(int slotIndex)
+    {
+        return slotIndex < maxUnlockedSlots;
+    }
+    public void UnlockAdditionalSlots(int count)
+    {
+        maxUnlockedSlots = Mathf.Min(maxUnlockedSlots + count, inventorySlots.Count);
     }
 }
 [System.Serializable]
