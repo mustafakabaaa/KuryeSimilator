@@ -28,7 +28,11 @@ public class CharrController : MonoBehaviour
     private Transform _cameraTarget; // Kamera hedefi (oyuncu veya bisiklet)
     private bool _isControlEnabled = true; // Oyuncu kontrolu etkin mi?
 
-
+    // CharrController'a ekleyin:
+    [Header("Game Data")]
+    [SerializeField] private GameDataSO gameData; // Inspector'dan bağlayın
+    [SerializeField] private CharacterStat speedStat; // Speed Stat SO'sunu Inspector'dan bağlayın
+    [SerializeField] private CharacterStat jumpForceStat; // Speed Stat SO'sunu Inspector'dan bağlayın
 
 
     private void Awake()
@@ -67,6 +71,20 @@ public class CharrController : MonoBehaviour
             HandleMovement();
             RaycastController();
             InventoryOpenAndClose();
+            GameDataUpdate();
+        }
+        
+    }
+    public void GameDataUpdate()
+    {
+        if (gameData != null && speedStat != null)
+        {
+            moveSpeed = gameData.GetCurrentStatValue(speedStat);
+
+        }
+        if (gameData != null && jumpForceStat != null)
+        {
+            jumpForce=gameData.GetCurrentStatValue(jumpForceStat);
         }
     }
 
