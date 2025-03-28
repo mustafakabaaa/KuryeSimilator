@@ -13,7 +13,9 @@ public class Inventory : MonoBehaviour
     bool isSwapping;
     int tempIndex;
     Slot tempSlot;
-   
+    
+    public Transform dropPoint; // Inspector'dan atayacaðýz
+
     private void Awake()
     {
         if (Instance == null)
@@ -117,6 +119,9 @@ public class Inventory : MonoBehaviour
             int amountToAdd = Mathf.Min(amount, spaceAvailable);
 
             slot.itemCount += amountToAdd;
+            inventoryUIController.UpdateUI(playerInventory);
+
+            inventoryUIController.UpdateUI(bagInventory);
             return true; // Stack'e eklendi
         }
         return false; // Stack'e eklenemedi
@@ -168,61 +173,92 @@ public class Inventory : MonoBehaviour
     {
         if (inventoryUIController.IsShowingBag())
         {
-            // Çantanýn envanteri açýksa, çantanýn envanteri üzerinde slot temizleme iþlemi yap
             if (slotIndex >= 0 && slotIndex < bagInventory.inventorySlots.Count)
             {
+                DropItem(slotIndex, true, true); // Çantadan tüm stack'i býrak
                 bagInventory.inventorySlots[slotIndex].item = null;
                 bagInventory.inventorySlots[slotIndex].itemCount = 0;
                 bagInventory.inventorySlots[slotIndex].isFull = false;
-                DropItem(slotIndex);
-                // Çantanýn envanterini güncelle
                 inventoryUIController.UpdateUI(bagInventory);
             }
         }
         else
         {
-            // Oyuncunun envanteri açýksa, oyuncunun envanteri üzerinde slot temizleme iþlemi yap
             if (slotIndex >= 0 && slotIndex < playerInventory.inventorySlots.Count)
             {
+                DropItem(slotIndex, false, true); // Oyuncudan tüm stack'i býrak
                 playerInventory.inventorySlots[slotIndex].item = null;
                 playerInventory.inventorySlots[slotIndex].itemCount = 0;
                 playerInventory.inventorySlots[slotIndex].isFull = false;
-                DropItem(slotIndex);
-
-                // Oyuncunun envanterini güncelle
                 inventoryUIController.UpdateUI(playerInventory);
             }
         }
     }
-    public void DropItem(int slotIndex)
+    public void DropItem(int slotIndex, bool fromBag, bool dropAllStack = false)
     {
-        if (slotIndex < 0 || slotIndex >= playerInventory.inventorySlots.Count)
-            return;
+        Slot slot;
 
-        Slot slot = playerInventory.inventorySlots[slotIndex];
-
-        // Slot boþsa iþlem yapma
-        if (slot.item == null || slot.itemCount <= 0)
-            return;
-
-        // Nesneyi sahneye spawn et
-        if (slot.item.itemPrefab != null)
+        if (fromBag)
         {
-            Vector3 spawnPosition = transform.position + transform.forward * 2f; // Karakterin önünde spawn et
-            Instantiate(slot.item.itemPrefab, spawnPosition, Quaternion.identity);
+            if (slotIndex < 0 || slotIndex >= bagInventory.inventorySlots.Count) return;
+            slot = bagInventory.inventorySlots[slotIndex];
         }
         else
         {
-            Debug.LogError("Item prefab is missing!");
+            if (slotIndex < 0 || slotIndex >= playerInventory.inventorySlots.Count) return;
+            slot = playerInventory.inventorySlots[slotIndex];
         }
 
-        // Slotu temizle
-        playerInventory.inventorySlots[slotIndex] = new Slot();
+        // Slot boþsa iþlem yapma
+        if (slot.item == null || slot.itemCount <= 0) return;
 
-        // UI'ý güncelle
-        GetComponent<InventoryUIController>().UpdateUI(playerInventory);
+        // Kaç adet býrakýlacak? (Tüm stack veya 1 adet)
+        int dropCount = dropAllStack ? slot.itemCount : 1;
+
+        // Nesneyi sahneye spawn et
+        if (slot.item.itemPrefab != null && dropPoint != null)
+        {
+            for (int i = 0; i < dropCount; i++)
+            {
+                GameObject droppedItem = Instantiate(
+                    slot.item.itemPrefab,
+                    dropPoint.position + Random.insideUnitSphere * 0.3f, // Küçük bir rastgele offset
+                    dropPoint.rotation
+                );
+
+                // Item component'i yoksa ekle
+                if (!droppedItem.GetComponent<Item>())
+                {
+                    Item itemComponent = droppedItem.AddComponent<Item>();
+                    itemComponent.item = slot.item;
+                    itemComponent.inventory = playerInventory;
+                }
+
+                // Fizik ekle (nesnenin düþmesi için)
+                Rigidbody rb = droppedItem.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.AddForce(dropPoint.forward * 2f + Vector3.up * 1f, ForceMode.Impulse);
+                }
+            }
+
+            // Envanterden düþürülen miktarý azalt
+            slot.itemCount -= dropCount;
+            if (slot.itemCount <= 0)
+            {
+                slot.item = null;
+                slot.isFull = false;
+            }
+
+            // UI'ý güncelle
+            inventoryUIController.UpdateUI(fromBag ? bagInventory : playerInventory);
+        }
+        else
+        {
+            Debug.LogError("Item prefab or drop point is missing!");
+        }
     }
-   
+
     public void ResetSwap()
     {
         isSwapping = false;
@@ -374,14 +410,18 @@ public class Inventory : MonoBehaviour
     // Oyuncunun envanterinde boþ slot bul
     private int FindEmptySlotInPlayer()
     {
-        for (int i = 0; i < playerInventory.inventorySlots.Count; i++)
+        // Sadece açýk olan slotlarda ara
+        for (int i = 0; i < playerInventory.maxUnlockedSlots; i++)
         {
-            if (playerInventory.inventorySlots[i].item == null || playerInventory.inventorySlots[i].itemCount == 0)
+            if (i >= playerInventory.inventorySlots.Count) break;
+
+            if (playerInventory.inventorySlots[i].item == null ||
+                playerInventory.inventorySlots[i].itemCount == 0)
             {
                 return i;
             }
         }
         return -1; // Boþ slot yok
     }
-   
+
 }

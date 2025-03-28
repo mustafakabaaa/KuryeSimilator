@@ -30,13 +30,19 @@ public class OrderUI : MonoBehaviour
 
     private void Update()
     {
-        // T tusuna basildiginda UI'i ac/kapa
         if (Input.GetKeyDown(KeyCode.T))
         {
-            ToggleUI();
+            if (orderUIPanel.activeSelf)
+            {
+                CloseUI();
+            }
+            else if (!UIManager.Instance.IsAnyUIOpen())
+            {
+                OpenUI();
+            }
         }
     }
-
+    //suan kullanilmiyor
     private void ToggleUI()
     {
         isUIOpen = !isUIOpen;
@@ -49,6 +55,31 @@ public class OrderUI : MonoBehaviour
         {
             LoadOrders(); // UI acildiginda siparisleri yukle
         }
+    }
+    private void OpenUI()
+    {
+        // UI durumunu güncelle
+        isUIOpen = true;
+        orderUIPanel.SetActive(true);
+        UIManager.Instance.SetPhoneUIState(true); // UIManager'a durumu bildir
+
+        // Görsel ayarlar
+        SetCursorState(true);
+        LoadOrders(); // Sipariþleri yükle
+
+        // Diðer UI iþlemleri...
+    }
+    private void CloseUI()
+    {
+        // UI durumunu güncelle
+        isUIOpen = false;
+        orderUIPanel.SetActive(false);
+        UIManager.Instance.SetPhoneUIState(false); // UIManager'a durumu bildir
+
+        // Görsel ayarlar
+        SetCursorState(false);
+
+        // Gerekirse temizlik iþlemleri...
     }
 
     private void ToggleOrders()

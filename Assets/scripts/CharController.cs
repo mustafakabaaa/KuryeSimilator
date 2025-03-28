@@ -23,7 +23,6 @@ public class CharrController : MonoBehaviour
     public TextMeshProUGUI interactText; // Etkilesim metni
 
     private Animator animator;
-    public GameObject inventoryGameobject;
 
     private Transform _cameraTarget; // Kamera hedefi (oyuncu veya bisiklet)
     private bool _isControlEnabled = true; // Oyuncu kontrolu etkin mi?
@@ -51,15 +50,7 @@ public class CharrController : MonoBehaviour
             Debug.LogError("PlayerCamera is not assigned.");
         }
 
-        // Fareyi kilitle
-        Cursor.lockState = CursorLockMode.Locked;
-        interactText.gameObject.SetActive(false);
-
-        _cameraTarget = transform;
-
-        inventoryGameobject.SetActive(false );
-        Cursor.visible = false;
-        
+       
     }
 
     void Update()
@@ -70,7 +61,6 @@ public class CharrController : MonoBehaviour
             HandleMouseLook();
             HandleMovement();
             RaycastController();
-            InventoryOpenAndClose();
             GameDataUpdate();
         }
         
@@ -88,41 +78,7 @@ public class CharrController : MonoBehaviour
         }
     }
 
-    public void InventoryOpenAndClose()
-    {
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            if (inventoryGameobject.activeSelf == false)
-            {
-                // Envanteri aç
-                
-                inventoryGameobject.SetActive(true);
-                inventoryUIController.OpenPlayerInventory();
-                inventoryUIController.SwitchToPlayerInventory();
-                // İmleci serbest bırak ve görünür yap
-                Cursor.lockState = CursorLockMode.None; // İmleci serbest bırak
-                Cursor.visible = true; // İmleci göster
-                inventoryUIController.ClearSelectedButton();
-            }
-            else
-            {
-                // Envanteri kapat
-                inventoryGameobject.SetActive(false);
-                inventoryUIController.OpenPlayerInventory();
-
-
-                // İmleci kilitle ve gizle
-                Cursor.lockState = CursorLockMode.Locked; // İmleci kilitle
-                Cursor.visible = false; // İmleci gizle
-                inventoryUIController.ClearSelectedButton(); // Butonların Selected durumunu sıfırla
-                Inventory inventory = GetComponent<Inventory>();
-                if (inventory != null)
-                {
-                    inventory.ResetSwap();
-                }
-            }
-        }
-    }
+   
     void RaycastController()
     {
         if (!_isControlEnabled) return; // Kontrol devre dışıysa RaycastController'ı çalıştırma

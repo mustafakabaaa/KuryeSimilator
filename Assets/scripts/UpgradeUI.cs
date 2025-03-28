@@ -23,7 +23,9 @@ public class UpgradeUI : MonoBehaviour
     [SerializeField] private Color affordableColor = Color.green;
     [SerializeField] private Color maxedOutColor = Color.gray;
     [SerializeField] private Color lockedColor = Color.red;
-
+    [SerializeField] private GameObject upgradePanel;
+    [Header("UI Management")]
+    [SerializeField] private bool useUIManager = true; // Yeni eklenen kontrol deðiþkeni
     private List<GameObject> activeButtons = new List<GameObject>();
     private bool isPanelVisible = false;
 
@@ -42,9 +44,27 @@ public class UpgradeUI : MonoBehaviour
     {
         if (Input.GetKeyDown(toggleKey))
         {
-            TogglePanel();
+            if (panel.activeSelf)
+            {
+                // Paneli kapat
+                panel.SetActive(false);
+                UIManager.Instance.SetUpgradeState(false);
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+            else if (!UIManager.Instance.IsAnyUIOpen())
+            {
+                // Paneli aç
+                panel.SetActive(true);
+                UIManager.Instance.SetUpgradeState(true);
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
         }
     }
+
+    public bool IsPanelActive() => panel.activeSelf;
+   
 
     private void InitializePanel()
     {
@@ -52,19 +72,36 @@ public class UpgradeUI : MonoBehaviour
         CreateButtons();
     }
 
-    public void TogglePanel()
+    private void LegacyTogglePanel()
     {
-        isPanelVisible = !isPanelVisible;
-        panel.SetActive(isPanelVisible);
+        bool newState = !panel.activeSelf;
+        panel.SetActive(newState);
 
         // Fare kontrolü
-        Cursor.lockState = isPanelVisible ? CursorLockMode.None : CursorLockMode.Locked;
-        Cursor.visible = isPanelVisible;
+        Cursor.lockState = newState ? CursorLockMode.None : CursorLockMode.Locked;
+        Cursor.visible = newState;
 
         // Oyun zamanýný durdurma
         if (pauseGameWhenOpen)
         {
-            Time.timeScale = isPanelVisible ? 0f : 1f;
+            Time.timeScale = newState ? 0f : 1f;
+        }
+    }
+
+    // Yeni panel kapatma metodu
+    public void ClosePanel()
+    {
+        panel.SetActive(false);
+
+        if (!useUIManager)
+        {
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+
+            if (pauseGameWhenOpen)
+            {
+                Time.timeScale = 1f;
+            }
         }
     }
 

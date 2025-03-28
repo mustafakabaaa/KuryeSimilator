@@ -1,52 +1,81 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.Net.Security;
 using UnityEngine;
+using System.Collections.Generic;
 
 [CreateAssetMenu(fileName = "Inventory", menuName = "Scriptable/Inventory")]
-
 public class SCInventory : ScriptableObject
 {
-   public List<Slot> inventorySlots = new List<Slot>();
-    public int maxUnlockedSlots = 8; // Baþlangýçta açýk olan slot sayýsý
+    public List<Slot> inventorySlots = new List<Slot>();
+    public int maxUnlockedSlots = 8;
+    public int maxTotalSlots = 24; // Maksimum slot limiti
+    public int stackLimit = 4;
 
-    int stackLimit = 4;
-
-    public bool AddItem(SCItem item) 
+    private void OnEnable()
     {
-        foreach ( Slot slot in inventorySlots)
-        {
-            if (slot.item == item)
-            {
-                if (slot.item.canStackable)
-                {
-                    if (slot.itemCount < stackLimit)
-                    {
-                        slot.itemCount++;
-                        if (slot.itemCount >= stackLimit)
-                        {
-                            slot.isFull = true;
-                        }
-                        return true;
+        InitializeSlots();
+    }
 
+    private void InitializeSlots()
+    {
+        // Baþlangýçta tüm slotlarý oluþtur
+        while (inventorySlots.Count < maxTotalSlots)
+        {
+            inventorySlots.Add(new Slot());
+        }
+    }
+
+    public bool AddItem(SCItem item)
+    {
+        // 1. Önce stacklenebilir slotlara bak (sadece açýk slotlarda)
+        if (item.canStackable)
+        {
+            for (int i = 0; i < maxUnlockedSlots; i++)
+            {
+                if (i >= inventorySlots.Count) break;
+
+                Slot slot = inventorySlots[i];
+                if (slot.item == item && slot.itemCount < stackLimit)
+                {
+                    slot.itemCount++;
+                    if (slot.itemCount >= stackLimit)
+                    {
+                        slot.isFull = true;
                     }
+                    return true;
                 }
             }
-            else if (slot.itemCount==0)
+        }
+
+        // 2. Boþ slot ara (sadece açýk slotlarda)
+        for (int i = 0; i < maxUnlockedSlots; i++)
+        {
+            if (i >= inventorySlots.Count) break;
+
+            Slot slot = inventorySlots[i];
+            if (slot.item == null || slot.itemCount == 0)
             {
                 slot.AddItemToSlot(item);
                 return true;
             }
         }
+
+        Debug.LogWarning("Envanter dolu veya yeterli slot açýk deðil!");
         return false;
     }
+
     public bool IsSlotUnlocked(int slotIndex)
     {
-        return slotIndex < maxUnlockedSlots;
+        return slotIndex < maxUnlockedSlots && slotIndex < maxTotalSlots;
     }
+
     public void UnlockAdditionalSlots(int count)
     {
-        maxUnlockedSlots = Mathf.Min(maxUnlockedSlots + count, inventorySlots.Count);
+        maxUnlockedSlots = Mathf.Min(maxUnlockedSlots + count, maxTotalSlots);
+
+        // Yeni açýlan slotlar için boþ slot oluþtur
+        for (int i = inventorySlots.Count; i < maxUnlockedSlots; i++)
+        {
+            inventorySlots.Add(new Slot());
+        }
     }
 }
 [System.Serializable]
