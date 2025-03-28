@@ -16,3 +16,4 @@ MonoBehaviour:
   valueIncrease: 0.2
   requiredPoints: 2
   maxUpgradeCount: 2
+  description: "z\u0131plamana ekleme yap"

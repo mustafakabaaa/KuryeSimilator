@@ -16,4 +16,6 @@ MonoBehaviour:
   valueIncrease: 1
   requiredPoints: 1
   maxUpgradeCount: 16
+  description: "Envanter\u0131 upgrade et"
+  icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   unlockedSlotsCount: 1

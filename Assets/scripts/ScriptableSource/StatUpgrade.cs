@@ -7,4 +7,8 @@ public class StatUpgrade : ScriptableObject
     public float valueIncrease;
     public int requiredPoints;
     public int maxUpgradeCount = 3; // Yeni eklenen max limit
+    [TextArea(3, 10)] // Daha büyük bir text alaný saðlar
+    public string description;
+    public Sprite icon;
+
 }

@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine.EventSystems;
 
 public class UpgradeUI : MonoBehaviour
 {
@@ -28,6 +29,14 @@ public class UpgradeUI : MonoBehaviour
     [SerializeField] private bool useUIManager = true; // Yeni eklenen kontrol deðiþkeni
     private List<GameObject> activeButtons = new List<GameObject>();
     private bool isPanelVisible = false;
+    [SerializeField] private TMP_Text descriptionText;
+    [SerializeField] private GameObject descriptionPanel;
+    [Header("Description Style")]
+    [SerializeField] private Color titleColor = Color.yellow;
+    [SerializeField] private Color effectColor = Color.green;
+    [SerializeField] private Color costColor = new Color(1f, 0.5f, 0f); // Turuncu
+    [SerializeField] private Image descriptionIcon; // Yeni eklenen Image referansý
+    private StatUpgrade currentlyDisplayedUpgrade;
 
     private void OnEnable()
     {
@@ -152,24 +161,105 @@ public class UpgradeUI : MonoBehaviour
 
     private void SetupButton(GameObject buttonObj, StatUpgrade upgrade)
     {
-        // Componentleri al
+        // Componentleri bul
         Image icon = buttonObj.transform.Find("Icon")?.GetComponent<Image>();
         TMP_Text statName = buttonObj.transform.Find("StatName")?.GetComponent<TMP_Text>();
         TMP_Text costText = buttonObj.transform.Find("CostText")?.GetComponent<TMP_Text>();
         Button button = buttonObj.GetComponent<Button>();
 
-        // Görselleri ata
-        if (icon != null) icon.sprite = upgrade.affectedStat.icon;
-        if (statName != null) statName.text = upgrade.affectedStat.statName;
+        // Null kontrolleri
+        if (icon == null || statName == null || costText == null || button == null)
+        {
+            Debug.LogError($"Buton componentleri eksik: {buttonObj.name}");
+            return;
+        }
+
+        // Görsel atamalarý
+        icon.sprite = upgrade.icon != null ? upgrade.icon : upgrade.affectedStat.icon;
+        statName.text = upgrade.affectedStat.statName;
+        costText.text = gameData.IsUpgradeMaxedOut(upgrade) ? "MAX" : $"{upgrade.requiredPoints}";
 
         // Buton etkileþimi
         button.onClick.RemoveAllListeners();
         button.onClick.AddListener(() => ApplyUpgrade(upgrade));
 
-        // Buton durumunu güncelle
+        // Event Trigger ayarlarý
+        EventTrigger trigger = buttonObj.GetComponent<EventTrigger>();
+        if (trigger == null)
+        {
+            trigger = buttonObj.AddComponent<EventTrigger>();
+        }
+        else
+        {
+            trigger.triggers.Clear();
+        }
+
+        // Fare üzerine gelince açýklama göster
+        EventTrigger.Entry pointerEnter = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerEnter
+        };
+        pointerEnter.callback.AddListener((data) => ShowDescription(upgrade));
+        trigger.triggers.Add(pointerEnter);
+
+        // Fare ayrýlýnca açýklamayý gizle
+        EventTrigger.Entry pointerExit = new EventTrigger.Entry
+        {
+            eventID = EventTriggerType.PointerExit
+        };
+        pointerExit.callback.AddListener((data) => HideDescription());
+        trigger.triggers.Add(pointerExit);
+
+        // Buton görünümünü güncelle
         UpdateButtonVisuals(button, costText, upgrade);
     }
+    private void ShowDescription(StatUpgrade upgrade)
+    {
+        currentlyDisplayedUpgrade = upgrade;
+        // Image componentine sprite'ý ata
+        if (descriptionIcon != null)
+        {
+            descriptionIcon.sprite = upgrade.icon != null ? upgrade.icon : upgrade.affectedStat.icon;
+            descriptionIcon.gameObject.SetActive(true);
+        }
 
+        // Max seviye kontrolü
+        bool isMaxedOut = gameData.IsUpgradeMaxedOut(upgrade);
+        string maxLevelText = isMaxedOut ? "\n\n<color=#FF0000><b>MAX SEVÝYEDE</b></color>" : "";
+
+        // Metni oluþtur
+        string formattedText = $"<color=#{ColorUtility.ToHtmlStringRGBA(titleColor)}><b>{upgrade.affectedStat.statName}</b></color>\n" +
+                              $"{upgrade.description}\n\n" +
+                              $"<color=#{ColorUtility.ToHtmlStringRGBA(effectColor)}>";
+
+        if (upgrade is InventoryUpgrade invUpgrade)
+        {
+            formattedText += $"• +{invUpgrade.unlockedSlotsCount} Envanter Slotu\n";
+        }
+        else
+        {
+            formattedText += $"• +{upgrade.affectedStat.baseValue} {upgrade.affectedStat.statName}\n";
+        }
+
+        formattedText += $"</color><color=#{ColorUtility.ToHtmlStringRGBA(costColor)}>" +
+                        $"Gerekli Puan: {(isMaxedOut ? "-" : upgrade.requiredPoints.ToString())}</color>" +
+                        maxLevelText;
+
+        descriptionText.text = formattedText;
+        descriptionPanel.SetActive(true);
+    }
+
+    private void HideDescription()
+    {
+        if (descriptionPanel != null)
+        {
+            descriptionPanel.SetActive(false);
+            if (descriptionIcon != null)
+                descriptionIcon.gameObject.SetActive(false);
+        }
+    }
+
+   
     private void UpdateButtonVisuals(Button button, TMP_Text costText, StatUpgrade upgrade)
     {
         bool isMaxedOut = gameData.IsUpgradeMaxedOut(upgrade);
@@ -219,6 +309,10 @@ public class UpgradeUI : MonoBehaviour
             RefreshAllButtons();
             GameEvents.Instance?.TriggerPointsUpdate();
         }
+        if (descriptionPanel.activeSelf && currentlyDisplayedUpgrade == upgrade)
+        {
+            ShowDescription(upgrade);
+        }
     }
 
     private void RefreshAllButtons()
@@ -235,7 +329,7 @@ public class UpgradeUI : MonoBehaviour
 
     private void UpdatePointsText()
     {
-        upgradePointsText.text = $"Upgrade Points: {gameData.upgradePoints}";
+        upgradePointsText.text = $" {gameData.upgradePoints}";
     }
 
     private void UpdateUI()
