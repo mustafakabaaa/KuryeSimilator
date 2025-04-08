@@ -56,7 +56,7 @@ public class CharrController : MonoBehaviour
     void Update()
     {
         
-        if (_isControlEnabled)
+        if (_isControlEnabled&&!UIManager.Instance.IsAnyUIOpen())
         {
             HandleMouseLook();
             HandleMovement();

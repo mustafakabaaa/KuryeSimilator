@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b35f4b5e24b809408a7ecfa58ff8645, type: 3}
   m_Name: Ball
   m_EditorClassIdentifier: 
-  itemID: 
+  itemID: 1
   itemName: Ball
   itemDescription: shoot
   canStackable: 0

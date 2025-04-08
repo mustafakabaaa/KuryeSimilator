@@ -406,7 +406,18 @@ public class Inventory : MonoBehaviour
         }
         return -1; // Boþ slot yok
     }
-
+    public int GetItemCount(string itemID)
+    {
+        int count = 0;
+        foreach (Slot slot in playerInventory.inventorySlots)
+        {
+            if (slot.item != null && slot.item.itemID == itemID)
+            {
+                count += slot.itemCount;
+            }
+        }
+        return count;
+    }
     // Oyuncunun envanterinde boþ slot bul
     private int FindEmptySlotInPlayer()
     {

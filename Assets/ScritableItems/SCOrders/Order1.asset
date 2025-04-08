@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5ab70881e5600840970bc26a94c3e73, type: 3}
   m_Name: Order1
   m_EditorClassIdentifier: 
+  dialogueData: {fileID: 11400000, guid: 7279c3dbbdf615443a3dab82872d20bb, type: 2}
   orderID: 1
   orderName: deneme
   description: asfasfas
   requiredItems:
   - {fileID: 11400000, guid: 4034b4dca03e1a54a8c7aa804d10bbcc, type: 2}
-  - {fileID: 11400000, guid: 9648a4c33bdf1094b9c17f3bed92ff3e, type: 2}
   deliveryAddress: ev
-  deliveryPosition: {x: 65, y: 2, z: -24}
+  deliveryPosition: {x: -0.03637767, y: 0.1805176, z: 1}
   reward: 10

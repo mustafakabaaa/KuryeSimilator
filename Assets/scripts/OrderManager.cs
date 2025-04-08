@@ -1,4 +1,5 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class OrderManager : MonoBehaviour
@@ -11,9 +12,13 @@ public class OrderManager : MonoBehaviour
     public List<SCOrderData> availableOrders = new List<SCOrderData>();
     public List<SCOrderData> activeOrders = new List<SCOrderData>();
 
-    private Dictionary<string, DeliveryPoint> deliveryPoints = new Dictionary<string, DeliveryPoint>();
-    public GameObject deliveryPointPrefab; // DeliveryPoint prefab'ý
-
+    [Header("NPC AyarlarÄ±")]
+    public GameObject npcPrefab;
+    private Dictionary<string, GameObject> spawnedNPCs = new Dictionary<string, GameObject>(); // Spawn edilen NPC'leri sakla
+    OrderUI orderUI = new OrderUI();
+  
+    public delegate void OrdersUpdatedDelegate();
+    public static event OrdersUpdatedDelegate OnOrdersUpdated;
     private void Awake()
     {
         if (Instance == null)
@@ -35,7 +40,7 @@ public class OrderManager : MonoBehaviour
     {
         if (currentDayIndex >= days.Length)
         {
-            Debug.Log("Tüm günler tamamlandý!");
+            Debug.Log("TÃ¼m gÃ¼nler tamamlandÄ±!");
             return;
         }
 
@@ -48,7 +53,7 @@ public class OrderManager : MonoBehaviour
             availableOrders.Add(order);
         }
 
-        Debug.Log($"Yeni gün baþladý: {currentDay.dayName}");
+        Debug.Log($"Yeni gÃ¼n baÅŸladÄ±: {currentDay.dayName}");
         currentDayIndex++;
     }
 
@@ -71,74 +76,95 @@ public class OrderManager : MonoBehaviour
             availableOrders.Remove(order);
             Debug.Log("Order accepted: " + order.orderName);
 
-            // DeliveryPoint prefab'ýný oluþtur
-            CreateDeliveryPoint(order);
+            // NPC'yi spawnla
+            SpawnNPCForOrder(order);
         }
     }
-
-    private void CreateDeliveryPoint(SCOrderData order)
+    private void SpawnNPCForOrder(SCOrderData order)
     {
-        if (deliveryPointPrefab == null)
+        if (npcPrefab == null)
         {
-            Debug.LogError("DeliveryPoint prefab'ý atanmamýþ!");
+            Debug.LogError("NPC PrefabÄ± atanmamÄ±ÅŸ!");
             return;
         }
 
-        // Prefab'ý yükle ve oluþtur
-        GameObject deliveryPointObject = Instantiate(deliveryPointPrefab, order.deliveryPosition, Quaternion.identity);
-        DeliveryPoint deliveryPoint = deliveryPointObject.GetComponent<DeliveryPoint>();
+        // NPC'yi deliveryPosition'da oluÅŸtur
+        GameObject npc = Instantiate(npcPrefab, order.deliveryPosition, Quaternion.identity);
+        MusteriNPC npcScript = npc.GetComponent<MusteriNPC>();
 
-        if (deliveryPoint != null)
+        if (npcScript != null)
         {
-            // DeliveryPoint'i kaydet
-            deliveryPoints.Add(order.orderID, deliveryPoint);
-            deliveryPoint.SetOrderID(order.orderID); // OrderID'yi DeliveryPoint'e atama
-            deliveryPoint.gameObject.SetActive(true); // Teslimat noktasýný aktif hale getir
-            deliveryPoint.StartBlinking(); // Iþýðý yanýp söndür
+            npcScript.SetOrder(order); // Diyalog ve sipariÅŸ bilgisini NPC'ye ver
+            spawnedNPCs.Add(order.orderID, npc); // NPC'yi dictionary'de sakla
         }
         else
         {
-            Debug.LogError("DeliveryPoint bileþeni bulunamadý!");
+            Debug.LogError("NPCMusteri prefabÄ±nda MusteriNPC scripti yok!");
         }
     }
+
+    
 
     public bool AreAllOrdersCompleted()
     {
         return activeOrders.Count == 0;
     }
-
     public void CompleteOrder(string orderID)
     {
         SCOrderData order = activeOrders.Find(o => o.orderID == orderID);
-        if (order != null)
+        if (order == null) return;
+
+        // 1. TÃœM REQUIRED ITEM'LERÄ°N ENVANTERDE OLUP OLMADIÄžINI KONTROL ET
+        List<SCItem> missingItems = new List<SCItem>();
+
+        foreach (SCItem requiredItem in order.requiredItems)
         {
-            // Envanterde gerekli nesneler var mý kontrol et
-            foreach (SCItem item in order.requiredItems)
+            bool itemFound = false;
+
+            // Oyuncu envanterinde ara (SADECE itemID'ye gÃ¶re kontrol)
+            foreach (Slot slot in Inventory.Instance.playerInventory.inventorySlots)
             {
-                if (!Inventory.Instance.HasItem(item.itemID))
+                if (slot.item != null && slot.item.itemID == requiredItem.itemID)
                 {
-                    Debug.LogWarning("Required item not found: " + item.itemName);
-                    return;
+                    itemFound = true;
+                    break;
                 }
             }
 
-            // Nesneleri envanterden kaldýr
-            foreach (SCItem item in order.requiredItems)
+            if (!itemFound)
             {
-                Inventory.Instance.RemoveItem(item.itemID);
-            }
-
-            // Sipariþi tamamla
-            Debug.Log("Order completed: " + order.orderName);
-            activeOrders.Remove(order);
-
-            // Teslimat noktasýný yok et
-            if (deliveryPoints.ContainsKey(orderID))
-            {
-                DeliveryPoint deliveryPoint = deliveryPoints[orderID];
-                deliveryPoints.Remove(orderID); // Dictionary'den kaldýr
-                Destroy(deliveryPoint.gameObject); // Teslimat noktasýný yok et
+                missingItems.Add(requiredItem);
             }
         }
+
+        // 2. EKSÄ°K VARSA UYARI VER
+        if (missingItems.Count > 0)
+        {
+            string missingText = "Eksik Ã¼rÃ¼nler:\n";
+            foreach (var item in missingItems)
+            {
+                missingText += $"- {item.itemName}\n";
+            }
+            DialogueUI.Instance.ShowSimpleMessage(missingText);
+            return;
+        }
+
+        // 3. TÃœM ÃœRÃœNLER VARSA ENVANTERDEN SÄ°L
+        foreach (SCItem requiredItem in order.requiredItems)
+        {
+            Inventory.Instance.RemoveItem(requiredItem.itemID);
+        }
+
+        // 4. SÄ°PARÄ°ÅžÄ° TAMAMLA
+        activeOrders.Remove(order);
+        if (spawnedNPCs.ContainsKey(orderID))
+        {
+            Destroy(spawnedNPCs[orderID]);
+            spawnedNPCs.Remove(orderID);
+        }
+        Debug.Log($"SipariÅŸ tamamlandÄ±: {order.orderName}");
+        // DoÄŸru ÅŸekilde OrderUI'ya eriÅŸim:
+        OnOrdersUpdated?.Invoke();
+
     }
 }

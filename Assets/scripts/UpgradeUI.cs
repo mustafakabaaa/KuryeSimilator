@@ -69,6 +69,8 @@ public class UpgradeUI : MonoBehaviour
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
+            PersistentMenuManager.Instance.CheckPanels();
+
         }
     }
 
@@ -106,6 +108,7 @@ public class UpgradeUI : MonoBehaviour
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
+            UIManager.Instance.SetUpgradeState(false);
 
             if (pauseGameWhenOpen)
             {

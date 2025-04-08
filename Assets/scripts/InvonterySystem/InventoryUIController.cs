@@ -12,7 +12,19 @@ public class InventoryUIController : MonoBehaviour
     private bool isShowingBag = false; // �anta envanteri mi g�steriliyor?
     public GameObject inventoryGameobject;
     public TextMeshProUGUI interactText; // Etkilesim metni
+    public static InventoryUIController Instance { get; private set; }
 
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
     private void Start()
     {
         playerInventory.maxUnlockedSlots = 8;
@@ -54,8 +66,9 @@ public class InventoryUIController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Tab))
         {
-            UpdateUI(playerInventory);
-            
+            SwitchToPlayerInventory();
+
+
 
             if (inventoryGameobject.activeSelf)
             {
@@ -77,6 +90,8 @@ public class InventoryUIController : MonoBehaviour
 
 
             }
+            PersistentMenuManager.Instance.CheckPanels();
+
         }
     }
     public void OnDropButtonClicked(int slotIndex)
@@ -95,7 +110,13 @@ public class InventoryUIController : MonoBehaviour
         // Envanter UI's�n� g�ncelle
         UpdateUI(isShowingBag ? bagInventory : playerInventory);
     }
-   
+    public void CloseInventory()
+    {
+        inventoryGameobject.SetActive(false);
+        UIManager.Instance.SetInventoryState(false);
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
     // �antan�n envanterine ge�
     public void SwitchToBagInventory(SCBagInventory bagInventory)
     {

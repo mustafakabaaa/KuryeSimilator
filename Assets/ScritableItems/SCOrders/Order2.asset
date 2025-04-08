@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5ab70881e5600840970bc26a94c3e73, type: 3}
   m_Name: Order2
   m_EditorClassIdentifier: 
+  dialogueData: {fileID: 11400000, guid: 7279c3dbbdf615443a3dab82872d20bb, type: 2}
   orderID: 2
-  orderName: qwqwrqw
+  orderName: hasan
   description: asfasfaf
   requiredItems:
   - {fileID: 11400000, guid: 4034b4dca03e1a54a8c7aa804d10bbcc, type: 2}

@@ -12,7 +12,28 @@ public class OrderUI : MonoBehaviour
 
     private bool isUIOpen = false;
     private bool showingActiveOrders = false;
+    public static OrderUI Instance { get; private set; }
 
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+    private void OnEnable()
+    {
+        OrderManager.OnOrdersUpdated += OnOrderListUpdated;
+    }
+
+    private void OnDisable()
+    {
+        OrderManager.OnOrdersUpdated -= OnOrderListUpdated;
+    }
     private void Start()
     {
         if (toggleOrdersButton == null)
@@ -20,14 +41,14 @@ public class OrderUI : MonoBehaviour
             Debug.LogError("Toggle Orders Button inspector'da atanmamis!");
             return;
         }
-
+        LoadOrders();
         orderUIPanel.SetActive(false); // UI baslangicta kapali olsun
         SetCursorState(false); // Baslangicta imleci gizle
 
         // Gecis butonuna tiklanma olayini ekle
         toggleOrdersButton.onClick.AddListener(ToggleOrders);
     }
-
+  
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.T))
@@ -40,22 +61,11 @@ public class OrderUI : MonoBehaviour
             {
                 OpenUI();
             }
+            PersistentMenuManager.Instance.CheckPanels();
+
         }
     }
-    //suan kullanilmiyor
-    private void ToggleUI()
-    {
-        isUIOpen = !isUIOpen;
-        orderUIPanel.SetActive(isUIOpen);
-
-        // UI acildiginda imleci goster, kapandiginda gizle
-        SetCursorState(isUIOpen);
-
-        if (isUIOpen)
-        {
-            LoadOrders(); // UI acildiginda siparisleri yukle
-        }
-    }
+   
     private void OpenUI()
     {
         // UI durumunu güncelle
@@ -67,21 +77,27 @@ public class OrderUI : MonoBehaviour
         SetCursorState(true);
         LoadOrders(); // Sipariþleri yükle
 
-        // Diðer UI iþlemleri...
+       
     }
-    private void CloseUI()
+    public void OnOrderListUpdated() // OrderManager'dan çaðýr
+    {
+        
+            LoadOrders();
+    }
+    public void CloseUI()
     {
         // UI durumunu güncelle
         isUIOpen = false;
         orderUIPanel.SetActive(false);
         UIManager.Instance.SetPhoneUIState(false); // UIManager'a durumu bildir
+        LoadOrders();
 
         // Görsel ayarlar
         SetCursorState(false);
-
+        FindAnyObjectByType<InfoPanelController>()?.HideOrderInfo();
         // Gerekirse temizlik iþlemleri...
     }
-
+   
     private void ToggleOrders()
     {
         if (OrderManager.Instance == null)

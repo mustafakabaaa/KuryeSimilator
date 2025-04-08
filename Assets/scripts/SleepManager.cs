@@ -23,18 +23,14 @@ public class SleepManager : MonoBehaviour
     public void TriggerSleep()
     {
         // Uyku saatinde mi kontrol et
-        if (lightManager.GetTimeOfDay() < sleepStartTime)
+        if (lightManager.GetTimeOfDay() < sleepStartTime&&!orderManager.AreAllOrdersCompleted())
         {
             Debug.Log("Henüz uyku saati deðil! Akþam 20:00'den önce uyuyamazsýnýz.");
-            return;
-        }
 
-        // Tüm görevler tamamlandý mý kontrol et
-        if (!orderManager.AreAllOrdersCompleted())
-        {
             Debug.Log("Tüm görevler tamamlanmadý! Uyuyamazsýnýz.");
             return;
         }
+
 
         Debug.Log("Oyuncu uyuyor...");
         EndDay();
