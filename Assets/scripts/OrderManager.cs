@@ -111,33 +111,25 @@ public class OrderManager : MonoBehaviour
     }
     public void CompleteOrder(string orderID)
     {
+        // 1. Siparişi aktif siparişler listesinde bul
         SCOrderData order = activeOrders.Find(o => o.orderID == orderID);
-        if (order == null) return;
+        if (order == null)
+        {
+            Debug.LogWarning($"Sipariş bulunamadı: {orderID}");
+            return;
+        }
 
-        // 1. TÜM REQUIRED ITEM'LERİN ENVANTERDE OLUP OLMADIĞINI KONTROL ET
+        // 2. Gerekli tüm itemler envanterde var mı kontrol et
         List<SCItem> missingItems = new List<SCItem>();
-
         foreach (SCItem requiredItem in order.requiredItems)
         {
-            bool itemFound = false;
-
-            // Oyuncu envanterinde ara (SADECE itemID'ye göre kontrol)
-            foreach (Slot slot in Inventory.Instance.playerInventory.inventorySlots)
-            {
-                if (slot.item != null && slot.item.itemID == requiredItem.itemID)
-                {
-                    itemFound = true;
-                    break;
-                }
-            }
-
-            if (!itemFound)
+            if (!Inventory.Instance.HasItem(requiredItem.itemID))
             {
                 missingItems.Add(requiredItem);
             }
         }
 
-        // 2. EKSİK VARSA UYARI VER
+        // 3. Eksik item varsa uyarı göster ve işlemi iptal et
         if (missingItems.Count > 0)
         {
             string missingText = "Eksik ürünler:\n";
@@ -149,22 +141,33 @@ public class OrderManager : MonoBehaviour
             return;
         }
 
-        // 3. TÜM ÜRÜNLER VARSA ENVANTERDEN SİL
+        // 4. Tüm itemleri envanterden sil
         foreach (SCItem requiredItem in order.requiredItems)
         {
             Inventory.Instance.RemoveItem(requiredItem.itemID);
         }
 
-        // 4. SİPARİŞİ TAMAMLA
-        activeOrders.Remove(order);
-        if (spawnedNPCs.ContainsKey(orderID))
+        // 5. NPC'yi yok olma moduna geçir (direkt destroy etme)
+        if (spawnedNPCs.TryGetValue(orderID, out GameObject npc))
         {
-            Destroy(spawnedNPCs[orderID]);
+            MusteriNPC npcScript = npc.GetComponent<MusteriNPC>();
+            if (npcScript != null)
+            {
+                npcScript.CompleteOrder(); // NPC artık Update'te yok olma koşullarını kontrol edecek
+            }
+            else
+            {
+                Debug.LogError("NPC'de MusteriNPC scripti yok!");
+            }
+
+            // Dictionary'den kaldır (artık yok olma Update'te kontrol edilecek)
             spawnedNPCs.Remove(orderID);
         }
-        Debug.Log($"Sipariş tamamlandı: {order.orderName}");
-        // Doğru şekilde OrderUI'ya erişim:
+
+        // 6. Siparişi aktif listesinden kaldır ve event tetikle
+        activeOrders.Remove(order);
         OnOrdersUpdated?.Invoke();
 
+        Debug.Log($"Sipariş tamamlandı: {order.orderName}");
     }
 }
