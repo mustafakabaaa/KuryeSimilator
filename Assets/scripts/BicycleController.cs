@@ -51,7 +51,7 @@ public class BicycleController : MonoBehaviour, Iinterectable
             HandleCameraLook();
             if (Input.GetKeyDown(KeyCode.E)) ExitVehicle();
         }
-        Debug.Log("handling:"+_handling+"    Spedd:"+_currentSpeed);
+       
     }
 
     private void HandleVehicleMovement()

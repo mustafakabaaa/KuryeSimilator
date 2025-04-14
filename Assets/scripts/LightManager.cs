@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,17 +11,24 @@ public class LightManager : MonoBehaviour
 
     [SerializeField, Range(0f, 24)] private float TimeOfDay; // Günün saati
     [SerializeField] private float timeMultiplier = 1f; // Gün döngüsü hýzýný kontrol eder
+    public static event Action OnDayCycleCompleted;
 
     private void FixedUpdate()
     {
-        if (Preset == null)
-        {
-            return;
-        }
+        if (Preset == null) return;
+
         if (Application.isPlaying)
         {
-            TimeOfDay += Time.deltaTime * timeMultiplier; // Gün döngüsü hýzýný ayarla
+            float previousTime = TimeOfDay;
+            TimeOfDay += Time.deltaTime * timeMultiplier;
             TimeOfDay %= 24;
+
+            // Gece 12'yi geçtiysek gün döngüsünü sýfýrla
+            if (previousTime > 23.9f && TimeOfDay < 0.1f)
+            {
+                OnDayCycleCompleted?.Invoke();
+            }
+
             UpdateLighting(TimeOfDay / 24);
         }
         else
@@ -28,7 +36,6 @@ public class LightManager : MonoBehaviour
             UpdateLighting(TimeOfDay / 24);
         }
     }
-
     private void UpdateLighting(float timePreset)
     {
         RenderSettings.ambientLight = Preset.AmbientColor.Evaluate(timePreset);

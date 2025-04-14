@@ -10,6 +10,8 @@ public class UIManager : MonoBehaviour
     private bool _isMenuOpen;
     private bool _isDialogueOpen; // Yeni eklenen durum
     private bool _isInfoPanel;
+    private bool _isBagInventoryOpen; 
+
     private void Awake()
     {
         if (Instance == null)
@@ -29,8 +31,9 @@ public class UIManager : MonoBehaviour
         if (_isPhoneUIOpen) FindObjectOfType<OrderUI>()?.CloseUI();
         if (_isDialogueOpen) FindObjectOfType<DialogueUI>()?.CloseDialogue();
     }
-   
+
     // UI durum güncellemeleri
+    public void SetBagInventoryState(bool state) => _isBagInventoryOpen = state;
     public void SetDialogueState(bool state) => _isDialogueOpen = state;
     public void SetInventoryState(bool state) => _isInventoryOpen = state;
     public void SetUpgradeState(bool state) => _isUpgradeOpen = state;
@@ -38,6 +41,7 @@ public class UIManager : MonoBehaviour
     public void SetMenuState(bool state) => _isMenuOpen = state;
 
     // UI durum sorgulamalarý
+    public bool IsBagInventoryOpen() => _isBagInventoryOpen;
     public bool IsDialogueOpen() => _isDialogueOpen;
     public bool IsPhoneUIOpen() => _isPhoneUIOpen;
     public bool IsInventoryOpen() => _isInventoryOpen;
@@ -45,9 +49,6 @@ public class UIManager : MonoBehaviour
     public bool IsMenuOpen() => _isMenuOpen;
 
 
-    public bool IsAnyUIOpen() => _isInventoryOpen || _isUpgradeOpen || _isPhoneUIOpen || _isMenuOpen || _isDialogueOpen;
-    private void Update()
-    {
-        Debug.Log("isDialogueOpen =" + _isDialogueOpen);
-    }
+    public bool IsAnyUIOpen() => _isInventoryOpen || _isUpgradeOpen || _isPhoneUIOpen || _isMenuOpen || _isDialogueOpen || _isBagInventoryOpen;
+    
 }

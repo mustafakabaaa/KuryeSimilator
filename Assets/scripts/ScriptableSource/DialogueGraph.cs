@@ -1,7 +1,7 @@
 // DialogueGraph.cs
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "New Dialogue", menuName = "NPC/Dialogue Graph")]
+[CreateAssetMenu(fileName = "New Dialogue", menuName = "SC/NPC/Dialogue Graph")]
 public class DialogueGraph : ScriptableObject
 {
     public DialogueNode[] nodes;

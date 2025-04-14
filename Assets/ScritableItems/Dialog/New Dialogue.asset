@@ -19,7 +19,7 @@ MonoBehaviour:
       nextNodeIndex: 1
       tipEffect: 2
     - text: cay
-      nextNodeIndex: -1
+      nextNodeIndex: 3
       tipEffect: 2
     - text: sex
       nextNodeIndex: 2
@@ -27,14 +27,19 @@ MonoBehaviour:
   - npcText: sekerli mi
     playerOptions:
     - text: evet
-      nextNodeIndex: -1
+      nextNodeIndex: 3
       tipEffect: 2
     - text: hayir
-      nextNodeIndex: -1
+      nextNodeIndex: 3
       tipEffect: 2
   - npcText: polisi ariyorum
     playerOptions:
     - text: pardon
+      nextNodeIndex: 3
+      tipEffect: 0
+  - npcText: Tesekkurler
+    playerOptions:
+    - text: IYi gunler
       nextNodeIndex: -1
       tipEffect: 0
   startNodeIndex: 0

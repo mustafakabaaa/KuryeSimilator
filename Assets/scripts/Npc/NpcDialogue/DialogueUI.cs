@@ -87,6 +87,8 @@ public class DialogueUI : MonoBehaviour
     }
     public void ShowSimpleMessage(string message)
     {
+        UIManager.Instance.SetDialogueState(true);
+
         // Paneli aç
         panel.SetActive(true);
 
@@ -105,6 +107,8 @@ public class DialogueUI : MonoBehaviour
     {
         yield return new WaitForSeconds(2f);
         CloseDialogue();
+        UIManager.Instance.SetDialogueState(false);
+
     }
     // DialogueUI.cs
     private void SelectOption(int nextNodeIndex)

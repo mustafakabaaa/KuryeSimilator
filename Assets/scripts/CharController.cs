@@ -32,7 +32,10 @@ public class CharrController : MonoBehaviour
     [SerializeField] private GameDataSO gameData; // Inspector'dan bağlayın
     [SerializeField] private CharacterStat speedStat; // Speed Stat SO'sunu Inspector'dan bağlayın
     [SerializeField] private CharacterStat jumpForceStat; // Speed Stat SO'sunu Inspector'dan bağlayın
+    [SerializeField] private SleepStaminaSystem sleepStaminaSystem; // Inspector'dan bağlayın
 
+    private bool isMoving = false;
+    public float runningStaminaCost = 3f;
 
     private void Awake()
     {
@@ -55,15 +58,33 @@ public class CharrController : MonoBehaviour
 
     void Update()
     {
-        
-        if (_isControlEnabled&&!UIManager.Instance.IsAnyUIOpen())
+        if (_isControlEnabled && !UIManager.Instance.IsAnyUIOpen())
         {
             HandleMouseLook();
             HandleMovement();
             RaycastController();
             GameDataUpdate();
+
+            ApplyStaminaPenalty();
+
+            // Hareket ederken stamina tüket
+            if (isMoving && sleepStaminaSystem != null)
+            {
+                float staminaCost = sleepStaminaSystem.walkingStaminaCost * Time.deltaTime;
+
+                // Eğer koşuyorsa (Shift basılıysa) ekstra tüket
+               
+
+                sleepStaminaSystem.currentStamina = Mathf.Max(0, sleepStaminaSystem.currentStamina - staminaCost);
+            }
         }
-        
+    }
+    private void ApplyStaminaPenalty()
+    {
+        if (sleepStaminaSystem != null && sleepStaminaSystem.IsPenaltyActive)
+        {
+            moveSpeed = gameData.GetCurrentStatValue(speedStat) * 0.5f; // %50 yavaşlat
+        }
     }
     public void GameDataUpdate()
     {
@@ -225,6 +246,12 @@ public class CharrController : MonoBehaviour
 
         // Yercekimini uygula
         characterController.Move(velocity * Time.deltaTime);
+
+        if (sleepStaminaSystem != null && move.magnitude > 0.1f)
+        {
+            sleepStaminaSystem.currentStamina -= sleepStaminaSystem.walkingStaminaCost * Time.deltaTime;
+            sleepStaminaSystem.currentStamina = Mathf.Max(0, sleepStaminaSystem.currentStamina);
+        }
     }
 
     bool IsGrounded()

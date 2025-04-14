@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "Item", menuName = "Scriptable/Item")]
+[CreateAssetMenu(fileName = "Item", menuName = "SC/Scriptable/Item")]
 public class SCItem : ScriptableObject
 {
     public string itemID; // Nesnenin benzersiz kimliði

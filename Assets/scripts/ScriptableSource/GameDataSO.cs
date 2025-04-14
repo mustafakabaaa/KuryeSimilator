@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-[CreateAssetMenu(fileName = "GameData", menuName = "Game/Data")]
+[CreateAssetMenu(fileName = "GameData", menuName = "SC/Game/Data")]
 public class GameDataSO : ScriptableObject
 {
     public int upgradePoints = 0;

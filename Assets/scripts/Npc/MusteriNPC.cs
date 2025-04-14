@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,8 +14,8 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
     public float destroyDistance = 10f;
     public LayerMask obstacleLayers; // Engel layer'larý (Inspector'dan atayýn)
     private Camera playerCamera;
-   
-    
+
+    private bool isRotating = false; // NPC dönüyor mu?
     private float nextCheckTime;
     private float checkInterval = 0.3f;
     
@@ -43,7 +44,7 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
     // IInteractable arayüzü
     public void Interact()
     {
-        if (assignedOrder == null) return;
+        if (assignedOrder == null || orderCompleted) return;
 
         bool hasAllItems = true;
         List<string> missingItems = new List<string>();
@@ -62,6 +63,11 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
             SayMissingItems(missingItems);
             return;
         }
+        // Dönme iþlemini baþlat
+        if (!isRotating)
+        {
+            StartCoroutine(LookAtPlayerSmoothly());
+        }
 
         DialogueManager.Instance.SetCurrentOrderID(assignedOrder.orderID);
         DialogueUI.Instance.StartDialogue(assignedOrder.dialogueData, npcName);
@@ -72,7 +78,31 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
         string message = "Eksik ürünler: " + string.Join(", ", missingItems);
         DialogueUI.Instance.ShowSimpleMessage(message);
     }
+    private IEnumerator LookAtPlayerSmoothly()
+    {
+        isRotating = true;
 
+        Vector3 directionToPlayer = player.position - transform.position;
+        directionToPlayer.y = 0; // Yükseklik farkýný yok say
+
+        if (directionToPlayer != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
+            float rotationSpeed = 5f;
+
+            while (Quaternion.Angle(transform.rotation, targetRotation) > 0.1f)
+            {
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    targetRotation,
+                    rotationSpeed * Time.deltaTime
+                );
+                yield return null; // Her frame'de güncelle
+            }
+        }
+
+        isRotating = false;
+    }
     // Sipariþ tamamlandýðýnda OrderManager tarafýndan çaðrýlýr
     public void CompleteOrder()
     {

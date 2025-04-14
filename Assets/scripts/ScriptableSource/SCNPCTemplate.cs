@@ -1,7 +1,7 @@
 // SCNPCTemplate.cs
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewNPCTemplate", menuName = "NPC/NPC Template")]
+[CreateAssetMenu(fileName = "NewNPCTemplate", menuName = "SC/NPC/NPC Template")]
 public class SCNPCTemplate : ScriptableObject
 {
     [Header("Görsel Ayarlar")]

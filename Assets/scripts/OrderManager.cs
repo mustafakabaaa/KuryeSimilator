@@ -38,20 +38,19 @@ public class OrderManager : MonoBehaviour
 
     public void StartNewDay()
     {
+        // Mevcut gün index kontrolü
         if (currentDayIndex >= days.Length)
         {
             Debug.Log("Tüm günler tamamlandı!");
             return;
         }
 
-        availableOrders.Clear();
-        activeOrders.Clear();
+        // Temizlik yap
+        CleanupDay();
 
+        // Yeni gün verilerini yükle
         SCDayData currentDay = days[currentDayIndex];
-        foreach (var order in currentDay.orders)
-        {
-            availableOrders.Add(order);
-        }
+        availableOrders.AddRange(currentDay.orders);
 
         Debug.Log($"Yeni gün başladı: {currentDay.dayName}");
         currentDayIndex++;
@@ -103,10 +102,17 @@ public class OrderManager : MonoBehaviour
         }
     }
 
-    
+
 
     public bool AreAllOrdersCompleted()
     {
+        // If there are available orders that haven't been accepted yet, return false
+        if (availableOrders.Count > 0)
+        {
+            return false;
+        }
+
+        // Only return true if all accepted orders have been completed
         return activeOrders.Count == 0;
     }
     public void CompleteOrder(string orderID)
@@ -169,5 +175,19 @@ public class OrderManager : MonoBehaviour
         OnOrdersUpdated?.Invoke();
 
         Debug.Log($"Sipariş tamamlandı: {order.orderName}");
+    }
+    public void CleanupDay()
+    {
+        // Tüm NPC'leri yok et
+        foreach (var npcEntry in spawnedNPCs)
+        {
+            if (npcEntry.Value != null)
+            {
+                Destroy(npcEntry.Value); // NPC'yi sahneden sil
+            }
+        }
+        availableOrders.Clear();
+        spawnedNPCs.Clear(); // Dictionary'yi temizle
+        activeOrders.Clear(); // Aktif siparişleri temizle
     }
 }

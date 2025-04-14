@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "NewOrder", menuName = "Orders/OrderData")]
+[CreateAssetMenu(fileName = "NewOrder", menuName = "SC/Orders/OrderData")]
 public class SCOrderData : ScriptableObject
 {
     public DialogueGraph dialogueData;

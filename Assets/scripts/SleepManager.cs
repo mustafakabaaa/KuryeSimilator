@@ -1,66 +1,110 @@
+using System.Collections;
 using UnityEngine;
 
 public class SleepManager : MonoBehaviour
 {
+    [Header("Referanslar")]
     public LightManager lightManager;
     public OrderManager orderManager;
-    public float sleepTime = 22.0f; // Uyku saati
+    public SleepEffect sleepEffect;
+    public SleepStaminaSystem sleepStaminaSystem;
 
-    public float wakeUpTime = 6f; // Sabah uyanma saati
-    public float sleepStartTime = 20f; // Uyku baþlangýç saati
+    [Header("Uyku Ayarlarý")]
+    public float sleepStartTime = 20f; // Uykuya baþlanabilecek saat (örn: 20.00)
+    public float sleepDuration = 8f;   // Uyku süresi
+    public float minWakeUpTime = 6f;   // Sabah uyanabileceði minimum saat (örn: 06.00)
+    public float defaultWakeUpTime = 6f; // Gün döngüsünde kullanýlacak varsayýlan sabah saati
 
-    public SleepEffect sleepEffect; // SleepEffect script'i
-    //private void Update()
-    //{
-    //    // Uyku saati kontrolü (akþam 20:00'den sonra)
-    //    if (lightManager.GetTimeOfDay() >= sleepStartTime)
-    //    {
-    //        Debug.Log("Uyku saati! Yataða gitmek için bir yere týklayýn.");
-    //        // Uyku tetikleme mekaniði burada olacak
-    //    }
-    //}
-
-    public void TriggerSleep()
+    private void OnEnable()
     {
-        // Uyku saatinde mi kontrol et
-        if (lightManager.GetTimeOfDay() < sleepStartTime&&!orderManager.AreAllOrdersCompleted())
-        {
-            Debug.Log("Henüz uyku saati deðil! Akþam 20:00'den önce uyuyamazsýnýz.");
+        LightManager.OnDayCycleCompleted += HandleDayCycleCompletion;
+    }
 
-            Debug.Log("Tüm görevler tamamlanmadý! Uyuyamazsýnýz.");
-            return;
+    private void OnDisable()
+    {
+        LightManager.OnDayCycleCompleted -= HandleDayCycleCompletion;
+    }
+
+    public void RequestSleep()
+    {
+        TriggerSleep();
+    }
+
+    private void TriggerSleep()
+    {
+        if (!CanSleep()) return;
+
+        StartCoroutine(SleepRoutine());
+    }
+
+    private IEnumerator SleepRoutine()
+    {
+        float currentTime = lightManager.GetTimeOfDay();
+
+        // Uyku efektini baþlat
+        sleepEffect?.StartSleepEffect();
+
+        // Bir süre bekle (örneðin animasyon için)
+        yield return new WaitForSecondsRealtime(3f);
+
+        // Uyanma saatini hesapla
+        float newWakeTime = (currentTime + sleepDuration) % 24f;
+
+        // Saat güncellensin
+        lightManager.SetTimeOfDay(newWakeTime);
+
+        // Gün deðiþimi gerekiyorsa iþlemleri yap
+        if (currentTime + sleepDuration >= 24f)
+        {
+            EndDay();
+            StartNewDay(newWakeTime);
         }
 
+        Debug.Log($"Uyandýnýz! Saat: {newWakeTime:00.00}");
+    }
 
-        Debug.Log("Oyuncu uyuyor...");
-        EndDay();
-        StartNewDay();
+    private bool CanSleep()
+    {
+        float currentTime = lightManager.GetTimeOfDay();
+
+        bool isNightTime = currentTime >= sleepStartTime || currentTime < minWakeUpTime;
+        bool ordersComplete = orderManager.AreAllOrdersCompleted();
+        bool needsSleep = sleepStaminaSystem.CanSleep;
+
+        return isNightTime || ordersComplete || needsSleep;
     }
 
     private void EndDay()
     {
-        // Tamamlanmamýþ görevleri kontrol et
-        foreach (var order in orderManager.GetActiveOrders())
+        // Tüm aktif NPC'leri temizle
+        foreach (var npc in FindObjectsOfType<MusteriNPC>())
         {
-            Debug.Log($"Görev tamamlanmadý: {order.orderName}");
-            // Ceza veya ödül uygula
+            Destroy(npc.gameObject);
         }
 
-        // Aktif görevleri temizle
-        orderManager.GetActiveOrders().Clear();
-        // Uyku efektini baþlat
-        if (sleepEffect != null)
+        // Sipariþ sistemini sýfýrla
+        orderManager.CleanupDay();
+
+        if (lightManager.GetTimeOfDay() >= 23.9f || lightManager.GetTimeOfDay() < 0.1f)
         {
-            sleepEffect.StartSleepEffect();
-            Debug.Log("efekt yapildi");
+            Debug.Log("Gece yarýsý oldu, gün sonu iþlemleri yapýlýyor");
         }
     }
 
-    private void StartNewDay()
+    public void StartNewDay(float newStartTime)
     {
-        // Yeni gün baþlangýcý
-        lightManager.SetTimeOfDay(6f); // Sabah 6'da uyan
-        orderManager.StartNewDay(); // Yeni görevler oluþtur
-        Debug.Log("Yeni bir gün baþladý! Sabah 6:00.");
+        // Yeni gün baþlatýlýrken saat ayarlanýr
+        lightManager.SetTimeOfDay(newStartTime);
+        orderManager.StartNewDay();
+        sleepStaminaSystem.ResetStamina();
+
+        Debug.Log("Yeni gün baþladý!");
+    }
+
+    private void HandleDayCycleCompletion()
+    {
+        Debug.Log("Gece 12 oldu, otomatik gün sonu iþlemleri yapýlýyor!");
+        EndDay();
+        StartNewDay(defaultWakeUpTime); // Gün döngüsü sonlandýðýnda varsayýlan uyanýþ saati
     }
 }

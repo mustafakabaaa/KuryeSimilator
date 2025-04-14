@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "DeliveryPointData", menuName = "Delivery/PointData")]
+[CreateAssetMenu(fileName = "DeliveryPointData", menuName = "SC/Delivery/PointData")]
 public class DeliveryPointData : ScriptableObject
 {
     public Vector3 position; // Teslimat noktasýnýn konumu
