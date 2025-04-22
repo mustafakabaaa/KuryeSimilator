@@ -1,28 +1,29 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class MusteriNPC : MonoBehaviour, Iinterectable
 {
-    // Etkileşim ve Sipariş
+    // EtkileÅŸim ve SipariÅŸ
     private SCOrderData assignedOrder;
-    private string npcName = "Müşteri";
+    private string npcName = "MÃ¼ÅŸteri";
+    private bool isTalking = false;
 
-    // Yok Olma Mekaniği
+    // Yok Olma MekaniÄŸi
     private bool orderCompleted = false;
     private Transform player;
     public float destroyDistance = 10f;
-    public LayerMask obstacleLayers; // Engel layer'ları (Inspector'dan atayın)
+    public LayerMask obstacleLayers; // Engel layer'larÄ± (Inspector'dan atayÄ±n)
     private Camera playerCamera;
 
-    private bool isRotating = false; // NPC dönüyor mu?
+    private bool isRotating = false; // NPC dÃ¶nÃ¼yor mu?
     private float nextCheckTime;
     private float checkInterval = 0.3f;
     
     private void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
-        playerCamera = Camera.main; // Ana kamera referansı
+        playerCamera = Camera.main; // Ana kamera referansÄ±
 
     }
 
@@ -31,7 +32,11 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
         assignedOrder = order;
         npcName = order.orderName;
     }
-
+    public void SetUITextBool(bool textSee)
+    {
+        isTalking = textSee;
+    }
+   
     private void Update()
     {
         if (orderCompleted && Time.time >= nextCheckTime)
@@ -41,7 +46,7 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
         }
     }
 
-    // IInteractable arayüzü
+    // IInteractable arayÃ¼zÃ¼
     public void Interact()
     {
         if (assignedOrder == null || orderCompleted) return;
@@ -63,19 +68,20 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
             SayMissingItems(missingItems);
             return;
         }
-        // Dönme işlemini başlat
+        // DÃ¶nme iÅŸlemini baÅŸlat
         if (!isRotating)
         {
             StartCoroutine(LookAtPlayerSmoothly());
         }
+        isTalking = true; // â† EKLE
 
         DialogueManager.Instance.SetCurrentOrderID(assignedOrder.orderID);
-        DialogueUI.Instance.StartDialogue(assignedOrder.dialogueData, npcName);
+        DialogueUI.Instance.StartDialogue(assignedOrder.dialogueData, npcName,this.transform);
     }
 
     public void SayMissingItems(List<string> missingItems)
     {
-        string message = "Eksik ürünler: " + string.Join(", ", missingItems);
+        string message = "Eksik Ã¼rÃ¼nler: " + string.Join(", ", missingItems);
         DialogueUI.Instance.ShowSimpleMessage(message);
     }
     private IEnumerator LookAtPlayerSmoothly()
@@ -83,7 +89,7 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
         isRotating = true;
 
         Vector3 directionToPlayer = player.position - transform.position;
-        directionToPlayer.y = 0; // Yükseklik farkını yok say
+        directionToPlayer.y = 0; // YÃ¼kseklik farkÄ±nÄ± yok say
 
         if (directionToPlayer != Vector3.zero)
         {
@@ -97,40 +103,40 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
                     targetRotation,
                     rotationSpeed * Time.deltaTime
                 );
-                yield return null; // Her frame'de güncelle
+                yield return null; // Her frame'de gÃ¼ncelle
             }
         }
 
         isRotating = false;
     }
-    // Sipariş tamamlandığında OrderManager tarafından çağrılır
+    // SipariÅŸ tamamlandÄ±ÄŸÄ±nda OrderManager tarafÄ±ndan Ã§aÄŸrÄ±lÄ±r
     public void CompleteOrder()
     {
         orderCompleted = true;
-        // İsteğe bağlı: Teşekkür animasyonu veya diyalog
+        // Ä°steÄŸe baÄŸlÄ±: TeÅŸekkÃ¼r animasyonu veya diyalog
         GetComponent<Animator>()?.SetTrigger("ThankYou");
-        DialogueUI.Instance.ShowSimpleMessage("Teşekkürler!");
+        DialogueUI.Instance.ShowSimpleMessage("TeÅŸekkÃ¼rler!");
     }
     private bool IsVisibleToPlayer()
     {
-        // 1. NPC kamera görüş açısında mı? (Viewport check)
+        // 1. NPC kamera gÃ¶rÃ¼ÅŸ aÃ§Ä±sÄ±nda mÄ±? (Viewport check)
         Vector3 viewportPoint = playerCamera.WorldToViewportPoint(transform.position);
         bool isInView = viewportPoint.z > 0 &&
                         viewportPoint.x > 0 && viewportPoint.x < 1 &&
                         viewportPoint.y > 0 && viewportPoint.y < 1;
 
-        // 2. Eğer kamera görüşünde değilse, zaten görünmüyor
+        // 2. EÄŸer kamera gÃ¶rÃ¼ÅŸÃ¼nde deÄŸilse, zaten gÃ¶rÃ¼nmÃ¼yor
         if (!isInView) return false;
 
-        // 3. Kamera ile NPC arasında engel var mı? (Raycast)
+        // 3. Kamera ile NPC arasÄ±nda engel var mÄ±? (Raycast)
         Vector3 cameraToNPC = transform.position - playerCamera.transform.position;
         RaycastHit hit;
         if (Physics.Raycast(playerCamera.transform.position, cameraToNPC.normalized, out hit, cameraToNPC.magnitude, obstacleLayers))
         {
-            return hit.transform == transform; // Sadece NPC'ye çarptıysa görünüyor
+            return hit.transform == transform; // Sadece NPC'ye Ã§arptÄ±ysa gÃ¶rÃ¼nÃ¼yor
         }
 
-        return true; // Engel yoksa görünüyor
+        return true; // Engel yoksa gÃ¶rÃ¼nÃ¼yor
     }
     private void CheckForDestroyConditions()
     {
@@ -147,11 +153,22 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
         Vector3 directionToPlayer = (player.position - transform.position).normalized;
         RaycastHit hit;
 
-        // Raycast ile engel kontrolü
+        // Raycast ile engel kontrolÃ¼
         if (Physics.Raycast(transform.position, directionToPlayer, out hit, destroyDistance, obstacleLayers))
         {
-            return hit.transform == player; // Sadece player'a çarptıysa görünüyor
+            return hit.transform == player; // Sadece player'a Ã§arptÄ±ysa gÃ¶rÃ¼nÃ¼yor
         }
-        return true; // Engel yoksa görünüyor
+        return true; // Engel yoksa gÃ¶rÃ¼nÃ¼yor
+    }
+
+    public string GetInteractionText()
+    {
+        return "KONUS (E)";
+    }
+
+    public bool CanInteract()
+    {
+        return !orderCompleted && !isTalking;
+
     }
 }

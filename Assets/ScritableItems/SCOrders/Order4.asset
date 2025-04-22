@@ -28,3 +28,4 @@ MonoBehaviour:
   deliveryAddress: none
   deliveryPosition: {x: 34, y: 2, z: 0}
   reward: 100
+  restaurantID: 1

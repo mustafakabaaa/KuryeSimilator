@@ -2,7 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface Iinterectable 
+public interface Iinterectable
 {
-    public void Interact();
+    void Interact();
+    string GetInteractionText();
+    bool CanInteract();
 }
+

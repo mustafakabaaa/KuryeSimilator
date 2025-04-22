@@ -190,4 +190,14 @@ public class BicycleController : MonoBehaviour, Iinterectable
         yield return new WaitForSeconds(delay);
         _rb.isKinematic = false;
     }
+
+    public string GetInteractionText()
+    {
+        return "Bin (E)";
+    }
+
+    public bool CanInteract()
+    {
+        return true;
+    }
 }

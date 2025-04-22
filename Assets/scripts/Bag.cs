@@ -70,4 +70,14 @@ public class Bag : MonoBehaviour, Iinterectable
             isInventoryOpen = false;
         }
     }
+
+    public string GetInteractionText()
+    {
+        return "Cantayi ac";
+    }
+
+    public bool CanInteract()
+    {
+        throw new System.NotImplementedException();
+    }
 }

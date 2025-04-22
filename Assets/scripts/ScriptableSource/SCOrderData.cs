@@ -12,4 +12,7 @@ public class SCOrderData : ScriptableObject
     public string deliveryAddress; // Teslimat adresi (metin olarak)
     public Vector3 deliveryPosition; // Teslimat pozisyonu (Unity'deki konum)
     public int reward; // Ödül (para)
+
+    [Header("Restoran Ayarlarý")]
+    public string restaurantID; // Hangi restorandan gelecek
 }

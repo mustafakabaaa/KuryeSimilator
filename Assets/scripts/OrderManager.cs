@@ -77,6 +77,8 @@ public class OrderManager : MonoBehaviour
 
             // NPC'yi spawnla
             SpawnNPCForOrder(order);
+            SpawnOrderItemsAtRestaurant(order); // Düzenli spawn sistemi
+
         }
     }
     private void SpawnNPCForOrder(SCOrderData order)
@@ -175,6 +177,29 @@ public class OrderManager : MonoBehaviour
         OnOrdersUpdated?.Invoke();
 
         Debug.Log($"Sipariş tamamlandı: {order.orderName}");
+    }
+    private void SpawnOrderItemsAtRestaurant(SCOrderData order)
+    {
+        if (order.requiredItems == null || order.requiredItems.Length == 0) return;
+
+        for (int i = 0; i < order.requiredItems.Length; i++)
+        {
+            SCItem requiredItem = order.requiredItems[i];
+            if (requiredItem.itemPrefab == null) continue;
+
+            Vector3 spawnPos = RestaurantManager.Instance.GetSpawnPosition(
+                order.restaurantID,
+                i,
+                order.requiredItems.Length
+            );
+
+            GameObject itemObj = Instantiate(requiredItem.itemPrefab, spawnPos, Quaternion.identity);
+            Item itemComponent = itemObj.GetComponent<Item>();
+            if (itemComponent != null)
+            {
+                itemComponent.item = requiredItem;
+            }
+        }
     }
     public void CleanupDay()
     {

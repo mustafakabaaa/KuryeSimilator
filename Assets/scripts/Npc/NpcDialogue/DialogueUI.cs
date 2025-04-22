@@ -13,26 +13,36 @@ public class DialogueUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI npcDialogueText;
     [SerializeField] private Transform optionsParent;
     [SerializeField] private GameObject optionButtonPrefab;
-
+     
+    MusteriNPC musteriNPC= new MusteriNPC();
     private void Awake()
     {
         if (Instance == null)
             Instance = this;
         else
             Destroy(gameObject);
+
+        musteriNPC.SetUITextBool(true);
+
     }
-    public void StartDialogue(DialogueGraph dialogue, string npcName)
+    public void StartDialogue(DialogueGraph dialogue, string npcName, Transform npcTransform)
     {
         UIManager.Instance.SetDialogueState(true); // Durumu güncelle
         
         UIManager.Instance.CloseAllOpenPanels(); // Diðer UI'larý kapat
         SetCursorState(true);
+        CharrController playerController = FindObjectOfType<CharrController>();
+        if (playerController != null && npcTransform != null)
+        {
+            playerController.LockCamera(true);
+            playerController.LookAtTarget(npcTransform);
+        }
         if (dialogue == null)
         {
             Debug.LogError("DialogueGraph is null!", this);
             return;
         }
-       
+        
         // ÖNCE DialogueManager'a diyalogu ata
         DialogueManager.Instance.SetCurrentDialogue(dialogue);
 
@@ -47,9 +57,16 @@ public class DialogueUI : MonoBehaviour
         }
 
         ShowNode(dialogue.nodes[dialogue.startNodeIndex]);
+        musteriNPC.SetUITextBool(false);
     }
     public void CloseDialogue()
-    {
+    {  // Kamera kilidini kaldýr
+        CharrController playerController = FindObjectOfType<CharrController>();
+        if (playerController != null)
+        {
+            playerController.LockCamera(false);
+        }
+
         // 1. Önce paneli kapat
         panel.SetActive(false);
 

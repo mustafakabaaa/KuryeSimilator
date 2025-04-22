@@ -10,6 +10,16 @@ public class DoorController : MonoBehaviour,Iinterectable
     private bool isOpen = true;
     private float doorZValue;
 
+    public bool CanInteract()
+    {
+        return true;
+    }
+
+    public string GetInteractionText()
+    {
+        return "AC";
+    }
+
     public void Interact()
     {
         ToogleDoor();

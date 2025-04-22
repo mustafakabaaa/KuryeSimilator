@@ -21,3 +21,4 @@ MonoBehaviour:
   deliveryAddress: asdasd
   deliveryPosition: {x: 60, y: 2, z: 20}
   reward: 12
+  restaurantID: 1

@@ -21,3 +21,4 @@ MonoBehaviour:
   deliveryAddress: ev
   deliveryPosition: {x: -0.03637767, y: 0.1805176, z: 1}
   reward: 10
+  restaurantID: 1

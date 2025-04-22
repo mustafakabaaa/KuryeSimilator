@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -36,6 +37,7 @@ public class CharrController : MonoBehaviour
 
     private bool isMoving = false;
     public float runningStaminaCost = 3f;
+    private bool _isCameraLocked = false;
 
     private void Awake()
     {
@@ -99,46 +101,48 @@ public class CharrController : MonoBehaviour
         }
     }
 
-   
+
     void RaycastController()
     {
-        if (!_isControlEnabled) return; // Kontrol devre dışıysa RaycastController'ı çalıştırma
+        if (!_isControlEnabled) return;
 
-        float raycastDistance = 3f; // Raycast'in maksimum mesafesi
+        float raycastDistance = 3f;
         Ray ray = Camera.main.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit;
 
-        // Raycast'i gorsel olarak cizin (ornegin kirmizi renk)
         Debug.DrawRay(ray.origin, ray.direction * raycastDistance, Color.red);
 
-        // Raycast'i belirli bir mesafeye kadar kontrol et
         if (Physics.Raycast(ray, out hit, raycastDistance))
         {
-            // E tusu ile etkilesim (ornegin kapi acma)
             if (hit.collider.TryGetComponent(out Iinterectable interactable))
             {
-                // Mesajı göster
-                interactText.gameObject.SetActive(true);
-                canInteract = true;
-
-                // E tusuna basildiginda etkilesime gir
-                if (Input.GetKeyDown(KeyCode.E))
+                if (interactable.CanInteract())
                 {
-                    interactable.Interact();
+                    interactText.text = interactable.GetInteractionText(); // Dinamik metin
+                    interactText.gameObject.SetActive(true);
+                    canInteract = true;
+
+                    if (Input.GetKeyDown(KeyCode.E))
+                    {
+                        interactable.Interact();
+                    }
+                }
+                else
+                {
+                    interactText.gameObject.SetActive(false);
+                    canInteract = false;
                 }
             }
             else
             {
-                // Etkilesime girilebilecek nesne degilse mesaji gizle
                 interactText.gameObject.SetActive(false);
                 canInteract = false;
             }
 
-            // Fare sol tiklamasi ile saldiri (ornegin NPC'ye saldirma)
+            // Saldırı kodu burada kalabilir (değişmeden)
             if (hit.collider.TryGetComponent(out IAttackable attackable))
             {
-                // Sol tiklama ile saldir
-                if (Input.GetMouseButtonDown(0)) // Sol tiklama
+                if (Input.GetMouseButtonDown(0))
                 {
                     attackable.Attack();
                 }
@@ -146,11 +150,11 @@ public class CharrController : MonoBehaviour
         }
         else
         {
-            // Hicbir nesneye bakilmiyorsa mesaji gizle
             interactText.gameObject.SetActive(false);
             canInteract = false;
         }
     }
+
 
     public void SetCameraTarget(Transform target)
     {
@@ -182,7 +186,7 @@ public class CharrController : MonoBehaviour
 
     void HandleMouseLook()
     {
-        if (!_isControlEnabled) return;
+        if (!_isControlEnabled || _isCameraLocked || UIManager.Instance.IsAnyUIOpen()) return;
 
         // Fare girdisi
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
@@ -196,7 +200,46 @@ public class CharrController : MonoBehaviour
         playerCamera.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
         transform.Rotate(Vector3.up * mouseX);
     }
+    public void LookAtTarget(Transform target)
+    {
+        if (target == null) return;
 
+        StartCoroutine(SmoothLookAt(target));
+    }
+
+    private IEnumerator SmoothLookAt(Transform target)
+    {
+        LockCamera(true);
+
+        Vector3 direction = target.position - transform.position;
+        direction.y = 0;
+        Quaternion targetRot = Quaternion.LookRotation(direction);
+
+        float duration = 0.5f;
+        float elapsed = 0f;
+        Quaternion startRot = transform.rotation;
+
+        while (elapsed < duration)
+        {
+            transform.rotation = Quaternion.Slerp(startRot, targetRot, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        transform.rotation = targetRot;
+    }
+    public void LockCamera(bool lockStatus)
+    {
+        _isCameraLocked = lockStatus;
+
+        // İmleç kontrolü
+        Cursor.visible = lockStatus;
+        Cursor.lockState = lockStatus ? CursorLockMode.None : CursorLockMode.Locked;
+
+        // Crosshair kontrolü
+        if (crosshairImage != null)
+            crosshairImage.SetActive(!lockStatus);
+    }
     void HandleMovement()
     {
         if (!_isControlEnabled) return;
