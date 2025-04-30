@@ -66,21 +66,30 @@ public class OrderManager : MonoBehaviour
         return activeOrders;
     }
 
-    public void AcceptOrder(string orderID)
+    public bool AcceptOrder(string orderID)
     {
+        if (activeOrders.Count > 0)
+        {
+            Debug.Log("Zaten aktif bir sipariş var! Önce onu tamamla.");
+            return false;
+        }
+
         SCOrderData order = availableOrders.Find(o => o.orderID == orderID);
         if (order != null)
         {
-            activeOrders.Add(order);
             availableOrders.Remove(order);
-            Debug.Log("Order accepted: " + order.orderName);
+            activeOrders.Add(order);
 
-            // NPC'yi spawnla
-            SpawnNPCForOrder(order);
-            SpawnOrderItemsAtRestaurant(order); // Düzenli spawn sistemi
+            // EKSİK OLAN KISIMLAR:
+            SpawnNPCForOrder(order); // NPC oluştur
+            SpawnOrderItemsAtRestaurant(order); // Sipariş itemlerini spawnla
 
+            OnOrdersUpdated?.Invoke();
+            return true;
         }
+        return false;
     }
+
     private void SpawnNPCForOrder(SCOrderData order)
     {
         if (npcPrefab == null)

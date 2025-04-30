@@ -38,6 +38,7 @@ public class OrderUIElement : MonoBehaviour
             requiredItemsText.text += item.itemName + ", ";
         }
         requiredItemsText.text = requiredItemsText.text.TrimEnd(',', ' ');
+        bool hasActiveOrder = OrderManager.Instance.GetActiveOrders().Count > 0;
 
         // Eðer sipariþ aktif sipariþler listesindeyse "Take Order" butonunu devre dýþý býrak
         takeOrderButton.interactable = !OrderManager.Instance.GetActiveOrders().Contains(order);
@@ -45,8 +46,17 @@ public class OrderUIElement : MonoBehaviour
 
     private void OnTakeOrderButtonClicked()
     {
-        OrderManager.Instance.AcceptOrder(currentOrder.orderID);
-        Destroy(gameObject); // Sipariþ alýndýktan sonra UI elementini kaldýr
+        bool success = OrderManager.Instance.AcceptOrder(currentOrder.orderID);
+
+        if (success)
+        {
+            // Eðer sipariþi aldýysak UI'yý güncelle
+            OrderUI.Instance.OnOrderListUpdated();
+        }
+        else
+        {
+            ToastManager.Instance.ShowToast("Zaten aktif bir  siparisiniz var!", 3f);
+        }
     }
 
     private void OnInfoButtonClicked()
