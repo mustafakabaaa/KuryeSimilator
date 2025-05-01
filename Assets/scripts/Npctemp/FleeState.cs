@@ -18,6 +18,7 @@ public class FleeState : IState
     {
         Debug.Log("Entering Flee State");
         timer = 0f; // Sayaç sýfýrlandý
+        npc.GetComponent<Animator>().SetBool("isWalking", true);
     }
 
     public void Update()
@@ -39,5 +40,6 @@ public class FleeState : IState
     public void Exit()
     {
         Debug.Log("Exiting Flee State");
+        npc.GetComponent<Animator>().SetBool("isWalking", false);
     }
 }

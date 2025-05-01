@@ -7,7 +7,7 @@ public class WalkingState : IState
     private float walkingSpeed;
     private int currentWaypointIndex = 0;
     private float timer = 0;
-    private float waitingWayPointTime = 5;
+    private float waitingWayPointTime = 2;
     public WalkingState(NPCController npc, PathList pathList, float walkingSpeed)
     {
         this.npc = npc;
@@ -32,17 +32,34 @@ public class WalkingState : IState
         if (targetWaypoint == null)
             return;
 
-        // Waypoint'e doðru hareket et
-        npc.transform.position = Vector3.MoveTowards(npc.transform.position, targetWaypoint.position, walkingSpeed * Time.deltaTime);
-
         // X ve Z eksenlerindeki mesafeyi hesapla
         float distanceXZ = CalculateXZDistance(npc.transform.position, targetWaypoint.position);
-        //Debug.Log("XZ Distance: " + distanceXZ);
 
-        // Waypoint'e ulaþýldýðýnda bir sonraki waypoint'e geç
-        if (distanceXZ <= 0.2f) 
+
+        if (distanceXZ > 0.2f) // Hedefe yürüyorsa
+        {
+            // Hareket
+            npc.transform.position = Vector3.MoveTowards(npc.transform.position, targetWaypoint.position, walkingSpeed * Time.deltaTime);
+
+            // Dönüþ
+            Vector3 direction = (targetWaypoint.position - npc.transform.position);
+            direction.y = 0f;
+            if (direction.magnitude > 0.1f)
+            {
+                Quaternion targetRotation = Quaternion.LookRotation(direction);
+                npc.transform.rotation = Quaternion.Slerp(npc.transform.rotation, targetRotation, 5f * Time.deltaTime);
+            }
+
+            // Animator'a "isWalking = true"
+            npc.GetComponent<Animator>().SetBool("isWalking", true);
+        }
+        else // Bekleme zamaný
         {
             timer += Time.deltaTime;
+
+            // Animator'a "isWalking = false"
+            npc.GetComponent<Animator>().SetBool("isWalking", false);
+
             if (timer > waitingWayPointTime)
             {
                 currentWaypointIndex = (currentWaypointIndex + 1) % pathList.waypoints.Count;
