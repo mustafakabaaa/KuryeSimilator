@@ -190,7 +190,7 @@ public class OrderManager : MonoBehaviour
     private void SpawnOrderItemsAtRestaurant(SCOrderData order)
     {
         if (order.requiredItems == null || order.requiredItems.Length == 0) return;
-
+        
         for (int i = 0; i < order.requiredItems.Length; i++)
         {
             SCItem requiredItem = order.requiredItems[i];
@@ -208,6 +208,7 @@ public class OrderManager : MonoBehaviour
             {
                 itemComponent.item = requiredItem;
             }
+            Debug.LogWarning("olusturuldu");
         }
     }
     public void CleanupDay()

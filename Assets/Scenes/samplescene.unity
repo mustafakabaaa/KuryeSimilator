@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 705507994}
-  m_IndirectSpecularColor: {r: 0.17798291, g: 0.22284335, b: 0.3049585, a: 1}
+  m_IndirectSpecularColor: {r: 0.17798321, g: 0.22284389, b: 0.30495936, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -6748,11 +6748,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7779976052777383206, guid: c1113bc1cc1416d49b21342b05df934e, type: 3}
   m_PrefabInstance: {fileID: 239595503}
   m_PrefabAsset: {fileID: 0}
---- !u!4 &929120392 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 7779976052777383206, guid: c1113bc1cc1416d49b21342b05df934e, type: 3}
-  m_PrefabInstance: {fileID: 239595503}
-  m_PrefabAsset: {fileID: 0}
 --- !u!224 &934101035 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1157198700172596653, guid: bd6c7ef4bd82f1b48a6fdbbac3b2bdb8, type: 3}
@@ -8784,7 +8779,7 @@ PrefabInstance:
     - target: {fileID: 4664322994268695228, guid: b9f42de6425d7a64492e24f3f8462954, type: 3}
       propertyPath: _playerTransform
       value: 
-      objectReference: {fileID: 929120392}
+      objectReference: {fileID: 0}
     - target: {fileID: 4664322994268695230, guid: b9f42de6425d7a64492e24f3f8462954, type: 3}
       propertyPath: m_Name
       value: FinalBike
@@ -14867,3 +14862,6 @@ SceneRoots:
   - {fileID: 1603954558}
   - {fileID: 239595503}
   - {fileID: 1294304378}
+  - {fileID: 380198664}
+  - {fileID: 240610508}
+  - {fileID: 1234630758}

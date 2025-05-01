@@ -74,7 +74,7 @@ public class BicycleVehicle : MonoBehaviour, Iinterectable
 	void Update()
 	{
         isPlayerWannaExitBicycle();
-		Debug.Log(rb.velocity.magnitude);
+		//Debug.Log(rb.velocity.magnitude);
     }
 
 	// Update is called once per frame
