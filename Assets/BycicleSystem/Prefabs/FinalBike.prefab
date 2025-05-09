@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3908327608305100903}
   - component: {fileID: 1644369867108252043}
   - component: {fileID: 5723978276694625776}
+  - component: {fileID: 9185877812146260474}
   m_Layer: 9
   m_Name: BicycleCamera
   m_TagString: Untagged
@@ -26,12 +27,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 785681121493379837}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.008726465, y: 0, z: 0, w: 0.999962}
-  m_LocalPosition: {x: 0, y: 1.3, z: 0}
+  m_LocalRotation: {x: -0.008726465, y: -0, z: -0, w: 0.999962}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 5472104034219470852}
+  m_Father: {fileID: 5978511260442835833}
   m_LocalEulerAnglesHint: {x: -1, y: 0, z: 0}
 --- !u!20 &1644369867108252043
 Camera:
@@ -92,6 +93,22 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 785681121493379837}
   m_Enabled: 1
+--- !u!114 &9185877812146260474
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 785681121493379837}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f3cfdefc7fc6e6b468392b9e96993c62, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cameraPivot: {fileID: 5978511260442835833}
+  sensitivity: 2
+  maxYaw: 45
+  maxPitch: 20
 --- !u!1 &1289980562747270202
 GameObject:
   m_ObjectHideFlags: 0
@@ -1653,8 +1670,8 @@ Transform:
   - {fileID: 3052604780477020903}
   - {fileID: 3052604780814234676}
   - {fileID: 1125797767960417296}
-  - {fileID: 3908327608305100903}
   - {fileID: 7547062774450130289}
+  - {fileID: 5978511260442835833}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4664322994268695228
@@ -1698,7 +1715,6 @@ MonoBehaviour:
   isPlayerOnBoard: 0
   frontGrounded: 0
   rearGrounded: 0
-  minimapIcon: {fileID: 0}
 --- !u!54 &4664322994268695231
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1745,8 +1761,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1.3664515, z: 2.0167534}
-  m_Center: {x: 0, y: 0.2664268, z: 0.11596778}
+  m_Size: {x: 0.24396911, y: 0.96887934, z: 2.0167534}
+  m_Center: {x: -0.015829707, y: 0.17074117, z: 0.115967825}
 --- !u!1 &6206282899706538739
 GameObject:
   m_ObjectHideFlags: 0
@@ -2619,3 +2635,35 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &8782300256458553522
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5978511260442835833}
+  m_Layer: 9
+  m_Name: "camerap\u0131vothandlelook"
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5978511260442835833
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8782300256458553522}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.3, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3908327608305100903}
+  m_Father: {fileID: 5472104034219470852}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
