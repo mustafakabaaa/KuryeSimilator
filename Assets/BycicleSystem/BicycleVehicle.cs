@@ -410,7 +410,7 @@ public class BicycleVehicle : MonoBehaviour, Iinterectable
 		}
 		else
 		{
-			return "Press E to get off the bicycle";
+			return "";
 		}
     }
 
