@@ -62,9 +62,10 @@ public class BicycleVehicle : MonoBehaviour, Iinterectable
     [SerializeField] private bool isPlayerOnBoard = false; // Player is on board or not
     public bool frontGrounded;
 	public bool rearGrounded;
+    [SerializeField] private MinimapPlayerIcon minimapIcon;
 
-	// Start is called before the first frame update
-	void Start()
+    // Start is called before the first frame update
+    void Start()
 	{
 		StopEmitTrail();
 		rb = GetComponent<Rigidbody>();		
@@ -323,22 +324,33 @@ public class BicycleVehicle : MonoBehaviour, Iinterectable
 		rearttrail.emitting = false;
 	}
 
-	private void changeCamera()
-	{
+    private void changeCamera()
+    {
         if (isPlayerOnBoard)
         {
             _vehicleCamera.SetActive(true);
             _playerCamera.SetActive(false);
             playerStatue();
+
+            // Minimap bisikleti takip etsin
+            MinimapTargetManager.Instance.SetTarget(transform); // bisiklet
+            FindObjectOfType<MinimapPlayerIcon>().SetTarget(this.transform);
+
         }
         else
         {
             _vehicleCamera.SetActive(false);
             _playerCamera.SetActive(true);
             playerStatue();
+
+            // Minimap tekrar oyuncuyu takip etsin
+            MinimapTargetManager.Instance.SetTarget(_player.transform); // oyuncu
+            FindObjectOfType<MinimapPlayerIcon>().SetTarget(_player.transform);
+
         }
     }
-	private void isPlayerWannaExitBicycle()
+
+    private void isPlayerWannaExitBicycle()
 	{
         if (isPlayerOnBoard && Input.GetKeyDown(KeyCode.E))
         {

@@ -38,4 +38,9 @@ public class MinimapPlayerIcon : MonoBehaviour
             minimapIcon.localRotation = Quaternion.Euler(0f, 0f, -angle+180);
         }
     }
+    public void SetTarget(Transform newTarget)
+    {
+        player = newTarget;
+    }
+
 }

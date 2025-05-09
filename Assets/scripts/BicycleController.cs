@@ -39,7 +39,9 @@ public class BicycleController : MonoBehaviour, Iinterectable
     private float _handling;
     private bool _playerOnboard = false;
     private GameObject _player;
+   
     private bool _isStandingUp = false; // Bisiklet düzeltiliyor mu?
+    [SerializeField] private MinimapCameraFollow minimapCameraFollow;
 
     private void Start()
     {

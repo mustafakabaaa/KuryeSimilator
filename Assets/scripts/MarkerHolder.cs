@@ -23,7 +23,7 @@ public class MarkerHolder : MonoBehaviour
             Vector2 flatDir = new Vector2(worldDir.x, worldDir.z).normalized;
 
             Vector2 minimapSize = minimapRect.rect.size;
-            Vector2 offset = flatDir * (minimapSize.x / 2f - 30f);
+            Vector2 offset = flatDir * (minimapSize.x / 2f - 15f);
 
             marker.anchoredPosition = offset;
 

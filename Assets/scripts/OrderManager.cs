@@ -17,7 +17,7 @@ public class OrderManager : MonoBehaviour
     public GameObject npcPrefab;
     private Dictionary<string, GameObject> spawnedNPCs = new Dictionary<string, GameObject>(); // Spawn edilen NPC'leri sakla
     OrderUI orderUI = new OrderUI();
-  
+    private string missingText = "Eksik ürünler:\n";
     public delegate void OrdersUpdatedDelegate();
     public static event OrdersUpdatedDelegate OnOrdersUpdated;
     private void Awake()
@@ -150,7 +150,7 @@ public class OrderManager : MonoBehaviour
         // 3. Eksik item varsa uyarı göster ve işlemi iptal et
         if (missingItems.Count > 0)
         {
-            string missingText = "Eksik ürünler:\n";
+           
             foreach (var item in missingItems)
             {
                 missingText += $"- {item.itemName}\n";
