@@ -62,6 +62,8 @@ public class SCInventory : ScriptableObject
         return false;
     }
 
+
+
     public bool IsSlotUnlocked(int slotIndex)
     {
         return slotIndex < maxUnlockedSlots && slotIndex < maxTotalSlots;
@@ -69,7 +71,7 @@ public class SCInventory : ScriptableObject
 
     public void UnlockAdditionalSlots(int count)
     {
-        maxUnlockedSlots = Mathf.Min(maxUnlockedSlots + count, maxTotalSlots);
+        maxUnlockedSlots = Mathf.Min(maxUnlockedSlots + count, maxTotalSlots); // sýnýr aþýlmýyor. 
 
         // Yeni açýlan slotlar için boþ slot oluþtur
         for (int i = inventorySlots.Count; i < maxUnlockedSlots; i++)

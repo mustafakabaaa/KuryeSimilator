@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using UnityEngine;
 
 public class OrderManager : MonoBehaviour
@@ -185,7 +186,20 @@ public class OrderManager : MonoBehaviour
         activeOrders.Remove(order);
         OnOrdersUpdated?.Invoke();
 
-        Debug.Log($"Sipariş tamamlandı: {order.orderName}");
+
+        // 7. Sipariş tamamlandığında CharrController'dan ödül ekle
+        CharrController charrController = GetComponent<CharrController>();
+        if (charrController != null)
+        {
+            charrController.addMoneyToPlayer(order.reward);
+            Debug.Log("CharrController bulundu!");
+        }
+        else
+        {
+            Debug.LogError("CharrController bulunamadı!");
+        }
+
+            Debug.Log($"Sipariş tamamlandı: {order.orderName}");
     }
     private void SpawnOrderItemsAtRestaurant(SCOrderData order)
     {

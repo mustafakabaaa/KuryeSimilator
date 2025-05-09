@@ -35,6 +35,10 @@ public class CharrController : MonoBehaviour
     [SerializeField] private CharacterStat jumpForceStat; // Speed Stat SO'sunu Inspector'dan bağlayın
     [SerializeField] private SleepStaminaSystem sleepStaminaSystem; // Inspector'dan bağlayın
 
+    public int playerMoneyBalance = 100;
+
+
+
     private bool isMoving = false;
     public float runningStaminaCost = 3f;
     private bool _isCameraLocked = false;
@@ -302,5 +306,14 @@ public class CharrController : MonoBehaviour
         // Karakterin altina bir Raycast gonder
         float raycastDistance = 0.2f; // Karakterin ayaklarindan ne kadar asagiya bakilacagi
         return Physics.Raycast(transform.position, Vector3.down, raycastDistance);
+    }
+
+    public void addMoneyToPlayer(int amount)
+    {
+        playerMoneyBalance += amount;
+    }
+    public void removeMoneyFromPlayer(int amount)
+    {
+        playerMoneyBalance -= amount;
     }
 }
