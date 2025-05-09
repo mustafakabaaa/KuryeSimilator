@@ -9063,16 +9063,16 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 929120389}
     - target: {fileID: 4664322994268695228, guid: b9f42de6425d7a64492e24f3f8462954, type: 3}
-      propertyPath: minimapIcon
-      value: 
-      objectReference: {fileID: 240610505}
-    - target: {fileID: 4664322994268695228, guid: b9f42de6425d7a64492e24f3f8462954, type: 3}
       propertyPath: _playerCamera
       value: 
       objectReference: {fileID: 676056220}
     - target: {fileID: 4664322994268695230, guid: b9f42de6425d7a64492e24f3f8462954, type: 3}
       propertyPath: m_Name
       value: FinalBike
+      objectReference: {fileID: 0}
+    - target: {fileID: 4664322994268695230, guid: b9f42de6425d7a64492e24f3f8462954, type: 3}
+      propertyPath: m_TagString
+      value: Untagged
       objectReference: {fileID: 0}
     - target: {fileID: 5472104034219470852, guid: b9f42de6425d7a64492e24f3f8462954, type: 3}
       propertyPath: m_LocalPosition.x

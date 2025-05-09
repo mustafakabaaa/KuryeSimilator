@@ -62,7 +62,6 @@ public class BicycleVehicle : MonoBehaviour, Iinterectable
     [SerializeField] private bool isPlayerOnBoard = false; // Player is on board or not
     public bool frontGrounded;
 	public bool rearGrounded;
-    [SerializeField] private MinimapPlayerIcon minimapIcon;
 
     // Start is called before the first frame update
     void Start()
@@ -411,7 +410,7 @@ public class BicycleVehicle : MonoBehaviour, Iinterectable
 		}
 		else
 		{
-			return "Press E to get off the bicycle";
+			return "";
 		}
     }
 
