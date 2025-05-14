@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using UnityEngine;
 
 public class SleepManager : MonoBehaviour
@@ -9,11 +9,11 @@ public class SleepManager : MonoBehaviour
     public SleepEffect sleepEffect;
     public SleepStaminaSystem sleepStaminaSystem;
 
-    [Header("Uyku Ayarları")]
-    public float sleepStartTime = 20f; // Uykuya başlanabilecek saat (örn: 20.00)
-    public float sleepDuration = 8f;   // Uyku süresi
-    public float minWakeUpTime = 6f;   // Sabah uyanabileceği minimum saat (örn: 06.00)
-    public float defaultWakeUpTime = 6f; // Gün döngüsünde kullanılacak varsayılan sabah saati
+    [Header("Uyku AyarlarÄ±")]
+    public float sleepStartTime = 20f; // Uykuya baÅŸlanabilecek saat (Ã¶rn: 20.00)
+    public float sleepDuration = 8f;   // Uyku sÃ¼resi
+    public float minWakeUpTime = 6f;   // Sabah uyanabileceÄŸi minimum saat (Ã¶rn: 06.00)
+    public float defaultWakeUpTime = 6f; // GÃ¼n dÃ¶ngÃ¼sÃ¼nde kullanÄ±lacak varsayÄ±lan sabah saati
 
     private void OnEnable()
     {
@@ -34,34 +34,32 @@ public class SleepManager : MonoBehaviour
     {
         if (!CanSleep()) return;
 
+        sleepStaminaSystem.isSleeping = true; // Uyku baÅŸlÄ±yor
         StartCoroutine(SleepRoutine());
     }
 
     private IEnumerator SleepRoutine()
     {
-        float currentTime = lightManager.GetTimeOfDay();
-
-        // Uyku efektini başlat
+        sleepStaminaSystem.isSleeping = true;
         sleepEffect?.StartSleepEffect();
-
-        // Bir süre bekle (örneğin animasyon için)
         yield return new WaitForSecondsRealtime(3f);
 
-        // Uyanma saatini hesapla
-        float newWakeTime = (currentTime + sleepDuration) % 24f;
-
-        // Saat güncellensin
+        // 1. ZamanÄ± ileri sar
+        float newWakeTime = (lightManager.GetTimeOfDay() + sleepDuration) % 24f;
         lightManager.SetTimeOfDay(newWakeTime);
 
-        // Gün değişimi gerekiyorsa işlemleri yap
-        if (currentTime + sleepDuration >= 24f)
-        {
-            EndDay();
-            StartNewDay(newWakeTime);
-        }
+        // 2. Åimdi stamina resetleniyor
+        sleepStaminaSystem.ResetStamina();
 
-        Debug.Log($"Uyandınız! Saat: {newWakeTime:00.00}");
+        // ğŸ› ï¸ Burada zamanla uyumlu hale getiriyoruz
+        sleepStaminaSystem.lastCheckedTime = newWakeTime;
+
+        // 3. Uyku bitti
+        sleepStaminaSystem.isSleeping = false;
     }
+
+
+
 
     private bool CanSleep()
     {
@@ -76,35 +74,36 @@ public class SleepManager : MonoBehaviour
 
     private void EndDay()
     {
-        // Tüm aktif NPC'leri temizle
+        // TÃ¼m aktif NPC'leri temizle
         foreach (var npc in FindObjectsOfType<MusteriNPC>())
         {
             Destroy(npc.gameObject);
         }
 
-        // Sipariş sistemini sıfırla
+        // SipariÅŸ sistemini sÄ±fÄ±rla
         orderManager.CleanupDay();
 
         if (lightManager.GetTimeOfDay() >= 23.9f || lightManager.GetTimeOfDay() < 0.1f)
         {
-            Debug.Log("Gece yarısı oldu, gün sonu işlemleri yapılıyor");
+            Debug.Log("Gece yarÄ±sÄ± oldu, gÃ¼n sonu iÅŸlemleri yapÄ±lÄ±yor");
         }
     }
 
     public void StartNewDay(float newStartTime)
     {
-        // Yeni gün başlatılırken saat ayarlanır
         lightManager.SetTimeOfDay(newStartTime);
         orderManager.StartNewDay();
-        sleepStaminaSystem.ResetStamina();
-
-        Debug.Log("Yeni gün başladı!");
+        
+        sleepStaminaSystem.isSleeping = false; // Uyku bitti
+        Debug.Log("Yeni gÃ¼n baÅŸladÄ±!");
     }
+
 
     private void HandleDayCycleCompletion()
     {
-        Debug.Log("Gece 12 oldu, otomatik gün sonu işlemleri yapılıyor!");
+        Debug.Log("Gece 12 oldu, otomatik gÃ¼n sonu iÅŸlemleri yapÄ±lÄ±yor!");
         EndDay();
-        StartNewDay(defaultWakeUpTime); // Gün döngüsü sonlandığında varsayılan uyanış saati
+        StartNewDay(lightManager.GetTimeOfDay()); 
     }
+
 }

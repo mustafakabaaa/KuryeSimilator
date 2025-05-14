@@ -35,7 +35,7 @@ public class CharrController : MonoBehaviour
     [SerializeField] private CharacterStat jumpForceStat; // Speed Stat SO'sunu Inspector'dan bağlayın
     [SerializeField] private SleepStaminaSystem sleepStaminaSystem; // Inspector'dan bağlayın
 
-    public int playerMoneyBalance = 100;
+    
 
 
 
@@ -308,12 +308,5 @@ public class CharrController : MonoBehaviour
         return Physics.Raycast(transform.position, Vector3.down, raycastDistance);
     }
 
-    public void addMoneyToPlayer(int amount)
-    {
-        playerMoneyBalance += amount;
-    }
-    public void removeMoneyFromPlayer(int amount)
-    {
-        playerMoneyBalance -= amount;
-    }
+  
 }

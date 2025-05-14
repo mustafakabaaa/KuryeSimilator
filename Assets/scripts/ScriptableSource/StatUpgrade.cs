@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "New Upgrade", menuName = "SC/Character/Upgrade")]
+[CreateAssetMenu(fileName = "New Upgrade", menuName = "SC/Stats/Upgrade")]
 public class StatUpgrade : ScriptableObject
 {
     public CharacterStat affectedStat;

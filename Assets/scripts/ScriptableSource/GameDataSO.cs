@@ -1,9 +1,12 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System;
 
 [CreateAssetMenu(fileName = "GameData", menuName = "SC/Game/Data")]
 public class GameDataSO : ScriptableObject
 {
+    public event Action<CharacterStat> OnStatUpgraded;
+
     public int upgradePoints = 0;
     public List<StatUpgrade> availableUpgrades = new List<StatUpgrade>();
 
@@ -48,6 +51,8 @@ public class GameDataSO : ScriptableObject
             upgradeCounts.Add(upgrade.affectedStat, 0);
 
         upgradeCounts[upgrade.affectedStat]++;
+        OnStatUpgraded?.Invoke(upgrade.affectedStat);
+
     }
 
     public void ResetAllUpgrades()

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 public class RestaurantManager : MonoBehaviour
@@ -24,26 +24,36 @@ public class RestaurantManager : MonoBehaviour
         Restaurant restaurant = restaurants.Find(r => r.restaurantID == restaurantID);
         if (restaurant == null) return Vector3.zero;
 
-        // Eðer tanýmlý masa pozisyonlarý varsa onlarý kullan
+        // MASA varsa â†’ MasanÄ±n Ã¼stÃ¼ne rastgele XZ offset ile
         if (restaurant.tablePositions != null && restaurant.tablePositions.Count > 0)
         {
             int tableIndex = itemIndex % restaurant.tablePositions.Count;
-            return restaurant.tablePositions[tableIndex].position;
+            Vector3 basePos = restaurant.tablePositions[tableIndex].position;
+
+            float maxOffset = 0.3f;
+            float offsetX = Random.Range(-maxOffset, maxOffset);
+            float offsetZ = Random.Range(-maxOffset, maxOffset);
+
+            return new Vector3(
+                basePos.x + offsetX,
+                basePos.y+restaurant.verticalSpacing,
+                basePos.z + offsetZ
+            );
         }
 
-        // Yoksa otomatik grid daðýlýmý yap
-        int itemsPerRow = Mathf.CeilToInt(Mathf.Sqrt(totalItems));
-        float xStep = restaurant.spawnAreaSize.x / itemsPerRow;
-        float zStep = restaurant.spawnAreaSize.y / itemsPerRow;
+        // MASA yoksa â†’ Rastgele alan iÃ§ine spawnla
+        Vector3 center = restaurant.spawnAreaCenter.position;
+        Vector2 size = restaurant.spawnAreaSize;
 
-        int row = itemIndex / itemsPerRow;
-        int col = itemIndex % itemsPerRow;
+        float randomX = Random.Range(-size.x / 2f, size.x / 2f);
+        float randomZ = Random.Range(-size.y / 2f, size.y / 2f);
 
-        return restaurant.spawnAreaCenter.position +
-               new Vector3(
-                   col * xStep - restaurant.spawnAreaSize.x / 2 + xStep / 2,
-                   row * restaurant.verticalSpacing,
-                   row * zStep - restaurant.spawnAreaSize.y / 2 + zStep / 2
-               );
+        return new Vector3(
+            center.x + randomX,
+            center.y+restaurant.verticalSpacing,
+            center.z + randomZ
+        );
     }
+
+
 }
