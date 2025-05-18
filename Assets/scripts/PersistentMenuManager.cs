@@ -43,25 +43,27 @@ public class PersistentMenuManager : MonoBehaviour
 
     private void TogglePanel(GameObject panel)
     {
-        bool newState = !panel.activeSelf;
+        // Eðer panel zaten açýksa, hiçbir þey yapma (kapatma)
+        if (panel.activeSelf)
+        {
+            return;
+        }
 
-        // Diðer panelleri kapat
-        if (newState) CloseAllPanels();
+        // Diðer tüm panelleri kapat
+        CloseAllPanels();
 
-        // Seçili paneli aç/kapat
-        panel.SetActive(newState);
+        // Yeni paneli aç
+        panel.SetActive(true);
 
         // UI Manager durumlarýný güncelle
-        if (panel == inventoryPanel) UIManager.Instance.SetInventoryState(newState);
-        else if (panel == upgradePanel) UIManager.Instance.SetUpgradeState(newState);
-        else if (panel == phonePanel) UIManager.Instance.SetPhoneUIState(newState);
+        if (panel == inventoryPanel) UIManager.Instance.SetInventoryState(true);
+        else if (panel == upgradePanel) UIManager.Instance.SetUpgradeState(true);
+        else if (panel == phonePanel) UIManager.Instance.SetPhoneUIState(true);
 
-        // Cursor kontrolü
-        Cursor.lockState = newState ? CursorLockMode.None : CursorLockMode.Locked;
-        Cursor.visible = newState;
-
-        // Menü panelini güncelle
-        persistentMenuPanel.SetActive(newState);
+        // Cursor'ý serbest býrak ve menüyü göster
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        persistentMenuPanel.SetActive(true);
     }
 
     public void CloseAllPanels()

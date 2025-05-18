@@ -25,38 +25,43 @@ public class SleepManager : MonoBehaviour
         LightManager.OnDayCycleCompleted -= HandleDayCycleCompletion;
     }
 
-    public void RequestSleep()
+    public bool RequestSleep(System.Action onSleepEnd = null)
+{
+    if (!CanSleep())
     {
-        TriggerSleep();
+            ToastManager.Instance.ShowToast("Uyuyamazsın: Saat uygun değil, siparişler tamam değil veya uykun yok.", 3f);
+        return false;
     }
 
-    private void TriggerSleep()
+    TriggerSleep(onSleepEnd);
+    return true;
+}
+
+
+    private void TriggerSleep(System.Action onSleepEnd)
     {
         if (!CanSleep()) return;
 
-        sleepStaminaSystem.isSleeping = true; // Uyku başlıyor
-        StartCoroutine(SleepRoutine());
+        sleepStaminaSystem.isSleeping = true;
+        StartCoroutine(SleepRoutine(onSleepEnd));
     }
 
-    private IEnumerator SleepRoutine()
+    private IEnumerator SleepRoutine(System.Action onSleepEnd)
     {
         sleepStaminaSystem.isSleeping = true;
         sleepEffect?.StartSleepEffect();
         yield return new WaitForSecondsRealtime(3f);
 
-        // 1. Zamanı ileri sar
         float newWakeTime = (lightManager.GetTimeOfDay() + sleepDuration) % 24f;
         lightManager.SetTimeOfDay(newWakeTime);
 
-        // 2. Şimdi stamina resetleniyor
         sleepStaminaSystem.ResetStamina();
-
-        // 🛠️ Burada zamanla uyumlu hale getiriyoruz
         sleepStaminaSystem.lastCheckedTime = newWakeTime;
-
-        // 3. Uyku bitti
         sleepStaminaSystem.isSleeping = false;
+
+        onSleepEnd?.Invoke(); // 🟢 Yatak tekrar etkileşime açılıyor
     }
+
 
 
 

@@ -97,7 +97,7 @@ public class BicycleVehicle : MonoBehaviour, Iinterectable
             UpdateHandle(); // gidonun konumu ön tekerleðe göre yapýlýr
             LayOnTurn(); // gidon eðimine göre eðilmeyi ayarlýyoruz
             DownPresureOnSpeed(); // hýz ve cisim aðýrlýðýna göre yere basma kuvveti uyguluyoruz
-            EmitTrail();
+            //EmitTrail();
 			
         }	
 	}

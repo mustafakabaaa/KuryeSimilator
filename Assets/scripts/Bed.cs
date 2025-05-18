@@ -3,10 +3,11 @@ using UnityEngine;
 public class Bed : MonoBehaviour, Iinterectable
 {
     public SleepManager sleepManager;
+    private bool isSleeping = false;
 
     public bool CanInteract()
     {
-        return true;
+        return !isSleeping;
     }
 
     public string GetInteractionText()
@@ -16,15 +17,23 @@ public class Bed : MonoBehaviour, Iinterectable
 
     public void Interact()
     {
-       
+        if (isSleeping) return;
 
-
-
-        // Uyku tetikle
         if (sleepManager != null)
         {
-            Debug.Log("Yataða yatýldý.");
-            sleepManager.RequestSleep();
+            Debug.Log("Yataða yatýlmaya çalýþýlýyor.");
+            isSleeping = true;
+
+            bool sleepStarted = sleepManager.RequestSleep(() =>
+            {
+                isSleeping = false; // Uyku bittiðinde tekrar aç
+            });
+
+            if (!sleepStarted)
+            {
+                isSleeping = false; // Uyku baþlayamadýysa tekrar aç
+            }
         }
     }
+
 }
