@@ -406,7 +406,7 @@ public class BicycleVehicle : MonoBehaviour, Iinterectable
 
 		if (isPlayerOnBoard)
 		{
-        return "Press E to ride the bicycle";
+        return "Bin (E)";
 		}
 		else
 		{

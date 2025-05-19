@@ -15,16 +15,16 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
     public Vector3 COG;
 
     [Header("Engine Settings")]
-    [SerializeField] float motorForce = 2000f; // Increased for motorcycle
-    [SerializeField] float maxSpeed = 120f; // Added speed limit
-    [SerializeField] float brakeForce = 3000f; // Increased braking force
+    [SerializeField] float motorForce = 2000f;
+    [SerializeField] float maxSpeed = 120f;
+    [SerializeField] float brakeForce = 3000f;
     float currentbrakeForce;
 
     [Header("Steering Settings")]
     float steeringAngle;
     [SerializeField] float currentSteeringAngle;
     [Range(0f, 0.1f)][SerializeField] float speedSteerControlTime = 0.05f;
-    [SerializeField] float maxSteeringAngle = 25f; // Reduced for motorcycle
+    [SerializeField] float maxSteeringAngle = 25f;
     [Range(0.000001f, 1)][SerializeField] float turnSmoothing = 0.1f;
 
     [Header("Leaning Settings")]
@@ -32,7 +32,7 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
     public float targetLeaningAngle;
     [Range(-40, 40)] public float leaningAmount;
     [Range(0.000001f, 1)][SerializeField] float leanSmoothing = 0.05f;
-    [SerializeField] float leanAtSpeedFactor = 0.5f; // How much speed affects leaning
+    [SerializeField] float leanAtSpeedFactor = 0.5f;
 
     [Header("Wheels Collider")]
     [SerializeField] WheelCollider frontWheel;
@@ -52,83 +52,103 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
     [SerializeField] private float coastingDrag = 0.5f;
     [SerializeField] private float normalDrag = 0.1f;
     [SerializeField] private float minSpeedThreshold = 0.5f;
-    [SerializeField] private float autoBrakeForce = 100f; // Increased for motorcycle
+    [SerializeField] private float autoBrakeForce = 100f;
 
     private bool isPlayerOnBoard = false;
     public bool frontGrounded;
     public bool rearGrounded;
 
-    // Motorcycle-specific variables
-    [SerializeField]
-    private float currentSpeed;
+    [Header("Motor Sound")]
+    [SerializeField] private AudioSource engineAudioSource;
+    [SerializeField] private float minPitch = 0.8f;
+    [SerializeField] private float maxPitch = 2.0f;
+
+    [SerializeField] private float currentSpeed;
     private float engineRPM;
     [SerializeField] private float maxRPM = 8000f;
     [SerializeField] private float idleRPM = 1000f;
-    [SerializeField] private AnimationCurve torqueCurve; // Torque curve based on RPM
+    [SerializeField] private AnimationCurve torqueCurve;
+    // MotorcycleVehicle sýnýfýna bu property'leri ekleyin
+    public float EngineRPM => engineRPM;
+    public bool IsEngineRunning => isPlayerOnBoard;
 
     void Start()
-    {  // WheelCollider'ýn yerleþik sürtünme ayarlarýný kullan
+    {
         WheelStartSettings();
 
         rb = GetComponent<Rigidbody>();
         rb.centerOfMass = COG;
+
+        if (engineAudioSource != null)
+        {
+            engineAudioSource.loop = true;
+            engineAudioSource.playOnAwake = true;
+            engineAudioSource.Play();
+        }
     }
 
     private void WheelStartSettings()
     {
-        WheelFrictionCurve forwardFriction = new WheelFrictionCurve();
-        forwardFriction.extremumSlip = 0.4f;
-        forwardFriction.extremumValue = 1.2f;
-        forwardFriction.asymptoteSlip = 0.8f;
-        forwardFriction.asymptoteValue = 0.6f;
-        forwardFriction.stiffness = 1.4f; // Ana sürtünme çarpaný
+        WheelFrictionCurve forwardFriction = new WheelFrictionCurve
+        {
+            extremumSlip = 0.4f,
+            extremumValue = 1.2f,
+            asymptoteSlip = 0.8f,
+            asymptoteValue = 0.6f,
+            stiffness = 1.4f
+        };
 
-        WheelFrictionCurve sidewaysFriction = new WheelFrictionCurve();
-        sidewaysFriction.extremumSlip = 0.2f;
-        sidewaysFriction.extremumValue = 1.0f;
-        sidewaysFriction.asymptoteSlip = 0.5f;
-        sidewaysFriction.asymptoteValue = 0.5f;
-        sidewaysFriction.stiffness = 1.4f;
+        WheelFrictionCurve sidewaysFriction = new WheelFrictionCurve
+        {
+            extremumSlip = 0.2f,
+            extremumValue = 1.0f,
+            asymptoteSlip = 0.5f,
+            asymptoteValue = 0.5f,
+            stiffness = 1.4f
+        };
 
-        // Tekerleklere uygula
         frontWheel.forwardFriction = forwardFriction;
         frontWheel.sidewaysFriction = sidewaysFriction;
-
         backWheel.forwardFriction = forwardFriction;
         backWheel.sidewaysFriction = sidewaysFriction;
     }
 
     void Update()
     {
-
-        Debug.Log("COG World Position: " + transform.TransformPoint(COG));
-
-        isPlayerWannaExitBicycle(); // Orijinal bisiklet kodundaki isimle çaðýr
+        isPlayerWannaExitBicycle();
         currentSpeed = rb.velocity.magnitude * 3.6f;
+
+        
     }
+
+    private void UpdateEngineSound()
+    {
+        if (engineAudioSource != null)
+        {
+            float rpmPercent = Mathf.InverseLerp(idleRPM, maxRPM, engineRPM);
+            engineAudioSource.pitch = Mathf.Lerp(minPitch, maxPitch, rpmPercent);
+        }
+    }
+
     void OnDrawGizmos()
     {
-        // COG noktasýný kýrmýzý küre ile iþaretle
         Gizmos.color = Color.red;
         Vector3 worldCOG = transform.TransformPoint(COG);
         Gizmos.DrawSphere(worldCOG, 0.1f);
 
-        // Motorun merkezinden COG'ye çizgi çek
         Gizmos.color = Color.cyan;
         Gizmos.DrawLine(transform.position, worldCOG);
 
-        // Koordinat eksenlerini çiz (X: Kýrmýzý, Y: Yeþil, Z: Mavi)
         Gizmos.color = Color.red;
-        Gizmos.DrawLine(worldCOG, worldCOG + transform.right * 0.5f); // X ekseni
+        Gizmos.DrawLine(worldCOG, worldCOG + transform.right * 0.5f);
         Gizmos.color = Color.green;
-        Gizmos.DrawLine(worldCOG, worldCOG + transform.up * 0.5f); // Y ekseni
+        Gizmos.DrawLine(worldCOG, worldCOG + transform.up * 0.5f);
         Gizmos.color = Color.blue;
-        Gizmos.DrawLine(worldCOG, worldCOG + transform.forward * 0.5f); // Z ekseni
+        Gizmos.DrawLine(worldCOG, worldCOG + transform.forward * 0.5f);
     }
-    
+
     void FixedUpdate()
     {
-        // Mevcut FixedUpdate kodlarýnýzýn üstüne veya uygun bir yerine ekleyin
         WheelHit hit;
         bool isGrounded = frontWheel.GetGroundHit(out hit) || backWheel.GetGroundHit(out hit);
 
@@ -138,7 +158,6 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
             UpdateWheels();
             MaintainBalance();
 
-            // Havada kaldýysa ekstra downforce uygula
             if (!isGrounded)
             {
                 rb.AddForce(Vector3.down * 1500f, ForceMode.Force);
@@ -147,19 +166,18 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
         }
         else
         {
-            // Tekerlekler yerden kesilirse gücü kes
             if (!isGrounded)
             {
                 backWheel.motorTorque = 0f;
                 frontWheel.brakeTorque = 3000f;
-                rb.AddForce(Vector3.down * 2000f, ForceMode.Force); // Daha agresif downforce
+                rb.AddForce(Vector3.down * 2000f, ForceMode.Force);
             }
             else
             {
                 GetInput();
                 HandleEngine();
                 HandleSteering();
-                ReleaseBraking(); // Yere temas varsa freni serbest býrak
+                ReleaseBraking();
             }
 
             UpdateWheels();
@@ -167,9 +185,9 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
             LeanOnTurn();
             ApplyDownforce();
         }
-      
+        UpdateEngineSound(); // <-- Her frame motor sesi güncelleniyor
     }
-   
+
     private void isPlayerWannaExitBicycle()
     {
         if (isPlayerOnBoard && Input.GetKeyDown(KeyCode.E))
@@ -179,12 +197,14 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
             playerStatue();
         }
     }
+
     public void GetInput()
     {
         horizontalInput = Input.GetAxis("Horizontal");
         verticalInput = Input.GetAxis("Vertical");
         braking = Input.GetKey(KeyCode.Space);
     }
+
     private void CoastToStop()
     {
         backWheel.motorTorque = 0f;
@@ -208,22 +228,18 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
             rb.drag = 0f;
         }
     }
+
     public void HandleEngine()
     {
-        // Calculate RPM based on speed and gear ratio (simplified)
         engineRPM = Mathf.Lerp(idleRPM, maxRPM, currentSpeed / maxSpeed);
-
-        // Get torque from curve based on RPM
         float availableTorque = torqueCurve.Evaluate(engineRPM / maxRPM) * motorForce;
 
         if (Mathf.Abs(verticalInput) > 0.1f)
         {
-            // Apply torque with RPM consideration
             backWheel.motorTorque = verticalInput * availableTorque;
             rb.drag = normalDrag;
             ReleaseBraking();
 
-            // Limit max speed
             if (currentSpeed > maxSpeed)
             {
                 backWheel.motorTorque = 0;
@@ -253,7 +269,7 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
     private void ApplyAutoBrake()
     {
         backWheel.brakeTorque = autoBrakeForce;
-        frontWheel.brakeTorque = autoBrakeForce * 0.7f; // More brake on rear for motorcycle
+        frontWheel.brakeTorque = autoBrakeForce * 0.7f;
     }
 
     private void ApplyFullBrake()
@@ -264,7 +280,6 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
 
     public void ApplyBraking()
     {
-        // More braking power on front wheel (70/30 distribution)
         frontWheel.brakeTorque = brakeForce * 0.7f;
         backWheel.brakeTorque = brakeForce * 0.3f;
     }
@@ -279,19 +294,15 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
     {
         SpeedSteeringReductor();
 
-        // Duruþ anýnda steeringAngle = 0 olmalý (input == 0)
-        if (Mathf.Abs(horizontalInput) < 0.01f) // Giriþ yoksa
+        if (Mathf.Abs(horizontalInput) < 0.01f)
         {
-            currentSteeringAngle = Mathf.Lerp(currentSteeringAngle, 0f, turnSmoothing * 2f); // Hýzlýca sýfýrla
+            currentSteeringAngle = Mathf.Lerp(currentSteeringAngle, 0f, turnSmoothing * 2f);
         }
         else
         {
-            // Normal direksiyon kontrolü
-            currentSteeringAngle = Mathf.Lerp(
-                currentSteeringAngle,
+            currentSteeringAngle = Mathf.Lerp(currentSteeringAngle,
                 maxSteeringAngle * horizontalInput,
-                turnSmoothing * Time.fixedDeltaTime * 50f
-            );
+                turnSmoothing * Time.fixedDeltaTime * 50f);
         }
 
         frontWheel.steerAngle = currentSteeringAngle;
@@ -301,25 +312,15 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
     public void SpeedSteeringReductor()
     {
         if (currentSpeed < 20f)
-        {
             maxSteeringAngle = Mathf.Lerp(maxSteeringAngle, 25f, speedSteerControlTime);
-        }
         else if (currentSpeed < 40f)
-        {
             maxSteeringAngle = Mathf.Lerp(maxSteeringAngle, 20f, speedSteerControlTime);
-        }
         else if (currentSpeed < 60f)
-        {
             maxSteeringAngle = Mathf.Lerp(maxSteeringAngle, 15f, speedSteerControlTime);
-        }
         else if (currentSpeed < 80f)
-        {
             maxSteeringAngle = Mathf.Lerp(maxSteeringAngle, 10f, speedSteerControlTime);
-        }
         else
-        {
             maxSteeringAngle = Mathf.Lerp(maxSteeringAngle, 5f, speedSteerControlTime);
-        }
     }
 
     private void LeanOnTurn()
@@ -333,24 +334,17 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
             return;
         }
 
-        // More natural leaning for motorcycle
         if (Mathf.Abs(currentSteeringAngle) < 0.5f)
         {
-            // Gradually return to upright position
             leaningAmount = Mathf.LerpAngle(leaningAmount, 0f, leanSmoothing * 0.5f);
         }
         else
         {
-            // Lean into the turn
-            leaningAmount = Mathf.LerpAngle(leaningAmount,
-                                          targetLeaningAngle,
-                                          leanSmoothing * Time.fixedDeltaTime * 50f);
+            leaningAmount = Mathf.LerpAngle(leaningAmount, targetLeaningAngle, leanSmoothing * Time.fixedDeltaTime * 50f);
         }
 
-        // Apply the leaning rotation
         transform.rotation = Quaternion.Euler(currentRot.x, currentRot.y, leaningAmount);
 
-        // Small counter-steering effect at high speeds
         if (currentSpeed > 50f)
         {
             rb.AddTorque(transform.up * -horizontalInput * currentSpeed * 0.1f);
@@ -359,7 +353,6 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
 
     private void MaintainBalance()
     {
-        // Motorcycle should stay upright when not ridden
         if (!frontGrounded || !rearGrounded) return;
 
         Vector3 currentRot = transform.rotation.eulerAngles;
@@ -369,7 +362,6 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
 
     private void ApplyDownforce()
     {
-        // More downforce at higher speeds for motorcycle
         if (currentSpeed > 30f)
         {
             float downforceAmount = Mathf.Pow(currentSpeed / 100f, 2) * 100f;
@@ -381,8 +373,6 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
     {
         UpdateSingleWheel(frontWheel, frontWheelTransform);
         UpdateSingleWheel(backWheel, backWheelTransform);
-
-        // Check if wheels are grounded
         frontGrounded = frontWheel.isGrounded;
         rearGrounded = backWheel.isGrounded;
     }
@@ -391,7 +381,7 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
     {
         handle.localRotation = Quaternion.Euler(
             handle.localRotation.eulerAngles.x,
-            currentSteeringAngle * 1.5f, // Handle turns more than wheel
+            currentSteeringAngle * 1.5f,
             handle.localRotation.eulerAngles.z
         );
     }
@@ -404,6 +394,7 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
         wheelTransform.rotation = rot;
         wheelTransform.position = pos;
     }
+
     private void changeCamera()
     {
         if (isPlayerOnBoard)
@@ -411,12 +402,18 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
             _vehicleCamera.SetActive(true);
             _playerCamera.SetActive(false);
             playerStatue();
+            // Minimap motoru takip etsin
+            MinimapTargetManager.Instance.SetTarget(transform); // bisiklet
+            FindObjectOfType<MinimapPlayerIcon>().SetTarget(this.transform);
         }
         else
         {
             _vehicleCamera.SetActive(false);
             _playerCamera.SetActive(true);
             playerStatue();
+            // Minimap tekrar oyuncuyu takip etsin
+            MinimapTargetManager.Instance.SetTarget(_player.transform); // oyuncu
+            FindObjectOfType<MinimapPlayerIcon>().SetTarget(_player.transform);
         }
     }
 
@@ -456,5 +453,4 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
     {
         return true;
     }
-
 }
