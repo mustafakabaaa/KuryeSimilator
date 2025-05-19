@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class BicycleVehicle : MonoBehaviour, Iinterectable
@@ -62,7 +63,8 @@ public class BicycleVehicle : MonoBehaviour, Iinterectable
     [SerializeField] private bool isPlayerOnBoard = false; // Player is on board or not
     public bool frontGrounded;
 	public bool rearGrounded;
-
+    [Header("UI References")]
+    [SerializeField] private TextMeshProUGUI interactText; // Inspector'dan baðlayýn
     // Start is called before the first frame update
     void Start()
 	{
@@ -399,23 +401,22 @@ public class BicycleVehicle : MonoBehaviour, Iinterectable
     {
         isPlayerOnBoard = !isPlayerOnBoard; // Toggle the player's presence on the bicycle
 		changeCamera();
+        // Motora binildiðinde UI metnini gizle
+        if (interactText != null)
+        {
+            interactText.gameObject.SetActive(false);
+        }
     }
 
     public string GetInteractionText()
     {
 
-		if (isPlayerOnBoard)
-		{
-        return "Bin (E)";
-		}
-		else
-		{
-			return "";
-		}
+		return "Bin (E)";
+		
     }
 
     public bool CanInteract()
     {
-		return true;
+		return !isPlayerOnBoard;
     }
 }

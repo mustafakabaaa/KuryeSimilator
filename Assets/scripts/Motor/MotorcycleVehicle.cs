@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -71,7 +72,8 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
     // MotorcycleVehicle sýnýfýna bu property'leri ekleyin
     public float EngineRPM => engineRPM;
     public bool IsEngineRunning => isPlayerOnBoard;
-
+    [Header("UI References")]
+    [SerializeField] private TextMeshProUGUI interactText; // Inspector'dan baðlayýn
     void Start()
     {
         WheelStartSettings();
@@ -442,11 +444,20 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
     {
         isPlayerOnBoard = !isPlayerOnBoard;
         changeCamera();
+
+        // Motora binildiðinde UI metnini gizle
+        if (interactText != null)
+        {
+            interactText.gameObject.SetActive(false);
+        }
     }
 
     public string GetInteractionText()
     {
-        return "Bin (E)";
+      
+        
+            return "Bin (E)"; // Binme metni göster
+        
     }
 
     public bool CanInteract()
