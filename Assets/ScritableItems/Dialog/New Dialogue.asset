@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: New Dialogue
   m_EditorClassIdentifier: 
   nodes:
-  - npcText: NE istersiniz
+  - npcText: Siparisiniz
     playerOptions:
     - text: Kahve
       nextNodeIndex: 1

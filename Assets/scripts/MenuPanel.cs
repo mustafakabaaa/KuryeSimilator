@@ -50,6 +50,9 @@ public class MenuPanel : MonoBehaviour
         menuPanel.SetActive(true);
         UIManager.Instance.SetMenuState(true);
         Time.timeScale = 0f; // Oyunu duraklat
+                             // Tüm sesleri durdur
+
+        AudioListener.pause = true;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
     }
@@ -58,6 +61,9 @@ public class MenuPanel : MonoBehaviour
     {
         menuPanel.SetActive(false);
         UIManager.Instance.SetMenuState(false);
+        // Tüm sesleri yeniden baþlat
+        AudioListener.pause = false;
+
         Time.timeScale = 1f;
 
         StartCoroutine(ForceHideCursor());

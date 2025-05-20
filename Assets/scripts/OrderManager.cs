@@ -188,7 +188,7 @@ public class OrderManager : MonoBehaviour
 
 
         // 7. Sipariş tamamlandığında CharrController'dan ödül ekle
-       
+        WalletManager.Instance.AddMoney(order.reward);
 
             Debug.Log($"Sipariş tamamlandı: {order.orderName}");
     }
