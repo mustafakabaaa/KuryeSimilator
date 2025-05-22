@@ -19,7 +19,7 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
     private bool isRotating = false; // NPC dönüyor mu?
     private float nextCheckTime;
     private float checkInterval = 0.3f;
-    
+
     private void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player").transform;
@@ -36,7 +36,7 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
     {
         isTalking = textSee;
     }
-   
+
     private void Update()
     {
         if (orderCompleted && Time.time >= nextCheckTime)
@@ -46,7 +46,7 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
         }
     }
 
-    // IInteractable arayüzü
+    // MusteriNPC.cs'de Interact metodunu güncelle
     public void Interact()
     {
         if (assignedOrder == null || orderCompleted) return;
@@ -68,15 +68,22 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
             SayMissingItems(missingItems);
             return;
         }
-        // Dönme işlemini başlat
+
         if (!isRotating)
         {
             StartCoroutine(LookAtPlayerSmoothly());
         }
-        isTalking = true; // ← EKLE
+        isTalking = true;
 
         DialogueManager.Instance.SetCurrentOrderID(assignedOrder.orderID);
-        DialogueUI.Instance.StartDialogue(assignedOrder.dialogueData, npcName,this.transform);
+
+        // JSON veya ScriptableObject kontrolü
+        if (assignedOrder.dialogueJson != null)
+        {
+            DialogueGraph jsonGraph = JSONDialogueLoader.ConvertJSONToDialogueGraph(assignedOrder.dialogueJson);
+            DialogueUI.Instance.StartDialogue(jsonGraph, npcName, this.transform);
+        }
+        
     }
 
     public void SayMissingItems(List<string> missingItems)
@@ -171,4 +178,23 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
         return !orderCompleted && !isTalking;
 
     }
+    public void ResetTalkingState()
+    {
+        isTalking = false;
+    }
+    private void OnEnable()
+    {
+        DialogueUI.OnDialogueEnded += HandleDialogueEnded;
+    }
+
+    private void OnDisable()
+    {
+        DialogueUI.OnDialogueEnded -= HandleDialogueEnded;
+    }
+
+    private void HandleDialogueEnded()
+    {
+        isTalking = false;
+    }
+
 }

@@ -1,4 +1,3 @@
-// DialogueGraph.cs
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "New Dialogue", menuName = "SC/NPC/Dialogue Graph")]

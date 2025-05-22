@@ -1,8 +1,7 @@
-// DialogueOption.cs
 [System.Serializable]
 public class DialogueOption
 {
-    public string text; // "Kahve lütfen"
-    public int nextNodeIndex; // Hangi node'a geçilecek?
-    public int tipEffect; // +3, -1 gibi bahþiþ etkisi
+    public string text; // Oyuncu seçeneði metni
+    public int nextNodeIndex; // Sonraki node indeksi, -1 ise diyalog bitiþi
+    public int tipEffect; // Bahþiþ etkisi (kullanabilirsin)
 }

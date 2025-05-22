@@ -1,4 +1,4 @@
-using UnityEngine;
+Ôªøusing UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.Collections;
@@ -7,14 +7,17 @@ public class DialogueUI : MonoBehaviour
 {
     public static DialogueUI Instance;
 
-    [Header("UI Referanslar˝")]
+    [Header("UI Referanslarƒ±")]
     [SerializeField] private GameObject panel;
     [SerializeField] private TextMeshProUGUI npcNameText;
     [SerializeField] private TextMeshProUGUI npcDialogueText;
     [SerializeField] private Transform optionsParent;
     [SerializeField] private GameObject optionButtonPrefab;
-     
-    MusteriNPC musteriNPC= new MusteriNPC();
+    private MusteriNPC currentNPC;
+
+    MusteriNPC musteriNPC = new MusteriNPC();
+    public delegate void DialogueEndedDelegate();
+    public static event DialogueEndedDelegate OnDialogueEnded;
     private void Awake()
     {
         if (Instance == null)
@@ -27,29 +30,33 @@ public class DialogueUI : MonoBehaviour
     }
     public void StartDialogue(DialogueGraph dialogue, string npcName, Transform npcTransform)
     {
-        UIManager.Instance.SetDialogueState(true); // Durumu g¸ncelle
-        
-        UIManager.Instance.CloseAllOpenPanels(); // Dier UI'lar˝ kapat
+        UIManager.Instance.SetDialogueState(true);
+        UIManager.Instance.CloseAllOpenPanels();
         SetCursorState(true);
+
         CharrController playerController = FindObjectOfType<CharrController>();
         if (playerController != null && npcTransform != null)
         {
             playerController.LockCamera(true);
             playerController.LookAtTarget(npcTransform);
         }
+
+        currentNPC = npcTransform.GetComponent<MusteriNPC>();
+        if (currentNPC != null)
+        {
+            currentNPC.SetUITextBool(true);
+        }
+
         if (dialogue == null)
         {
             Debug.LogError("DialogueGraph is null!", this);
             return;
         }
-        
-        // ÷NCE DialogueManager'a diyalogu ata
-        DialogueManager.Instance.SetCurrentDialogue(dialogue);
 
+        DialogueManager.Instance.SetCurrentDialogue(dialogue);
         npcNameText.text = npcName;
         panel.SetActive(true);
 
-        // startNodeIndex kontrol¸ ekle
         if (dialogue.startNodeIndex < 0 || dialogue.startNodeIndex >= dialogue.nodes.Length)
         {
             Debug.LogError($"Invalid startNodeIndex: {dialogue.startNodeIndex}");
@@ -57,29 +64,36 @@ public class DialogueUI : MonoBehaviour
         }
 
         ShowNode(dialogue.nodes[dialogue.startNodeIndex]);
-        musteriNPC.SetUITextBool(false);
     }
+
     public void CloseDialogue()
-    {  // Kamera kilidini kald˝r
+    {  // Kamera kilidini kaldƒ±r
         CharrController playerController = FindObjectOfType<CharrController>();
         if (playerController != null)
         {
             playerController.LockCamera(false);
         }
+        if (currentNPC != null)
+        {
+            currentNPC.SetUITextBool(false);
+            currentNPC = null;
+        }
 
-        // 1. ÷nce paneli kapat
+        // 1. √ñnce paneli kapat
         panel.SetActive(false);
 
-        // 2. UI durumunu g¸ncelle
+        // 2. UI durumunu g√ºncelle
         UIManager.Instance.SetDialogueState(false);
 
-        // 3. ›mleÁ kontrol¸ (Debug ekleyerek test edin)
+        // 3. ƒ∞mle√ß kontrol√º (Debug ekleyerek test edin)
         Debug.Log("Closing dialogue - Setting cursor: visible=false, locked");
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
 
-        // 4. Input sistemini resetle (EventSystem Áak˝˛malar˝ iÁin)
+        // 4. Input sistemini resetle (EventSystem √ßakƒ±≈ümalarƒ± i√ßin)
         UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
+
+        OnDialogueEnded?.Invoke();
     }
     private void SetCursorState(bool visible)
     {
@@ -90,11 +104,18 @@ public class DialogueUI : MonoBehaviour
     {
         npcDialogueText.text = node.npcText;
 
-        // ÷nceki seÁenekleri temizle
+        // √ñnceki se√ßenekleri temizle
         foreach (Transform child in optionsParent)
             Destroy(child.gameObject);
 
-        // Yeni seÁenekleri olu˛tur
+        if (node.playerOptions == null || node.playerOptions.Length == 0)
+        {
+            // Se√ßenek yoksa 2 saniye bekleyip diyalogu kapat
+            StartCoroutine(AutoCloseDialogue(1));
+            return;
+        }
+
+        // Yeni se√ßenekleri olu≈ütur
         foreach (var option in node.playerOptions)
         {
             GameObject button = Instantiate(optionButtonPrefab, optionsParent);
@@ -102,17 +123,28 @@ public class DialogueUI : MonoBehaviour
             button.GetComponent<Button>().onClick.AddListener(() => SelectOption(option.nextNodeIndex));
         }
     }
+
+    IEnumerator AutoCloseDialogue(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null); // ‚Üê Buraya da eklenebilir
+
+        DialogueUI.Instance.CloseDialogue();
+    }
+
+
     public void ShowSimpleMessage(string message)
     {
         UIManager.Instance.SetDialogueState(true);
 
-        // Paneli aÁ
+        // Paneli a√ß
         panel.SetActive(true);
 
-        // Mesaj˝ gˆster
+        // Mesajƒ± g√∂ster
         npcDialogueText.text = message;
 
-        // SeÁenekleri temizle
+        // Se√ßenekleri temizle
         foreach (Transform child in optionsParent)
             Destroy(child.gameObject);
 
@@ -132,17 +164,24 @@ public class DialogueUI : MonoBehaviour
     {
         if (nextNodeIndex == -1)
         {
-            // Diyalog tamamland˝˝nda sipari˛i teslim et
+            // 1. Sƒ∞PARƒ∞≈û TAMAMLA (NPC kalƒ±r)
             string completedOrderID = DialogueManager.Instance.GetCurrentOrderID();
             if (!string.IsNullOrEmpty(completedOrderID))
             {
-                OrderManager.Instance.CompleteOrder(completedOrderID);
+                OrderManager.Instance.CompleteOrder(completedOrderID); // Sipari≈ü tamamlandƒ±
             }
             CloseDialogue();
         }
+        else if (nextNodeIndex == -2)
+        {
+            // 2. Sƒ∞PARƒ∞≈ûƒ∞ TAMAMLAMA (NPC kalƒ±r, sadece diyalog kapanƒ±r)
+            CloseDialogue(); // Sipari≈ü tamamlanmaz, NPC yok edilmez
+        }
         else
         {
+            // 3. Normal diyalog akƒ±≈üƒ±
             ShowNode(DialogueManager.Instance.GetNode(nextNodeIndex));
         }
     }
+
 }

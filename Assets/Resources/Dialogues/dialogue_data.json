@@ -1,0 +1,41 @@
+{
+    "startNodeId": "node1",
+    "nodes": [
+        {
+            "nodeId": "node1",
+            "npcText": "Merhaba, siparişimi getirdiniz mi?",
+            "options": [
+                {
+                    "text": "Evet, işte burada",
+                    "nextNodeId": "node2",
+                    "tipEffect": 10
+                },
+                {
+                    "text": "Hayır, henüz değil",
+                    "nextNodeId": "node3",
+                    "tipEffect": 0
+                }
+            ]
+        },
+        {
+            "nodeId": "node2",
+            "npcText": "Harika! Teşekkür ederim.",
+            "options": [
+                {
+                    "text": "Rica ederim",
+                    "nextNodeId": "-1",
+                    "tipEffect": 5
+                }
+            ]
+        },
+        {
+            "nodeId": "node3",
+            "npcText": "Tamam, bekliyorum...",
+            "options": [{
+                    "text": "güle güle",
+                    "nextNodeId": "-2",
+                    "tipEffect": 0
+                }]
+        }
+    ]
+}

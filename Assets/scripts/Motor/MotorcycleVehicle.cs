@@ -214,7 +214,11 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
     {
         horizontalInput = Input.GetAxis("Horizontal");
         verticalInput = Input.GetAxis("Vertical");
-        braking = Input.GetKey(KeyCode.Space);
+        braking = Input.GetKeyDown(KeyCode.Space);
+        if (braking && verticalInput > 0.1f)
+        {
+            verticalInput = 0f; // Motor torkunu sýfýrla
+        }
     }
 
     private void CoastToStop()
@@ -246,39 +250,43 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
         currentSpeed = rb.velocity.magnitude * 3.6f;
         engineRPM = Mathf.Lerp(idleRPM, maxRPM, currentSpeed / maxSpeed);
 
-        float forwardDot = Vector3.Dot(rb.velocity.normalized, transform.forward);
+        // 1. ÖNCE FREN KONTROLÜ (SPACE TUÞU) - EN YÜKSEK ÖNCELÝK
+        if (braking)
+        {
+            backWheel.motorTorque = 0f; // Motor gücünü tamamen kes
+            ApplyBraking(); // Frenleri uygula
 
+            // Eðer durduysak tekerlekleri kilitle
+            if (currentSpeed < 0.5f)
+            {
+                rb.velocity = Vector3.zero;
+                engineRPM = idleRPM;
+            }
+            return; // Diðer kontrollere geçme
+        }
+
+        // 2. GERÝ GÝTME (S TUÞU)
         if (verticalInput < -0.1f)
         {
-            float speed = rb.velocity.magnitude * 3.6f; // m/s to km/h
-            bool isMovingForward = forwardDot > 0.1f;
+            float speed = rb.velocity.magnitude * 3.6f;
+            bool isMovingForward = Vector3.Dot(rb.velocity.normalized, transform.forward) > 0.1f;
 
-            if (isMovingForward)
+            // Eðer ileri hareket varsa, önce tamamen dur
+            if (isMovingForward && speed > 1f)
             {
-                if (speed > 15f)
-                {
-                    backWheel.motorTorque = 0f;
-                    ApplyFullBrake();
-                    return;
-                }
-                else
-                {
-                    float reverseTorque = verticalInput * motorForce * 0.3f;
-                    backWheel.motorTorque = reverseTorque;
-                    rb.drag = normalDrag;
-                    ReleaseBraking();
-                    return;
-                }
+                backWheel.motorTorque = 0f;
+                ApplyAutoBrake();
+                return;
             }
 
-            // Eðer zaten ileri gitmiyorsak ve geri gidiyorsak, hýz sýnýrýna bak
+            // Geri gitme kuvveti (sýnýrlý)
             if (speed < maxReverseSpeed)
             {
-                backWheel.motorTorque = verticalInput * motorForce * 0.1f;
+                backWheel.motorTorque = verticalInput * motorForce * 0.3f; // Yavaþ geri git
             }
             else
             {
-                backWheel.motorTorque = 0f;
+                backWheel.motorTorque = 0f; // Max hýza ulaþtýysa kes
             }
 
             rb.drag = normalDrag;
@@ -286,9 +294,7 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
             return;
         }
 
-
-
-        // --- Ýleri gitme isteði (W tuþu) ---
+        // 3. ÝLERÝ GÝTME (W TUÞU)
         if (verticalInput > 0.1f)
         {
             float availableTorque = torqueCurve.Evaluate(engineRPM / maxRPM) * motorForce;
@@ -299,13 +305,14 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
             }
             else
             {
-                backWheel.motorTorque = 0f;
+                backWheel.motorTorque = 0f; // Max hýzda gücü kes
             }
 
             rb.drag = normalDrag;
             ReleaseBraking();
         }
-        else // Gaz verilmiyor (yavaþlama)
+        // 4. HÝÇBÝR TUÞA BASILMIYORSA (YAVAÞLAMA)
+        else
         {
             backWheel.motorTorque = 0f;
 
@@ -318,17 +325,9 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
             {
                 rb.velocity = Vector3.zero;
                 engineRPM = idleRPM;
-                ApplyFullBrake();
             }
         }
-
-        // --- Manuel fren (Space tuþu) ---
-        if (braking)
-        {
-            ApplyBraking();
-        }
     }
-
     private void ApplyAutoBrake()
     {
         backWheel.brakeTorque = autoBrakeForce;

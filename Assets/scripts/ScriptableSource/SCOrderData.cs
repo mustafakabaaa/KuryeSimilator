@@ -3,7 +3,8 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "NewOrder", menuName = "SC/Orders/OrderData")]
 public class SCOrderData : ScriptableObject
 {
-    public DialogueGraph dialogueData;
+    
+    public TextAsset dialogueJson; // Yeni JSON sistemi
 
     public string orderID; // Sipariþin benzersiz kimliði
     public string orderName; // Sipariþ adý

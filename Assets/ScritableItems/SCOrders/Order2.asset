@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5ab70881e5600840970bc26a94c3e73, type: 3}
   m_Name: Order2
   m_EditorClassIdentifier: 
-  dialogueData: {fileID: 11400000, guid: 7279c3dbbdf615443a3dab82872d20bb, type: 2}
+  dialogueJson: {fileID: 4900000, guid: bd4e8e79e3c2c5e4f9e3987deec812ab, type: 3}
   orderID: 2
   orderName: hasan
   description: asfasfaf
   requiredItems:
   - {fileID: 11400000, guid: 4034b4dca03e1a54a8c7aa804d10bbcc, type: 2}
   deliveryAddress: "\u0131s"
-  deliveryPosition: {x: 24, y: 2, z: -24}
+  deliveryPosition: {x: 24, y: 0.2750212, z: -24}
   reward: 122
   restaurantID: 1
