@@ -78,6 +78,11 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
 
     [Header("Reverse Settings")]
     [SerializeField] private float maxReverseSpeed = 10f; // Geri gitme maksimum hýzý (km/h)
+
+    // MotorcycleVehicle scriptinin en üstüne (diðer deðiþkenlerin yanýna) ekleyin:
+    
+    public float CurrentSpeed { get { return currentSpeed; } }
+    public bool IsPlayerOnBoard { get { return isPlayerOnBoard; } }
     void Start()
     {
         WheelStartSettings();

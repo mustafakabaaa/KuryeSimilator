@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   dialogueJson: {fileID: 4900000, guid: eabb00ca031246448b2f21a11540ef92, type: 3}
   orderID: 1
-  orderName: deneme
+  orderName: Ayse
   description: asfasfas
   requiredItems:
   - {fileID: 11400000, guid: 4034b4dca03e1a54a8c7aa804d10bbcc, type: 2}
   deliveryAddress: ev
-  deliveryPosition: {x: -0.843143, y: 0.19760734, z: 1.826097}
+  deliveryPosition: {x: 0.17720914, y: 0.19760734, z: 1.2129118}
   reward: 10
   restaurantID: 1

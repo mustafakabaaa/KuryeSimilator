@@ -7,6 +7,7 @@ public class DynamicHUDManager : MonoBehaviour
 
     [SerializeField] private GameObject minimap;
     [SerializeField] private GameObject staminaBar;
+    [SerializeField] private GameObject walletAndClock;
 
     private void OnEnable()
     {
@@ -30,6 +31,7 @@ public class DynamicHUDManager : MonoBehaviour
         bool anyUIOpen = UIManager.Instance.IsAnyUIOpen();
         minimap.SetActive(!anyUIOpen);
         staminaBar.SetActive(!anyUIOpen);
+        walletAndClock.SetActive(!anyUIOpen);
 
     }
 }
