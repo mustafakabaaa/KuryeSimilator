@@ -134,7 +134,7 @@ public class InventoryUIController : MonoBehaviour
 
     public void UpdateUI(SCInventory inventory)
     {
-        Debug.Log($"UI Güncelleniyor. Açık slot sayısı: {inventory.maxUnlockedSlots}");
+        //Debug.Log($"UI Güncelleniyor. Açık slot sayısı: {inventory.maxUnlockedSlots}");
 
         for (int i = 0; i < uiList.Count; i++)
         {

@@ -103,7 +103,7 @@ public class NPCController : MonoBehaviour, IAttackable
     public void ResetHealth()
     {
         health = maxHealth; // Caný yenile
-        Debug.Log("NPC'nin caný yenilendi: " + health);
+        //Debug.Log("NPC'nin caný yenilendi: " + health);
     }
     public void SetActiveState(bool active)
     {

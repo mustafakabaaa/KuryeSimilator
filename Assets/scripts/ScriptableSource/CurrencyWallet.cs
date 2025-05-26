@@ -7,7 +7,7 @@ public class CurrencyWallet : ScriptableObject
     public int balance = 0;
 
     public event Action OnBalanceChanged;
-
+    
     public void Add(int amount)
     {
         balance += amount;

@@ -46,8 +46,8 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
     [Header("Camera & DropOff Point Offset")]
     [SerializeField] private Transform _dropOfPoint;
     [SerializeField] private GameObject _vehicleCamera;
-    [SerializeField] private GameObject _playerCamera;
-    [SerializeField] private GameObject _player;
+    [SerializeField] public  GameObject _playerCamera;
+    [SerializeField] public GameObject _player;
 
     [Header("Coasting Settings")]
     [SerializeField] private float coastingDrag = 0.5f;
@@ -55,7 +55,7 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
     [SerializeField] private float minSpeedThreshold = 0.5f;
     [SerializeField] private float autoBrakeForce = 100f;
 
-    private bool isPlayerOnBoard = false;
+    [SerializeField] private bool isPlayerOnBoard = false;
     public bool frontGrounded;
     public bool rearGrounded;
 
@@ -212,6 +212,11 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
             isPlayerOnBoard = !isPlayerOnBoard;
             changeCamera();
             playerStatue();
+
+            if (MotorEventManager.Instance != null)
+            {
+                MotorEventManager.Instance.TriggerDismountEvent();
+            }
         }
     }
 
@@ -506,15 +511,37 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
         }
     }
 
+    // MotorcycleVehicle.cs
+    // MotorcycleVehicle.cs - Interact() içinde
     public void Interact()
     {
+        // Deðeri önce deðiþtir
         isPlayerOnBoard = !isPlayerOnBoard;
-        changeCamera();
+        Debug.Log($"Interact called. New State: {isPlayerOnBoard}", this);
 
-        // Motora binildiðinde UI metnini gizle
-        if (interactText != null)
+        // Kamera ve player durumunu güncelle
+        changeCamera();
+        playerStatue();
+
+        // Event tetikleme (Null check ekledik)
+        if (MotorEventManager.Instance != null)
         {
-            interactText.gameObject.SetActive(false);
+            if (isPlayerOnBoard)
+                MotorEventManager.Instance.TriggerMountEvent(this);
+            else
+                MotorEventManager.Instance.TriggerDismountEvent();
+        }
+        else
+
+        {
+            Debug.LogError("MotorEventManager.Instance NULL!", this);
+        }
+
+        // Fallback: Doðrudan HUD kontrolü
+        if (!isPlayerOnBoard)
+        {
+            var hud = FindObjectOfType<MotorHUD>(true);
+            if (hud != null) hud.ForceCloseHUD();
         }
     }
 
