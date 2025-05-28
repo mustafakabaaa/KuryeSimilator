@@ -6,6 +6,7 @@ using UnityEngine;
 public class OrderManager : MonoBehaviour
 {
     public static OrderManager Instance;
+    public GameDataSO gameData;
 
     public SCDayData[] days;
     private int currentDayIndex = 0;
@@ -129,41 +130,66 @@ public class OrderManager : MonoBehaviour
     }
     public void CompleteOrder(string orderID)
     {
-        // 1. Siparişi aktif siparişler listesinde bul
         SCOrderData order = activeOrders.Find(o => o.orderID == orderID);
         if (order == null)
         {
-            Debug.LogWarning($"Sipariş bulunamadı: {orderID}");
+            Debug.LogError($"Sipariş bulunamadı: {orderID}");
             return;
         }
 
-        // 2. Gerekli tüm itemler envanterde var mı kontrol et
-        List<SCItem> missingItems = new List<SCItem>();
-        foreach (SCItem requiredItem in order.requiredItems)
+        // DEBUG: Tüm requiredItems'ı logla
+        Debug.Log($"Sipariş {order.orderID} için {order.requiredItems.Length} adet required item var:");
+        for (int i = 0; i < order.requiredItems.Length; i++)
         {
-            if (!Inventory.Instance.HasItem(requiredItem.itemID))
+            SCItem item = order.requiredItems[i];
+            Debug.Log($"  {i}. ItemID: {item.itemID}, Name: {item.itemName}, Type: {item.GetType()}");
+        }
+
+        // 1. Ürünleri grupla
+        var groupedItems = order.requiredItems
+            .GroupBy(item => item.itemID)
+            .Select(g => new { Item = g.First(), Count = g.Count() })
+            .ToList(); // DEBUG: ToList ekleyerek sonucu somutlaştırıyoruz
+
+        // DEBUG: Gruplama sonuçlarını logla
+        Debug.Log($"Gruplama sonucu {groupedItems.Count} adet benzersiz ürün:");
+        foreach (var group in groupedItems)
+        {
+            Debug.Log($"  ItemID: {group.Item.itemID}, Name: {group.Item.itemName}, Count: {group.Count}");
+        }
+
+        // 2. Eksikleri kontrol et
+        List<string> missingItems = new List<string>();
+        foreach (var group in groupedItems)
+        {
+            int currentCount = Inventory.Instance.GetItemCount(group.Item.itemID);
+            Debug.Log($"Envanter kontrol: {group.Item.itemName} (ID:{group.Item.itemID}), Gerekli: {group.Count}, Mevcut: {currentCount}");
+
+            if (currentCount < group.Count)
             {
-                missingItems.Add(requiredItem);
+                int missingCount = group.Count - currentCount;
+                missingItems.Add($"{group.Item.itemName} x{missingCount}");
+                Debug.Log($"  Eksik: {missingCount} adet");
             }
         }
 
-        // 3. Eksik item varsa uyarı göster ve işlemi iptal et
+        // 3. Eksik varsa uyarı göster
         if (missingItems.Count > 0)
         {
-           
-            foreach (var item in missingItems)
-            {
-                missingText += $"- {item.itemName}\n";
-            }
-            DialogueUI.Instance.ShowSimpleMessage(missingText);
+            string errorMessage = "Eksik ürünler:\n" + string.Join("\n", missingItems);
+            Debug.Log(errorMessage);
+            DialogueUI.Instance.ShowSimpleMessage(errorMessage);
             return;
         }
 
-        // 4. Tüm itemleri envanterden sil
-        foreach (SCItem requiredItem in order.requiredItems)
+        // 4. Eksik yoksa sil ve tamamla
+        Debug.Log("Eksik ürün yok, sipariş tamamlanıyor...");
+        foreach (var group in groupedItems)
         {
-            Inventory.Instance.RemoveItem(requiredItem.itemID);
+            Debug.Log($"Envanterden siliniyor: {group.Item.itemName} x{group.Count}");
+            Inventory.Instance.RemoveItem(group.Item.itemID, group.Count);
         }
+
 
         // 5. NPC'yi yok olma moduna geçir (direkt destroy etme)
         if (spawnedNPCs.TryGetValue(orderID, out GameObject npc))
@@ -189,8 +215,10 @@ public class OrderManager : MonoBehaviour
 
         // 7. Sipariş tamamlandığında CharrController'dan ödül ekle
         WalletManager.Instance.AddMoney(order.reward);
+        gameData.upgradePoints += order.upgradePointReward;
+        Debug.Log($"Yeni Upgrade Puanı: {gameData.upgradePoints}");
 
-            Debug.Log($"Sipariş tamamlandı: {order.orderName}");
+        Debug.Log($"Sipariş tamamlandı: {order.orderName}");
     }
     private void SpawnOrderItemsAtRestaurant(SCOrderData order)
     {

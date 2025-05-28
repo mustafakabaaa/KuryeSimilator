@@ -19,10 +19,10 @@ public class WalletManager : MonoBehaviour
         // Opsiyonel: PlayerPrefs’ten önceki session bakiyesini yükle
         walletAsset.balance = PlayerPrefs.GetInt("PlayerBalance", walletAsset.balance);
     }
-    private void Start()
-    {
-        AddMoney(1000);
-    }
+    //private void Start()
+    //{
+    //    AddMoney(1000);
+    //}
 
     public void AddMoney(int amount)
     {

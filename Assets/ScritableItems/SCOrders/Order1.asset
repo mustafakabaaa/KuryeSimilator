@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Order1
   m_EditorClassIdentifier: 
   dialogueJson: {fileID: 4900000, guid: eabb00ca031246448b2f21a11540ef92, type: 3}
+  upgradePointReward: 1
   orderID: 1
   orderName: Ayse
   description: asfasfas

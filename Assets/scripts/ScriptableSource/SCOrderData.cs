@@ -5,7 +5,7 @@ public class SCOrderData : ScriptableObject
 {
     
     public TextAsset dialogueJson; // Yeni JSON sistemi
-
+    public int upgradePointReward = 1;
     public string orderID; // Sipariþin benzersiz kimliði
     public string orderName; // Sipariþ adý
     public string description; // Sipariþ açýklamasý

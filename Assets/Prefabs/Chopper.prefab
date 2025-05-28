@@ -105,6 +105,7 @@ MonoBehaviour:
   normalDrag: 0.1
   minSpeedThreshold: 0.5
   autoBrakeForce: 100
+  isPlayerOnBoard: 0
   frontGrounded: 0
   rearGrounded: 0
   engineAudioSource: {fileID: 0}
@@ -2818,7 +2819,7 @@ Transform:
   m_GameObject: {fileID: 8449417830544192087}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.907}
+  m_LocalPosition: {x: -0.497, y: 0, z: -0.786}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

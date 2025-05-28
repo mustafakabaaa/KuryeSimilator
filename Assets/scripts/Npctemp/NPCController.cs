@@ -111,34 +111,41 @@ public class NPCController : MonoBehaviour, IAttackable
         {
             if (active)
             {
-                // NavMesh üzerinde mi diye kontrol et
-                if (!navMeshAgent.isOnNavMesh)
-                {
-                    Debug.LogWarning("NPC NavMesh üzerinde deðil!");
-                    return;
-                }
-
+                // Aktif olunca agent aktif, yürümeye hazýr
                 navMeshAgent.enabled = true;
                 navMeshAgent.isStopped = false;
             }
             else
             {
+                // Kapandýðýnda agent durdurulur ve kapatýlýr
                 navMeshAgent.isStopped = true;
                 navMeshAgent.enabled = false;
+
+                // 0. waypoint'e dön
+                if (pathList != null && pathList.waypoints.Count > 0)
+                {
+                    transform.position = pathList.waypoints[0].position;
+                    SetWaypointIndex(0);
+                }
             }
         }
 
         if (animator != null)
         {
             animator.enabled = active;
+            if (!active)
+                animator.speed = 0f;
+            else
+                animator.speed = 1f;
         }
 
-        // FSM’i baþlat/durdur
+        // FSM yönetimi
         if (!active)
         {
             if (currentState != null)
             {
                 currentState.Exit();
+                currentState = null;
             }
         }
         else

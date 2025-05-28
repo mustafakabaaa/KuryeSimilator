@@ -5193,6 +5193,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41314a828dbaddc4db0e01a26ecc473c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gameData: {fileID: 11400000, guid: 1fe079cb317ff104dac47a4224721e8f, type: 2}
   days:
   - {fileID: 11400000, guid: 2284b392f8bcc5f47ae6aa5a1587119c, type: 2}
   - {fileID: 11400000, guid: c3e2f49a000df464884f43867d69f8cc, type: 2}
@@ -7960,7 +7961,7 @@ GameObject:
   m_Layer: 0
   m_Name: motorspawn
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: -964228994112308473, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -12105,7 +12106,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1503230465
 RectTransform:
   m_ObjectHideFlags: 0

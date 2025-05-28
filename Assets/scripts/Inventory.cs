@@ -69,45 +69,62 @@ public class Inventory : MonoBehaviour
 
         return false; // Item bulunamadý
     }
-    public void RemoveItem(string itemID)
+    public void RemoveItem(string itemID, int amount)
     {
-        // Oyuncunun envanterinden item'i kaldýr
+        int remainingToRemove = amount;
+
+        // Önce oyuncu envanterinden sil
         foreach (Slot slot in playerInventory.inventorySlots)
         {
             if (slot.item != null && slot.item.itemID == itemID && slot.itemCount > 0)
             {
-                slot.itemCount--; // Item sayýsýný azalt
+                int removeCount = Mathf.Min(slot.itemCount, remainingToRemove);
+                slot.itemCount -= removeCount;
+                remainingToRemove -= removeCount;
+
                 if (slot.itemCount <= 0)
                 {
-                    slot.item = null; // Slotu boþalt
+                    slot.item = null;
                     slot.isFull = false;
                 }
-                Debug.Log("Item removed from player inventory: " + itemID);
-                return; // Item bulundu ve kaldýrýldý
+
+                if (remainingToRemove <= 0)
+                    break;
             }
         }
 
-        // Çantanýn envanterinden item'i kaldýr (eðer çanta açýksa)
-        if (inventoryUIController.IsShowingBag())
+        // Eðer hala silinecek varsa ve çanta açýksa, çantadan da sil
+        if (remainingToRemove > 0 && inventoryUIController.IsShowingBag())
         {
             foreach (Slot slot in bagInventory.inventorySlots)
             {
                 if (slot.item != null && slot.item.itemID == itemID && slot.itemCount > 0)
                 {
-                    slot.itemCount--; // Item sayýsýný azalt
+                    int removeCount = Mathf.Min(slot.itemCount, remainingToRemove);
+                    slot.itemCount -= removeCount;
+                    remainingToRemove -= removeCount;
+
                     if (slot.itemCount <= 0)
                     {
-                        slot.item = null; // Slotu boþalt
+                        slot.item = null;
                         slot.isFull = false;
                     }
-                    Debug.Log("Item removed from bag inventory: " + itemID);
-                    return; // Item bulundu ve kaldýrýldý
+
+                    if (remainingToRemove <= 0)
+                        break;
                 }
             }
         }
 
-        Debug.LogWarning("Item not found in any inventory: " + itemID);
+        if (remainingToRemove > 0)
+        {
+            Debug.LogWarning($"Yeterli miktarda {itemID} bulunamadý, {remainingToRemove} eksik kaldý.");
+        }
+
+        inventoryUIController.UpdateUI(playerInventory);
+        inventoryUIController.UpdateUI(bagInventory);
     }
+
     // Stack'e ekle
     private bool AddToStack(SCInventory inventory, SCItem item, int amount)
     {
