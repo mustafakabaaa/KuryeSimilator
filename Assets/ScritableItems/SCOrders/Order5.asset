@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5ab70881e5600840970bc26a94c3e73, type: 3}
   m_Name: Order5
   m_EditorClassIdentifier: 
-  dialogueJson: {fileID: 4900000, guid: eabb00ca031246448b2f21a11540ef92, type: 3}
+  dialogueJson: {fileID: 4900000, guid: 944423f5100915c4ca9a13379366c495, type: 3}
+  upgradePointReward: 1
   orderID: 5
   orderName: hakan
   description: qweqweq
