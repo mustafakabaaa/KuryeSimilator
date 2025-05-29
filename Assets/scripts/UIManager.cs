@@ -38,46 +38,66 @@ public class UIManager : MonoBehaviour
         if (_isDialogueOpen) FindObjectOfType<DialogueUI>()?.CloseDialogue();
         if (_isPCOpen) FindAnyObjectByType<PCUIController>()?.ClosePCUI();
     }
-
+    public bool CanOpenNewUI()
+    {
+        // Diyalog açýksa yeni UI açýlmasýna izin verme
+        if (_isDialogueOpen)
+        {
+            Debug.LogWarning("Yeni UI açýlamaz: Diyalog paneli þu anda açýk!");
+            return false;
+        }
+        return true;
+    }
+    private void Update()
+    {
+        
+    }
     // UI durum güncellemeleri (event tetikleyerek)
     public void SetBagInventoryState(bool state)
     {
+        if (state && !CanOpenNewUI()) return;
         _isBagInventoryOpen = state;
         OnUIStateChanged?.Invoke();
     }
 
     public void SetDialogueState(bool state)
     {
+        if (state && !CanOpenNewUI()) return;
         _isDialogueOpen = state;
         OnUIStateChanged?.Invoke();
     }
 
     public void SetInventoryState(bool state)
     {
+        if (state && !CanOpenNewUI()) return;
         _isInventoryOpen = state;
         OnUIStateChanged?.Invoke();
     }
 
     public void SetUpgradeState(bool state)
     {
+        if (state && !CanOpenNewUI()) return;
         _isUpgradeOpen = state;
         OnUIStateChanged?.Invoke();
     }
 
     public void SetPhoneUIState(bool state)
     {
+        if (state && !CanOpenNewUI()) return;
         _isPhoneUIOpen = state;
         OnUIStateChanged?.Invoke();
     }
 
     public void SetMenuState(bool state)
     {
+        if (state && !CanOpenNewUI()) return;
         _isMenuOpen = state;
         OnUIStateChanged?.Invoke();
     }
 
     public void SetPCState(bool state)
     {
+        if (state && !CanOpenNewUI()) return;
         _isPCOpen = state;
         OnUIStateChanged?.Invoke();
     }

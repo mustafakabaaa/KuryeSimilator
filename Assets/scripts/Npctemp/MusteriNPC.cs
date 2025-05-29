@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class MusteriNPC : MonoBehaviour, Iinterectable
@@ -46,29 +47,53 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
         }
     }
 
-    // MusteriNPC.cs'de Interact metodunu güncelle
+    // MusteriNPC.cs - Güncellenmiş Interact metodu
     public void Interact()
     {
         if (assignedOrder == null || orderCompleted) return;
 
-        bool hasAllItems = true;
-        List<string> missingItems = new List<string>();
-
+        // Gerekli ürünleri ve miktarlarını hesapla
+        var requiredItems = new Dictionary<string, (int required, SCItem data)>();
         foreach (SCItem item in assignedOrder.requiredItems)
         {
-            if (!Inventory.Instance.HasItem(item.itemID))
+            if (requiredItems.ContainsKey(item.itemID))
             {
-                hasAllItems = false;
-                missingItems.Add(item.itemName);
+                var current = requiredItems[item.itemID];
+                requiredItems[item.itemID] = (current.required + 1, current.data);
+            }
+            else
+            {
+                requiredItems.Add(item.itemID, (1, item));
             }
         }
 
+        // Eksik ürünleri tespit et
+        var missingItems = new List<string>();
+        bool hasAllItems = true;
+
+        foreach (var item in requiredItems)
+        {
+            int inventoryCount = Inventory.Instance.GetItemCount(item.Key);
+            if (inventoryCount < item.Value.required)
+            {
+                hasAllItems = false;
+                int missingAmount = item.Value.required - inventoryCount;
+                missingItems.Add($"• {item.Value.data.itemName} x{missingAmount}");
+            }
+        }
+
+        // Eksik varsa formatlı mesaj göster
         if (!hasAllItems)
         {
-            SayMissingItems(missingItems);
+            string message = "<color=#ff0000>Siparişi tamamlayamazsın!</color>\n";
+            message += "Eksik olan ürünler:\n";
+            message += string.Join("\n", missingItems);
+
+            DialogueUI.Instance.ShowSimpleMessage(message);
             return;
         }
 
+        // Tüm ürünler mevcutsa diyalog başlat
         if (!isRotating)
         {
             StartCoroutine(LookAtPlayerSmoothly());
@@ -77,15 +102,12 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
 
         DialogueManager.Instance.SetCurrentOrderID(assignedOrder.orderID);
 
-        // JSON veya ScriptableObject kontrolü
         if (assignedOrder.dialogueJson != null)
         {
             DialogueGraph jsonGraph = JSONDialogueLoader.ConvertJSONToDialogueGraph(assignedOrder.dialogueJson);
             DialogueUI.Instance.StartDialogue(jsonGraph, npcName, this.transform);
         }
-        
     }
-
     public void SayMissingItems(List<string> missingItems)
     {
         string message = "Eksik ürünler: " + string.Join(", ", missingItems);

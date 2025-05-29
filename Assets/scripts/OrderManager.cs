@@ -130,95 +130,70 @@ public class OrderManager : MonoBehaviour
     }
     public void CompleteOrder(string orderID)
     {
-        SCOrderData order = activeOrders.Find(o => o.orderID == orderID);
+        // Siparişi bul
+        SCOrderData order = activeOrders.FirstOrDefault(o => o.orderID == orderID);
         if (order == null)
         {
-            Debug.LogError($"Sipariş bulunamadı: {orderID}");
+            Debug.LogError("[OrderManager] Sipariş bulunamadı: " + orderID);
             return;
         }
 
-        // DEBUG: Tüm requiredItems'ı logla
-        Debug.Log($"Sipariş {order.orderID} için {order.requiredItems.Length} adet required item var:");
-        for (int i = 0; i < order.requiredItems.Length; i++)
+        // Gereken tüm itemleri ve miktarlarını hesapla
+        Dictionary<string, int> requiredItems = new Dictionary<string, int>();
+        foreach (SCItem item in order.requiredItems)
         {
-            SCItem item = order.requiredItems[i];
-            Debug.Log($"  {i}. ItemID: {item.itemID}, Name: {item.itemName}, Type: {item.GetType()}");
+            if (requiredItems.ContainsKey(item.itemID))
+                requiredItems[item.itemID]++;
+            else
+                requiredItems.Add(item.itemID, 1);
         }
 
-        // 1. Ürünleri grupla
-        var groupedItems = order.requiredItems
-            .GroupBy(item => item.itemID)
-            .Select(g => new { Item = g.First(), Count = g.Count() })
-            .ToList(); // DEBUG: ToList ekleyerek sonucu somutlaştırıyoruz
-
-        // DEBUG: Gruplama sonuçlarını logla
-        Debug.Log($"Gruplama sonucu {groupedItems.Count} adet benzersiz ürün:");
-        foreach (var group in groupedItems)
+        // Envanter kontrolü
+        bool canComplete = true;
+        foreach (var item in requiredItems)
         {
-            Debug.Log($"  ItemID: {group.Item.itemID}, Name: {group.Item.itemName}, Count: {group.Count}");
-        }
-
-        // 2. Eksikleri kontrol et
-        List<string> missingItems = new List<string>();
-        foreach (var group in groupedItems)
-        {
-            int currentCount = Inventory.Instance.GetItemCount(group.Item.itemID);
-            Debug.Log($"Envanter kontrol: {group.Item.itemName} (ID:{group.Item.itemID}), Gerekli: {group.Count}, Mevcut: {currentCount}");
-
-            if (currentCount < group.Count)
+            if (Inventory.Instance.GetItemCount(item.Key) < item.Value)
             {
-                int missingCount = group.Count - currentCount;
-                missingItems.Add($"{group.Item.itemName} x{missingCount}");
-                Debug.Log($"  Eksik: {missingCount} adet");
+                canComplete = false;
+                break;
             }
         }
 
-        // 3. Eksik varsa uyarı göster
-        if (missingItems.Count > 0)
+        // Eksik varsa
+        if (!canComplete)
         {
-            string errorMessage = "Eksik ürünler:\n" + string.Join("\n", missingItems);
-            Debug.Log(errorMessage);
-            DialogueUI.Instance.ShowSimpleMessage(errorMessage);
+            Debug.Log("[OrderManager] Sipariş tamamlanamaz: Ürünler eksik");
+            DialogueUI.Instance.ShowSimpleMessage("Ürünler eksik");
             return;
         }
 
-        // 4. Eksik yoksa sil ve tamamla
-        Debug.Log("Eksik ürün yok, sipariş tamamlanıyor...");
-        foreach (var group in groupedItems)
+        // Tüm ürünler mevcutsa
+        Debug.Log("[OrderManager] Tüm ürünler mevcut, sipariş tamamlanıyor...");
+
+        // Envanterden ürünleri sil
+        foreach (var item in requiredItems)
         {
-            Debug.Log($"Envanterden siliniyor: {group.Item.itemName} x{group.Count}");
-            Inventory.Instance.RemoveItem(group.Item.itemID, group.Count);
+            Inventory.Instance.RemoveItem(item.Key, item.Value);
         }
 
-
-        // 5. NPC'yi yok olma moduna geçir (direkt destroy etme)
+        // NPC'yi temizle
         if (spawnedNPCs.TryGetValue(orderID, out GameObject npc))
         {
-            MusteriNPC npcScript = npc.GetComponent<MusteriNPC>();
-            if (npcScript != null)
-            {
-                npcScript.CompleteOrder(); // NPC artık Update'te yok olma koşullarını kontrol edecek
-            }
-            else
-            {
-                Debug.LogError("NPC'de MusteriNPC scripti yok!");
-            }
-
-            // Dictionary'den kaldır (artık yok olma Update'te kontrol edilecek)
+            npc.GetComponent<MusteriNPC>()?.CompleteOrder();
             spawnedNPCs.Remove(orderID);
         }
 
-        // 6. Siparişi aktif listesinden kaldır ve event tetikle
+        // Siparişi kaldır
         activeOrders.Remove(order);
-        OnOrdersUpdated?.Invoke();
 
-
-        // 7. Sipariş tamamlandığında CharrController'dan ödül ekle
+        // Ödülleri ver
         WalletManager.Instance.AddMoney(order.reward);
         gameData.upgradePoints += order.upgradePointReward;
-        Debug.Log($"Yeni Upgrade Puanı: {gameData.upgradePoints}");
 
-        Debug.Log($"Sipariş tamamlandı: {order.orderName}");
+        // Event tetikle
+        OnOrdersUpdated?.Invoke();
+
+        Debug.Log($"[OrderManager] Sipariş tamamlandı: {order.orderName}");
     }
     private void SpawnOrderItemsAtRestaurant(SCOrderData order)
     {

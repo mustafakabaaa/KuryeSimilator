@@ -30,8 +30,9 @@ public class DialogueUI : MonoBehaviour
     }
     public void StartDialogue(DialogueGraph dialogue, string npcName, Transform npcTransform)
     {
-        UIManager.Instance.SetDialogueState(true);
+       
         UIManager.Instance.CloseAllOpenPanels();
+        UIManager.Instance.SetDialogueState(true);
         SetCursorState(true);
 
         CharrController playerController = FindObjectOfType<CharrController>();

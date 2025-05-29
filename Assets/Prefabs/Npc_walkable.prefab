@@ -267,10 +267,6 @@ PrefabInstance:
       propertyPath: pathList
       value: 
       objectReference: {fileID: 4340629513033222998}
-    - target: {fileID: 4450408145546279505, guid: 45cc6010984276d4e97f47c6d5372135, type: 3}
-      propertyPath: Path
-      value: 
-      objectReference: {fileID: 4227282282803776473}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

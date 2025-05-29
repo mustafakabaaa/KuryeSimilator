@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -16,7 +17,6 @@ public class InfoPanelController : MonoBehaviour
         infoPanel.SetActive(false);
     }
 
-    // InfoPanel'i ac ve siparis verilerini goster
     public void ShowOrderInfo(SCOrderData orderData)
     {
         infoPanel.SetActive(true);
@@ -27,13 +27,31 @@ public class InfoPanelController : MonoBehaviour
         infoDeliveryAddressText.text = "Address: " + orderData.deliveryAddress;
         infoRewardText.text = orderData.reward.ToString() + "$";
 
-        // Gerekli item'leri goster
-        infoRequiredItemsText.text = "Orders: ";
+        // Gerekli item'leri grupla ve sayýlarýyla birlikte göster
+        var groupedItems = new Dictionary<string, int>();
         foreach (SCItem item in orderData.requiredItems)
         {
-            infoRequiredItemsText.text += item.itemName + ", ";
+            if (groupedItems.ContainsKey(item.itemName))
+            {
+                groupedItems[item.itemName]++;
+            }
+            else
+            {
+                groupedItems.Add(item.itemName, 1);
+            }
         }
-        infoRequiredItemsText.text = infoRequiredItemsText.text.TrimEnd(',', ' ');
+
+        infoRequiredItemsText.text = "Orders: ";
+        bool firstItem = true;
+        foreach (var item in groupedItems)
+        {
+            if (!firstItem)
+            {
+                infoRequiredItemsText.text += ", ";
+            }
+            infoRequiredItemsText.text += $"{item.Key} x{item.Value}";
+            firstItem = false;
+        }
     }
 
     // InfoPanel'i kapat

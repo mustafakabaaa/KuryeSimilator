@@ -3,40 +3,30 @@
   "nodes": [
     {
       "nodeId": "node1",
-      "npcText": "Merhaba! Size nasıl yardımcı olabilirim?",
+      "npcText": "Hoş geldiniz! Yardımcı olabilir miyim?",
       "options": [
         {
-          "text": "Sipariş vermek istiyorum.",
+          "text": "Siparişimi teslim etmek istiyorum.",
           "nextNodeId": "node2",
           "tipEffect": 0
         },
         {
-          "text": "Sadece bakıyorum, teşekkürler.",
-          "nextNodeId": "node3",
+          "text": "Henüz siparişi tamamlamadım.",
+          "nextNodeId": "-2",
           "tipEffect": 0
         }
       ]
     },
     {
       "nodeId": "node2",
-      "npcText": "Harika! Hangi ürünü almak istersiniz?",
+      "npcText": "Harika, siparişi kontrol ediyorum... Her şey eksiksiz görünüyor. Teşekkürler!",
       "options": [
         {
-          "text": "Bir kahve alacağım.",
+          "text": "Rica ederim!",
           "nextNodeId": "-1",
-          "tipEffect": 5
-        },
-        {
-          "text": "Çay alacağım.",
-          "nextNodeId": "-2",
-          "tipEffect": 3
+          "tipEffect": 10
         }
       ]
-    },
-    {
-      "nodeId": "node3",
-      "npcText": "Tamam, size iyi günler!",
-      "options": []
     }
   ]
 }
