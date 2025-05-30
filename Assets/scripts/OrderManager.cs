@@ -188,8 +188,8 @@ public class OrderManager : MonoBehaviour
 
         // Ödülleri ver
         WalletManager.Instance.AddMoney(order.reward);
-        gameData.upgradePoints += order.upgradePointReward;
-
+        gameData.AddUpgradePoints(order.upgradePointReward);
+        GameEvents.Instance?.TriggerPointsUpdate();
         // Event tetikle
         OnOrdersUpdated?.Invoke();
 
@@ -232,5 +232,34 @@ public class OrderManager : MonoBehaviour
         availableOrders.Clear();
         spawnedNPCs.Clear(); // Dictionary'yi temizle
         activeOrders.Clear(); // Aktif siparişleri temizle
+    }
+    public void CancelOrder(string orderID)
+    {
+        SCOrderData order = activeOrders.FirstOrDefault(o => o.orderID == orderID);
+        if (order == null)
+        {
+            Debug.LogError("[OrderManager] İptal edilecek sipariş bulunamadı: " + orderID);
+            return;
+        }
+
+        // NPC'yi temizle
+        if (spawnedNPCs.TryGetValue(orderID, out GameObject npc))
+        {
+            Destroy(npc);
+            spawnedNPCs.Remove(orderID);
+        }
+
+        // Restaurant'taki itemleri temizle (eğer varsa)
+        // RestaurantManager.Instance.ClearOrderItems(orderID);
+
+        // Siparişi aktif listesinden çıkar (AVAILABLE'A EKLEME!)
+        activeOrders.Remove(order);
+
+        // Eğer siparişin bir daha gösterilmemesini istiyorsanız:
+        // availableOrders'a EKLEMEYİN ve direkt yok sayın.
+        // Veya bir "canceledOrders" listesi tutabilirsiniz.
+        WalletManager.Instance.SpendMoney(order.reward);
+        OnOrdersUpdated?.Invoke();
+        Debug.Log($"[OrderManager] Sipariş iptal edildi ve listeden kaldırıldı: {order.orderName}");
     }
 }

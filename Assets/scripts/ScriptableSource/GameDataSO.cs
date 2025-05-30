@@ -60,4 +60,9 @@ public class GameDataSO : ScriptableObject
         activeStats.Clear();
         upgradeCounts.Clear();
     }
+    public void AddUpgradePoints(int amount)
+    {
+        upgradePoints += amount;
+        // Burada baþka güncellemeler veya event tetiklemeleri yapabilirsiniz
+    }
 }

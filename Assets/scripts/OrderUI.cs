@@ -5,10 +5,11 @@ using UnityEngine.UI;
 
 public class OrderUI : MonoBehaviour
 {
-    public GameObject orderUIPanel; // Siparislerin gosterilecegi UI paneli
-    public Transform orderContainer; // Siparislerin eklenecegi container (ScrollView Content)
+    public GameObject orderUIPanel; // Sipariþlerin gösterileceði UI paneli
+    public Transform orderContainer; // Sipariþlerin ekleneceði container (ScrollView Content)
     public GameObject orderPrefab; // Order prefab'i
-    public Button toggleOrdersButton; // Gecis butonu
+    public Button toggleOrdersButton; // Geçiþ butonu
+    public Button cancelOrderButton; // Ýptal butonu (Inspector'dan atanacak)
 
     private bool isUIOpen = false;
     private bool showingActiveOrders = false;
@@ -25,6 +26,7 @@ public class OrderUI : MonoBehaviour
             Destroy(gameObject);
         }
     }
+
     private void OnEnable()
     {
         OrderManager.OnOrdersUpdated += OnOrderListUpdated;
@@ -34,21 +36,25 @@ public class OrderUI : MonoBehaviour
     {
         OrderManager.OnOrdersUpdated -= OnOrderListUpdated;
     }
+
     private void Start()
     {
-        if (toggleOrdersButton == null)
+        if (toggleOrdersButton == null || cancelOrderButton == null)
         {
-            Debug.LogError("Toggle Orders Button inspector'da atanmamis!");
+            Debug.LogError("Butonlar inspector'da atanmamýþ!");
             return;
         }
-        LoadOrders();
-        orderUIPanel.SetActive(false); // UI baslangicta kapali olsun
-        SetCursorState(false); // Baslangicta imleci gizle
 
-        // Gecis butonuna tiklanma olayini ekle
+        LoadOrders();
+        orderUIPanel.SetActive(false);
+        SetCursorState(false);
+
+        // Buton dinleyicilerini ekle
         toggleOrdersButton.onClick.AddListener(ToggleOrders);
+        cancelOrderButton.onClick.AddListener(OnCancelOrderClicked);
+        cancelOrderButton.gameObject.SetActive(false); // Baþlangýçta gizli
     }
-  
+
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.T))
@@ -62,87 +68,89 @@ public class OrderUI : MonoBehaviour
                 OpenUI();
             }
             PersistentMenuManager.Instance.CheckPanels();
-
         }
     }
-   
+
     private void OpenUI()
     {
-        // UI durumunu güncelle
         isUIOpen = true;
         orderUIPanel.SetActive(true);
-        UIManager.Instance.SetPhoneUIState(true); // UIManager'a durumu bildir
-
-        // Görsel ayarlar
+        UIManager.Instance.SetPhoneUIState(true);
         SetCursorState(true);
-        LoadOrders(); // Sipariþleri yükle
+        LoadOrders();
+    }
 
-       
-    }
-    public void OnOrderListUpdated() // OrderManager'dan çaðýr
+    public void OnOrderListUpdated()
     {
-        
-            LoadOrders();
+        LoadOrders();
     }
+
     public void CloseUI()
     {
-        // UI durumunu güncelle
         isUIOpen = false;
         orderUIPanel.SetActive(false);
-        UIManager.Instance.SetPhoneUIState(false); // UIManager'a durumu bildir
-        LoadOrders();
-
-        // Görsel ayarlar
+        UIManager.Instance.SetPhoneUIState(false);
         SetCursorState(false);
         FindAnyObjectByType<InfoPanelController>()?.HideOrderInfo();
-        // Gerekirse temizlik iþlemleri...
     }
-   
+
+    private void OnCancelOrderClicked()
+    {
+        if (OrderManager.Instance.GetActiveOrders().Count > 0)
+        {
+            SCOrderData activeOrder = OrderManager.Instance.GetActiveOrders()[0];
+            OrderManager.Instance.CancelOrder(activeOrder.orderID);
+
+            // UI'yi güncelle
+            OnOrderListUpdated();
+
+            // Cancel butonunu gizle (artýk aktif sipariþ yoksa)
+            cancelOrderButton.gameObject.SetActive(false);
+        }
+    }
+
     private void ToggleOrders()
     {
-        if (OrderManager.Instance == null)
-        {
-            Debug.LogError("OrderManager ornegi null!");
-            return;
-        }
-
         showingActiveOrders = !showingActiveOrders;
         LoadOrders();
 
-        // TextMeshProUGUI kullaniliyorsa
+        // Cancel butonunu sadece aktif sipariþ varsa göster
+        cancelOrderButton.gameObject.SetActive(
+            showingActiveOrders &&
+            OrderManager.Instance.GetActiveOrders().Count > 0
+        );
+
+        // Toggle buton metnini güncelle
         TextMeshProUGUI buttonText = toggleOrdersButton.GetComponentInChildren<TextMeshProUGUI>();
         if (buttonText != null)
         {
             buttonText.text = showingActiveOrders ? "Show Available Orders" : "Show Active Orders";
         }
-        else
-        {
-            Debug.LogError("ToggleOrdersButton'da TextMeshProUGUI bileseni bulunamadi!");
-        }
     }
 
     private void LoadOrders()
     {
-        // Once mevcut siparisleri temizle (yalnizca sahnedeki GameObject'leri sil)
         foreach (Transform child in orderContainer)
         {
-            Destroy(child.gameObject); // GameObject'i sil
+            Destroy(child.gameObject);
         }
 
-        // Mevcut siparisleri yukle
-        List<SCOrderData> orders = showingActiveOrders ? OrderManager.Instance.GetActiveOrders() : OrderManager.Instance.GetAvailableOrders();
+        List<SCOrderData> orders = showingActiveOrders ?
+            OrderManager.Instance.GetActiveOrders() :
+            OrderManager.Instance.GetAvailableOrders();
+
         foreach (SCOrderData order in orders)
         {
-            // Prefab'i instantiate et ve orderContainer'in altina ekle
             GameObject orderUI = Instantiate(orderPrefab, orderContainer);
             orderUI.GetComponent<OrderUIElement>().Setup(order);
         }
     }
 
-    // Imlecin gorunurlugunu ve kilidini ayarla
+   
+
     private void SetCursorState(bool isVisible)
     {
-        Cursor.visible = isVisible; // Imleci goster veya gizle
-        Cursor.lockState = isVisible ? CursorLockMode.None : CursorLockMode.Locked; // Imleci kilitle veya serbest birak
+        Cursor.visible = isVisible;
+        Cursor.lockState = isVisible ? CursorLockMode.None : CursorLockMode.Locked;
     }
 }

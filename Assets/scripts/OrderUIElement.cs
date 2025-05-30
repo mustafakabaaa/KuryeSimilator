@@ -9,7 +9,7 @@ public class OrderUIElement : MonoBehaviour
     public TextMeshProUGUI requiredItemsText; // Gerekli item'ler
     public Button takeOrderButton; // Sipariþi almak için buton
     public Button infoButton; // Bilgi butonu
-
+    public Button cancelOrderButton; // Inspector'da atanacak
     private SCOrderData currentOrder;
     public InfoPanelController infoPanelController; // Manuel atama için
 
