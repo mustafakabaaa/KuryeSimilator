@@ -1,13 +1,13 @@
-using System.Collections;
 using TMPro;
+using UnityEngine.InputSystem;
 using UnityEngine;
-using UnityEngine.UI;
+using System.Collections;
 
 public class CharrController : MonoBehaviour
 {
     [Header("Player Settings")]
     public float moveSpeed = 5f; // Hareket hizi
-    public float mouseSensitivity = 100f; // Fare hassasiyeti
+
     public float jumpForce = 1.5f; // Z�plama kuvveti
     private bool isJumping = false; // Z�plama durumu
     private InventoryUIController inventoryUIController;
@@ -17,7 +17,7 @@ public class CharrController : MonoBehaviour
     public GameObject crosshairImage; // Canvas'taki nokta görüntüsü
 
     private CharacterController characterController;
-    private float xRotation = 0f; // Kamera X rotasyonu
+
     private Vector3 velocity; // Yercekimi icin hiz
 
     private bool canInteract = false; // Etkilesime girilebilecek mi?
@@ -35,8 +35,14 @@ public class CharrController : MonoBehaviour
     [SerializeField] private CharacterStat jumpForceStat; // Speed Stat SO'sunu Inspector'dan bağlayın
     [SerializeField] private SleepStaminaSystem sleepStaminaSystem; // Inspector'dan bağlayın
 
-    
+    private PlayerInputs _playerInputs;
+    private Vector2 _moveInput;
 
+
+    private Vector2 _lookInput;
+    [SerializeField] private Transform cameraTransform;
+    [SerializeField] private float mouseSensitivity = 2f;
+    private float xRotation = 0f;
 
 
     private bool isMoving = false;
@@ -45,7 +51,25 @@ public class CharrController : MonoBehaviour
 
     private void Awake()
     {
+        _playerInputs = new PlayerInputs();
+
+        _playerInputs.Player.Move.performed += ctx => _moveInput = ctx.ReadValue<Vector2>();
+        _playerInputs.Player.Move.canceled += ctx => _moveInput = Vector2.zero;
+
+        _playerInputs.Player.Look.performed += ctx => _lookInput = ctx.ReadValue<Vector2>();
+        _playerInputs.Player.Look.canceled += ctx => _lookInput = Vector2.zero;
+
         inventoryUIController = GetComponent<InventoryUIController>();
+    }
+
+    private void OnEnable()
+    {
+        _playerInputs.Enable();
+    }
+
+    private void OnDisable()
+    {
+        _playerInputs.Disable();
     }
 
     void Start()
@@ -59,7 +83,7 @@ public class CharrController : MonoBehaviour
             Debug.LogError("PlayerCamera is not assigned.");
         }
 
-       
+
     }
 
     void Update()
@@ -79,7 +103,7 @@ public class CharrController : MonoBehaviour
                 float staminaCost = sleepStaminaSystem.walkingStaminaCost * Time.deltaTime;
 
                 // Eğer koşuyorsa (Shift basılıysa) ekstra tüket
-               
+
 
                 sleepStaminaSystem.currentStamina = Mathf.Max(0, sleepStaminaSystem.currentStamina - staminaCost);
             }
@@ -101,7 +125,7 @@ public class CharrController : MonoBehaviour
         }
         if (gameData != null && jumpForceStat != null)
         {
-            jumpForce=gameData.GetCurrentStatValue(jumpForceStat);
+            jumpForce = gameData.GetCurrentStatValue(jumpForceStat);
         }
     }
 
@@ -190,20 +214,18 @@ public class CharrController : MonoBehaviour
 
     void HandleMouseLook()
     {
-        if (!_isControlEnabled || _isCameraLocked || UIManager.Instance.IsAnyUIOpen()) return;
+        if (!_isControlEnabled) return;
 
-        // Fare girdisi
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
+        float mouseX = _lookInput.x * mouseSensitivity;
+        float mouseY = _lookInput.y * mouseSensitivity;
 
-        // Kamera rotasyonu (X ekseni)
         xRotation -= mouseY;
-        xRotation = Mathf.Clamp(xRotation, -90f, 90f); // Yukari-asagi bakis limiti
+        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
 
-        // Kamera ve oyuncu donusu
-        playerCamera.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+        cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
         transform.Rotate(Vector3.up * mouseX);
     }
+
     public void LookAtTarget(Transform target)
     {
         if (target == null) return;
@@ -247,51 +269,32 @@ public class CharrController : MonoBehaviour
     void HandleMovement()
     {
         if (!_isControlEnabled) return;
+        Vector3 move = (transform.right * _moveInput.x + transform.forward * _moveInput.y).normalized;
 
-        // Klavye girdisi
-        float moveX = Input.GetAxis("Horizontal"); // A/D veya Sol/Sag ok tuslari
-        float moveZ = Input.GetAxis("Vertical");   // W/S veya Yukari/Asagi ok tuslari
-
-        // Hareket yonu (normalize edilmis)
-        Vector3 move = (transform.right * moveX + transform.forward * moveZ).normalized;
-
-        // Hareketi uygula
         characterController.Move(move * moveSpeed * Time.deltaTime);
 
-        // Yurume animasyonunu kontrol et
-        if (move.magnitude > 0.1f) // Eger karakter hareket ediyorsa
-        {
-            animator.SetBool("isWalking", true); // Yurume animasyonunu baslat
-        }
-        else
-        {
-            animator.SetBool("isWalking", false); // Yurume animasyonunu durdur
-        }
+        animator.SetBool("isWalking", move.magnitude > 0.1f);
 
-        // Yer�ekimi kontrol�
         if (IsGrounded() && velocity.y < 0)
         {
-            velocity.y = -2f; // Hafif bir sabit kuvvet uygulayin
-
-            // Ziplama tusuna basildiginda
-            if (Input.GetButtonDown("Jump"))
+            velocity.y = -2f;
+            if (Keyboard.current.spaceKey.wasPressedThisFrame)
             {
-                velocity.y = Mathf.Sqrt(jumpForce * -2f * Physics.gravity.y); // Ziplama kuvveti uygula
-                animator.SetBool("isJumping", true); // Ziplama animasyonunu baslat
+                velocity.y = Mathf.Sqrt(jumpForce * -2f * Physics.gravity.y);
+                animator.SetBool("isJumping", true);
                 isJumping = true;
             }
             else if (isJumping)
             {
-                animator.SetBool("isJumping", false); // Ziplama animasyonunu durdur
+                animator.SetBool("isJumping", false);
                 isJumping = false;
             }
         }
         else
         {
-            velocity.y += Physics.gravity.y * Time.deltaTime; // Yercekimi ekleyin
+            velocity.y += Physics.gravity.y * Time.deltaTime;
         }
 
-        // Yercekimini uygula
         characterController.Move(velocity * Time.deltaTime);
 
         if (sleepStaminaSystem != null && move.magnitude > 0.1f)
@@ -301,6 +304,7 @@ public class CharrController : MonoBehaviour
         }
     }
 
+
     bool IsGrounded()
     {
         // Karakterin altina bir Raycast gonder
@@ -308,5 +312,5 @@ public class CharrController : MonoBehaviour
         return Physics.Raycast(transform.position, Vector3.down, raycastDistance);
     }
 
-  
+
 }

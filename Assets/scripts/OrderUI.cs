@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class OrderUI : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class OrderUI : MonoBehaviour
     private bool isUIOpen = false;
     private bool showingActiveOrders = false;
     public static OrderUI Instance { get; private set; }
+    private PlayerInputs _playerInputs;
 
     private void Awake()
     {
@@ -25,18 +27,38 @@ public class OrderUI : MonoBehaviour
         {
             Destroy(gameObject);
         }
+
+        _playerInputs = new PlayerInputs();
     }
+
 
     private void OnEnable()
     {
         OrderManager.OnOrdersUpdated += OnOrderListUpdated;
+
+        _playerInputs.UI.OrderKey.performed += OnToggleOrdersInput;  // InventorKey yerine senin input adý neyse onu yaz
+        _playerInputs.UI.Enable();
     }
 
     private void OnDisable()
     {
         OrderManager.OnOrdersUpdated -= OnOrderListUpdated;
-    }
 
+        _playerInputs.UI.OrderKey.performed -= OnToggleOrdersInput;
+        _playerInputs.UI.Disable();
+    }
+    private void OnToggleOrdersInput(InputAction.CallbackContext context)
+    {
+        if (orderUIPanel.activeSelf)
+        {
+            CloseUI();
+        }
+        else if (!UIManager.Instance.IsAnyUIOpen())
+        {
+            OpenUI();
+        }
+        PersistentMenuManager.Instance.CheckPanels();
+    }
     private void Start()
     {
         if (toggleOrdersButton == null || cancelOrderButton == null)
@@ -55,21 +77,7 @@ public class OrderUI : MonoBehaviour
         cancelOrderButton.gameObject.SetActive(false); // Baþlangýçta gizli
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            if (orderUIPanel.activeSelf)
-            {
-                CloseUI();
-            }
-            else if (!UIManager.Instance.IsAnyUIOpen())
-            {
-                OpenUI();
-            }
-            PersistentMenuManager.Instance.CheckPanels();
-        }
-    }
+    
 
     private void OpenUI()
     {

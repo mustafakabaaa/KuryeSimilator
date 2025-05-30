@@ -3,16 +3,20 @@ using System.Collections.Generic;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-public class MotorcycleVehicle : MonoBehaviour, Iinterectable
+public class MotorcycleVehicle : MonoBehaviour
 {
     float horizontalInput;
     float verticalInput;
-
+    private Vector2 moveInput;
+    private bool brakeInput;
+    private bool interactInput;
     public Transform handle;
     bool braking;
-    Rigidbody rb;
 
+    private MotorcycleControls controls;
+    Rigidbody rb;
     public Vector3 COG;
 
     [Header("Engine Settings")]
@@ -46,7 +50,7 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
     [Header("Camera & DropOff Point Offset")]
     [SerializeField] private Transform _dropOfPoint;
     [SerializeField] private GameObject _vehicleCamera;
-    [SerializeField] public  GameObject _playerCamera;
+    [SerializeField] public GameObject _playerCamera;
     [SerializeField] public GameObject _player;
 
     [Header("Coasting Settings")]
@@ -69,24 +73,48 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
     [SerializeField] private float maxRPM = 8000f;
     [SerializeField] private float idleRPM = 1000f;
     [SerializeField] private AnimationCurve torqueCurve;
-    // MotorcycleVehicle sýnýfýna bu property'leri ekleyin
-    public float EngineRPM => engineRPM;
-    public bool IsEngineRunning => isPlayerOnBoard;
-    [Header("UI References")]
-    [SerializeField] private TextMeshProUGUI interactText; // Inspector'dan baðlayýn
 
+    [Header("UI References")]
+    [SerializeField] private TextMeshProUGUI interactText;
 
     [Header("Reverse Settings")]
-    [SerializeField] private float maxReverseSpeed = 10f; // Geri gitme maksimum hýzý (km/h)
+    [SerializeField] private float maxReverseSpeed = 10f;
 
-    // MotorcycleVehicle scriptinin en üstüne (diðer deðiþkenlerin yanýna) ekleyin:
-    
-    public float CurrentSpeed { get { return currentSpeed; } }
-    public bool IsPlayerOnBoard { get { return isPlayerOnBoard; } }
+    [Header("Interaction Settings")]
+    [SerializeField] private float interactionRadius = 3f;
+    [SerializeField] private LayerMask playerLayer;
+    private bool isPlayerInRange = false;
+    private GameObject currentPlayer;
+
+    public float EngineRPM => engineRPM;
+    public bool IsEngineRunning => isPlayerOnBoard;
+    public float CurrentSpeed => currentSpeed;
+    public bool IsPlayerOnBoard => isPlayerOnBoard;
+
+    void Awake()
+    {
+        controls = new MotorcycleControls();
+        
+        controls.Motorcycle.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
+        controls.Motorcycle.Move.canceled += ctx => moveInput = Vector2.zero;
+        controls.Motorcycle.Brake.performed += ctx => brakeInput = true;
+        controls.Motorcycle.Brake.canceled += ctx => brakeInput = false;
+        controls.Motorcycle.Interact.performed += ctx => HandleInteraction();
+    }
+
+    void OnEnable()
+    {
+        controls.Motorcycle.Enable();
+    }
+
+    void OnDisable()
+    {
+        controls.Motorcycle.Disable();
+    }
+
     void Start()
     {
         WheelStartSettings();
-
         rb = GetComponent<Rigidbody>();
         rb.centerOfMass = COG;
 
@@ -95,6 +123,22 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
             engineAudioSource.loop = true;
             engineAudioSource.playOnAwake = true;
             engineAudioSource.Play();
+        }
+        if (interactText == null)
+        {
+            GameObject textObj = GameObject.FindGameObjectWithTag("InteractText"); // Obje adýyla bul
+                                                                                   // Veya tag ile: GameObject.FindGameObjectWithTag("InteractText");
+
+            if (textObj != null)
+            {
+                interactText = textObj.GetComponent<TextMeshProUGUI>();
+                if (interactText == null)
+                    Debug.LogError("interactableText objesinde TextMeshProUGUI yok!");
+            }
+            else
+            {
+                Debug.LogError("interactableText isimli bir obje bulunamadý!");
+            }
         }
     }
 
@@ -126,10 +170,89 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
 
     void Update()
     {
-        isPlayerWannaExitBicycle();
+        horizontalInput = moveInput.x;
+        verticalInput = moveInput.y;
+        braking = brakeInput;
         currentSpeed = rb.velocity.magnitude * 3.6f;
 
+        CheckPlayerInRange();
+        UpdateEngineSound();
+        if (interactText == null)
+        {
+            interactText = GameObject.FindGameObjectWithTag("InteractText")?.GetComponent<TextMeshProUGUI>();
+        }
+    }
+
+    private void CheckPlayerInRange()
+    {
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, interactionRadius, playerLayer);
+        isPlayerInRange = hitColliders.Length > 0;
+
+        if (isPlayerInRange && hitColliders.Length > 0)
+        {
+            currentPlayer = hitColliders[0].gameObject;
+
+            if (!isPlayerOnBoard && interactText != null)
+            {
+                interactText.text = "Bin (F)";
+                interactText.gameObject.SetActive(true); // <-- Oyuncu BÝNMEMÝÞSE ve yakýndaysa göster
+            }
+        }
+        else
+        {
+            currentPlayer = null;
+            if (interactText != null)
+                interactText.gameObject.SetActive(false); // <-- Oyuncu yakýnda deðilse her durumda gizle
+        }
+    }
+
+    private void HandleInteraction()
+    {
+        if (isPlayerInRange && !isPlayerOnBoard && currentPlayer != null)
+        {
+            MountMotorcycle();
+        }
+        else if (isPlayerOnBoard)
+        {
+            DismountMotorcycle();
+        }
+    }
+
+    public void MountMotorcycle()
+    {
+        if (currentPlayer == null) return;
+
+        isPlayerOnBoard = true;
+        _player = currentPlayer;
         
+        changeCamera();
+        playerStatue();
+
+        if (MotorEventManager.Instance != null)
+        {
+            MotorEventManager.Instance.TriggerMountEvent(this);
+        }
+
+        if (interactText != null)
+            interactText.gameObject.SetActive(false);
+    }
+
+    public void DismountMotorcycle()
+    {
+        isPlayerOnBoard = false;
+
+        changeCamera();
+        playerStatue();
+
+        // Motoru terk ettikten hemen sonra kontrol yap:
+        isPlayerInRange = true; // Geçici olarak "yakýnda" kabul et
+        currentPlayer = _player; // Oyuncu referansýný koru
+        CheckPlayerInRange(); // Yazýyý güncelle
+
+        if (MotorEventManager.Instance != null)
+        {
+            MotorEventManager.Instance.TriggerDismountEvent();
+        }
     }
 
     private void UpdateEngineSound()
@@ -139,23 +262,6 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
             float rpmPercent = Mathf.InverseLerp(idleRPM, maxRPM, engineRPM);
             engineAudioSource.pitch = Mathf.Lerp(minPitch, maxPitch, rpmPercent);
         }
-    }
-
-    void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        Vector3 worldCOG = transform.TransformPoint(COG);
-        Gizmos.DrawSphere(worldCOG, 0.1f);
-
-        Gizmos.color = Color.cyan;
-        Gizmos.DrawLine(transform.position, worldCOG);
-
-        Gizmos.color = Color.red;
-        Gizmos.DrawLine(worldCOG, worldCOG + transform.right * 0.5f);
-        Gizmos.color = Color.green;
-        Gizmos.DrawLine(worldCOG, worldCOG + transform.up * 0.5f);
-        Gizmos.color = Color.blue;
-        Gizmos.DrawLine(worldCOG, worldCOG + transform.forward * 0.5f);
     }
 
     void FixedUpdate()
@@ -196,38 +302,17 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
             LeanOnTurn();
             ApplyDownforce();
         }
-        UpdateEngineSound(); // <-- Her frame motor sesi güncelleniyor
-    }
-
-    private void isPlayerWannaExitBicycle()
-    {
-        if (isPlayerOnBoard && Input.GetKeyDown(KeyCode.E))
-        {
-            if (currentSpeed > 11f)
-            {
-                ToastManager.Instance.ShowToast("Hýzlýsýn, inemezsin!");
-                return; // 11 km/h üstü hýzda inemez
-            }
-
-            isPlayerOnBoard = !isPlayerOnBoard;
-            changeCamera();
-            playerStatue();
-
-            if (MotorEventManager.Instance != null)
-            {
-                MotorEventManager.Instance.TriggerDismountEvent();
-            }
-        }
     }
 
     public void GetInput()
     {
-        horizontalInput = Input.GetAxis("Horizontal");
-        verticalInput = Input.GetAxis("Vertical");
-        braking = Input.GetKeyDown(KeyCode.Space);
+        horizontalInput = moveInput.x;
+        verticalInput = moveInput.y;
+        braking = brakeInput;
+        
         if (braking && verticalInput > 0.1f)
         {
-            verticalInput = 0f; // Motor torkunu sýfýrla
+            verticalInput = 0f;
         }
     }
 
@@ -260,28 +345,24 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
         currentSpeed = rb.velocity.magnitude * 3.6f;
         engineRPM = Mathf.Lerp(idleRPM, maxRPM, currentSpeed / maxSpeed);
 
-        // 1. ÖNCE FREN KONTROLÜ (SPACE TUÞU) - EN YÜKSEK ÖNCELÝK
         if (braking)
         {
-            backWheel.motorTorque = 0f; // Motor gücünü tamamen kes
-            ApplyBraking(); // Frenleri uygula
+            backWheel.motorTorque = 0f;
+            ApplyBraking();
 
-            // Eðer durduysak tekerlekleri kilitle
             if (currentSpeed < 0.5f)
             {
                 rb.velocity = Vector3.zero;
                 engineRPM = idleRPM;
             }
-            return; // Diðer kontrollere geçme
+            return;
         }
 
-        // 2. GERÝ GÝTME (S TUÞU)
         if (verticalInput < -0.1f)
         {
             float speed = rb.velocity.magnitude * 3.6f;
             bool isMovingForward = Vector3.Dot(rb.velocity.normalized, transform.forward) > 0.1f;
 
-            // Eðer ileri hareket varsa, önce tamamen dur
             if (isMovingForward && speed > 1f)
             {
                 backWheel.motorTorque = 0f;
@@ -289,14 +370,13 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
                 return;
             }
 
-            // Geri gitme kuvveti (sýnýrlý)
             if (speed < maxReverseSpeed)
             {
-                backWheel.motorTorque = verticalInput * motorForce * 0.3f; // Yavaþ geri git
+                backWheel.motorTorque = verticalInput * motorForce * 0.3f;
             }
             else
             {
-                backWheel.motorTorque = 0f; // Max hýza ulaþtýysa kes
+                backWheel.motorTorque = 0f;
             }
 
             rb.drag = normalDrag;
@@ -304,7 +384,6 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
             return;
         }
 
-        // 3. ÝLERÝ GÝTME (W TUÞU)
         if (verticalInput > 0.1f)
         {
             float availableTorque = torqueCurve.Evaluate(engineRPM / maxRPM) * motorForce;
@@ -315,13 +394,12 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
             }
             else
             {
-                backWheel.motorTorque = 0f; // Max hýzda gücü kes
+                backWheel.motorTorque = 0f;
             }
 
             rb.drag = normalDrag;
             ReleaseBraking();
         }
-        // 4. HÝÇBÝR TUÞA BASILMIYORSA (YAVAÞLAMA)
         else
         {
             backWheel.motorTorque = 0f;
@@ -338,6 +416,7 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
             }
         }
     }
+
     private void ApplyAutoBrake()
     {
         backWheel.brakeTorque = autoBrakeForce;
@@ -352,10 +431,9 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
 
     public void ApplyBraking()
     {
-        frontWheel.brakeTorque = brakeForce ;
-        backWheel.brakeTorque = brakeForce ;
+        frontWheel.brakeTorque = brakeForce;
+        backWheel.brakeTorque = brakeForce;
     }
-
 
     public void ReleaseBraking()
     {
@@ -475,8 +553,7 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
             _vehicleCamera.SetActive(true);
             _playerCamera.SetActive(false);
             playerStatue();
-            // Minimap motoru takip etsin
-            MinimapTargetManager.Instance.SetTarget(transform); // bisiklet
+            MinimapTargetManager.Instance.SetTarget(transform);
             FindObjectOfType<MinimapPlayerIcon>().SetTarget(this.transform);
         }
         else
@@ -484,8 +561,7 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
             _vehicleCamera.SetActive(false);
             _playerCamera.SetActive(true);
             playerStatue();
-            // Minimap tekrar oyuncuyu takip etsin
-            MinimapTargetManager.Instance.SetTarget(_player.transform); // oyuncu
+            MinimapTargetManager.Instance.SetTarget(_player.transform);
             FindObjectOfType<MinimapPlayerIcon>().SetTarget(_player.transform);
         }
     }
@@ -511,50 +587,9 @@ public class MotorcycleVehicle : MonoBehaviour, Iinterectable
         }
     }
 
-    // MotorcycleVehicle.cs
-    // MotorcycleVehicle.cs - Interact() içinde
-    public void Interact()
+    void OnDrawGizmosSelected()
     {
-        // Deðeri önce deðiþtir
-        isPlayerOnBoard = !isPlayerOnBoard;
-        Debug.Log($"Interact called. New State: {isPlayerOnBoard}", this);
-
-        // Kamera ve player durumunu güncelle
-        changeCamera();
-        playerStatue();
-
-        // Event tetikleme (Null check ekledik)
-        if (MotorEventManager.Instance != null)
-        {
-            if (isPlayerOnBoard)
-                MotorEventManager.Instance.TriggerMountEvent(this);
-            else
-                MotorEventManager.Instance.TriggerDismountEvent();
-        }
-        else
-
-        {
-            Debug.LogError("MotorEventManager.Instance NULL!", this);
-        }
-
-        // Fallback: Doðrudan HUD kontrolü
-        if (!isPlayerOnBoard)
-        {
-            var hud = FindObjectOfType<MotorHUD>(true);
-            if (hud != null) hud.ForceCloseHUD();
-        }
-    }
-
-    public string GetInteractionText()
-    {
-      
-        
-            return "Bin (E)"; // Binme metni göster
-        
-    }
-
-    public bool CanInteract()
-    {
-        return true;
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(transform.position, interactionRadius);
     }
 }

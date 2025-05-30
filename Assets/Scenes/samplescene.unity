@@ -2366,8 +2366,12 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 2000794209}
     - target: {fileID: 2778691483460999448, guid: c1113bc1cc1416d49b21342b05df934e, type: 3}
+      propertyPath: cameraTransform
+      value: 
+      objectReference: {fileID: 676056224}
+    - target: {fileID: 2778691483460999448, guid: c1113bc1cc1416d49b21342b05df934e, type: 3}
       propertyPath: mouseSensitivity
-      value: 200
+      value: 0.2
       objectReference: {fileID: 0}
     - target: {fileID: 2778691483460999448, guid: c1113bc1cc1416d49b21342b05df934e, type: 3}
       propertyPath: sleepStaminaSystem
@@ -5828,6 +5832,11 @@ Camera:
   m_CorrespondingSourceObject: {fileID: 6457714471492175873, guid: c1113bc1cc1416d49b21342b05df934e, type: 3}
   m_PrefabInstance: {fileID: 239595503}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &676056224 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8762764558467796273, guid: c1113bc1cc1416d49b21342b05df934e, type: 3}
+  m_PrefabInstance: {fileID: 239595503}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -7152,7 +7161,7 @@ GameObject:
   - component: {fileID: 866366413}
   m_Layer: 5
   m_Name: interactableText
-  m_TagString: Untagged
+  m_TagString: InteractText
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -14035,7 +14044,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
-  mouseSensitivity: 100
   jumpForce: 1.5
   playerCamera: {fileID: 963194228}
   crosshairImage: {fileID: 0}
@@ -14044,6 +14052,8 @@ MonoBehaviour:
   speedStat: {fileID: 0}
   jumpForceStat: {fileID: 0}
   sleepStaminaSystem: {fileID: 0}
+  cameraTransform: {fileID: 0}
+  mouseSensitivity: 100
   runningStaminaCost: 3
 --- !u!143 &1672299969
 CharacterController:

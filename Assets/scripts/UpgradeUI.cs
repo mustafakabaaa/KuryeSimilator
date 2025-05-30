@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem; // Input System namespace
 
 public class UpgradeUI : MonoBehaviour
 {
@@ -37,25 +38,32 @@ public class UpgradeUI : MonoBehaviour
     [SerializeField] private Color costColor = new Color(1f, 0.5f, 0f); // Turuncu
     [SerializeField] private Image descriptionIcon; // Yeni eklenen Image referansý
     private StatUpgrade currentlyDisplayedUpgrade;
+    private PlayerInputs _playerInputs;
 
+    private void Awake()
+    {
+        _playerInputs = new PlayerInputs();
+    }
     private void OnEnable()
     {
+        _playerInputs.UI.ToggleUpgrade.performed += OnToggleUpgrade;
+        _playerInputs.UI.Enable();
         GameEvents.Instance.OnUpgradePointsChanged += UpdateUI; // Direk eriþim
         InitializePanel();
     }
 
     private void OnDisable()
     {
+        _playerInputs.UI.ToggleUpgrade.performed -= OnToggleUpgrade;
+        _playerInputs.UI.Disable();
         GameEvents.Instance.OnUpgradePointsChanged -= UpdateUI;
     }
-
-    private void Update()
+    private void OnToggleUpgrade(InputAction.CallbackContext context)
     {
-        if (Input.GetKeyDown(toggleKey))
+        if (useUIManager)
         {
             if (panel.activeSelf)
             {
-                // Paneli kapat
                 panel.SetActive(false);
                 UIManager.Instance.SetUpgradeState(false);
                 Cursor.lockState = CursorLockMode.Locked;
@@ -63,15 +71,21 @@ public class UpgradeUI : MonoBehaviour
             }
             else if (!UIManager.Instance.IsAnyUIOpen())
             {
-                // Paneli aç
                 panel.SetActive(true);
                 UIManager.Instance.SetUpgradeState(true);
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
             }
             PersistentMenuManager.Instance.CheckPanels();
-
         }
+        else
+        {
+            LegacyTogglePanel();
+        }
+    }
+    private void Update()
+    {
+       
     }
 
     public bool IsPanelActive() => panel.activeSelf;

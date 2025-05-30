@@ -3,6 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.InputSystem; // Input System namespace
 
 public class InventoryUIController : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class InventoryUIController : MonoBehaviour
     public GameObject inventoryGameobject;
     public TextMeshProUGUI interactText; // Etkilesim metni
     public static InventoryUIController Instance { get; private set; }
+    private PlayerInputs _playerInputs;
 
     private void Awake()
     {
@@ -24,7 +26,43 @@ public class InventoryUIController : MonoBehaviour
         {
             Destroy(gameObject);
         }
+        _playerInputs = new PlayerInputs();
+
     }
+    private void OnEnable()
+    {
+        _playerInputs.UI.InventorKey.performed += OnInventoryToggle;
+        _playerInputs.UI.Enable();
+    }
+
+    private void OnDisable()
+    {
+        _playerInputs.UI.InventorKey.performed -= OnInventoryToggle;
+        _playerInputs.UI.Disable();
+    }
+    private void OnInventoryToggle(InputAction.CallbackContext context)
+    {
+        SwitchToPlayerInventory();
+
+        if (inventoryGameobject.activeSelf)
+        {
+            // Envanteri kapat
+            inventoryGameobject.SetActive(false);
+            UIManager.Instance.SetInventoryState(false);
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
+        else if (!UIManager.Instance.IsAnyUIOpen())
+        {
+            // Envanteri aç
+            inventoryGameobject.SetActive(true);
+            UIManager.Instance.SetInventoryState(true);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+        }
+        PersistentMenuManager.Instance.CheckPanels();
+    }
+
     private void Start()
     {
         playerInventory.maxUnlockedSlots = 8;
@@ -41,10 +79,7 @@ public class InventoryUIController : MonoBehaviour
         Cursor.visible = false;
 
     }
-    private void Update()
-    {
-        InventoryOpenAndClose();
-    }
+   
 
     public void OnChangeButtonClicked(int slotIndex)
     {
