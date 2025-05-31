@@ -1,12 +1,13 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class FleeState : IState
 {
     private NPCController npc;
     private Transform playerTransform;
-    private float fleeSpeed = 5f;
-    private float fleeDuration = 5f; // Kaçma süresi
+    private float fleeDuration = 3f; // Kaçma süresi
     private float timer;
+    private float runSpeed = 4f; // Koþma hýzý
 
     public FleeState(NPCController npc, Transform playerTransform)
     {
@@ -16,30 +17,59 @@ public class FleeState : IState
 
     public void Enter()
     {
-        Debug.Log("Entering Flee State");
-        timer = 0f; // Sayaç sýfýrlandý
-        npc.GetComponent<Animator>().SetBool("isWalking", true);
+        Animator anim = npc.GetComponent<Animator>();
+        if (anim != null)
+        {
+            anim.SetBool("isRunning", true);
+            anim.SetBool("isWalking", false);
+            anim.SetBool("isIdle", false);
+        }
+
+        npc.navMeshAgent.speed = runSpeed;
+        npc.navMeshAgent.updateRotation = true; // DÖNMEYÝ NAVMESHAGENT YAPSIN
+        npc.navMeshAgent.isStopped = false;
+
+        MoveAwayFromPlayer();
     }
 
     public void Update()
     {
-        // NPC, oyuncudan uzaklaþacak
-        Vector3 fleeDirection = (npc.transform.position - playerTransform.position).normalized;
-        npc.transform.position += fleeDirection * fleeSpeed * Time.deltaTime;
-
-        // Sayaç güncelleniyor
         timer += Time.deltaTime;
 
-        // Belirli bir süre sonra WalkingState'e geç
+        // Süre dolduysa WalkingState'e dön
         if (timer >= fleeDuration)
         {
             npc.ChangeState(new WalkingState(npc, npc.pathList, npc.walkingSpeed));
+            return;
+        }
+
+        // Hedefe ulaþtýysa yeni kaçýþ yönü belirle
+        if (!npc.navMeshAgent.pathPending && npc.navMeshAgent.remainingDistance < 0.5f)
+        {
+            MoveAwayFromPlayer();
         }
     }
 
     public void Exit()
     {
-        Debug.Log("Exiting Flee State");
-        npc.GetComponent<Animator>().SetBool("isWalking", false);
+        Animator anim = npc.GetComponent<Animator>();
+        if (anim != null)
+        {
+            anim.SetBool("isRunning", false);
+        }
+
+        npc.navMeshAgent.speed = npc.walkingSpeed;
+    }
+
+    private void MoveAwayFromPlayer()
+    {
+        Vector3 fleeDirection = (npc.transform.position - playerTransform.position).normalized;
+        Vector3 targetPos = npc.transform.position + fleeDirection * 5f; // 5 birim uzaða git
+
+        NavMeshHit hit;
+        if (NavMesh.SamplePosition(targetPos, out hit, 2f, NavMesh.AllAreas))
+        {
+            npc.navMeshAgent.SetDestination(hit.position);
+        }
     }
 }

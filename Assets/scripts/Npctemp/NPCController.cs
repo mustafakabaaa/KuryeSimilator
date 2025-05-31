@@ -4,34 +4,35 @@ using UnityEngine.AI;
 public class NPCController : MonoBehaviour, IAttackable
 {
     public float walkingSpeed = 3.0f;
-    public PathList pathList; // Her NPC için ayrý bir PathList referansý
-    public int health = 3; // NPC'nin caný
-    public int maxHealth = 3; // NPC'nin maksimum caný
-    public NavMeshAgent navMeshAgent { get; private set; } // Eriþim saðlar, dýþarýdan deðiþtirilemez
+    public PathList pathList;
+    public int health = 3;
+    public int maxHealth = 3;
+    public NavMeshAgent navMeshAgent { get; private set; }
+    [SerializeField] private bool _isInvulnerable;
+    public bool isInvulnerable
+    {
+        get => _isInvulnerable;
+        set => _isInvulnerable = value;
+    }
+
     private bool isPaused = false;
     private Animator animator;
-   
     private int currentWaypointIndex = 0;
-
-    [SerializeField] private IState currentState;
+    private IState currentState;
     private Transform playerTransform;
     private Renderer[] renderers;
+    [HideInInspector] public KnockedOutState currentKnockoutState;
 
-    // NPCController.cs'de þu deðiþiklikleri yapýn:
     void Awake()
     {
         renderers = GetComponentsInChildren<Renderer>();
     }
+
     void Start()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
         animator = GetComponent<Animator>();
-
-        // Player'ý sadece bir kere bul ve cache'le
-        if (playerTransform == null)
-        {
-            playerTransform = GameObject.FindGameObjectWithTag("Player")?.transform;
-        }
+        playerTransform = GameObject.FindGameObjectWithTag("Player")?.transform;
 
         if (pathList != null && pathList.waypoints.Count > 0)
         {
@@ -42,6 +43,7 @@ public class NPCController : MonoBehaviour, IAttackable
             Debug.LogWarning("NPC için PathList atanmadý veya boþ.");
         }
     }
+
     public void SetVisible(bool isVisible)
     {
         foreach (var rend in renderers)
@@ -58,14 +60,11 @@ public class NPCController : MonoBehaviour, IAttackable
 
     public void ChangeState(IState newState)
     {
-        if (currentState != null)
-        {
-            currentState.Exit();
-        }
-
+        currentState?.Exit();
         currentState = newState;
-        currentState.Enter();
+        currentState?.Enter();
     }
+
     public void Pause()
     {
         isPaused = true;
@@ -79,49 +78,52 @@ public class NPCController : MonoBehaviour, IAttackable
         navMeshAgent.isStopped = false;
         animator.speed = 1f;
     }
+
     public void Attack()
     {
-        // Oyuncu NPC'ye saldýrdýðýnda
         TakeDamage();
     }
 
     public void TakeDamage()
     {
-        health--; // Can azalt
+        if (isInvulnerable) return; // Skip if invulnerable
+
+        health--;
 
         if (health > 0)
         {
-            // Kaçma durumuna geç
             ChangeState(new FleeState(this, playerTransform));
         }
         else
         {
-            // Bayýlma durumuna geç
+            isInvulnerable = true; // Become invulnerable when knocked out
             ChangeState(new KnockedOutState(this));
         }
     }
+
+    public bool IsVulnerable()
+    {
+        // currentState null ise ve invulnerable deðilse hasar alabilir
+        return !isInvulnerable && (currentState == null || !(currentState is KnockedOutState));
+    }
     public void ResetHealth()
     {
-        health = maxHealth; // Caný yenile
-        //Debug.Log("NPC'nin caný yenilendi: " + health);
+        health = maxHealth;
     }
+
     public void SetActiveState(bool active)
     {
         if (navMeshAgent != null)
         {
             if (active)
             {
-                // Aktif olunca agent aktif, yürümeye hazýr
                 navMeshAgent.enabled = true;
                 navMeshAgent.isStopped = false;
             }
             else
             {
-                // Kapandýðýnda agent durdurulur ve kapatýlýr
                 navMeshAgent.isStopped = true;
                 navMeshAgent.enabled = false;
-
-                // 0. waypoint'e dön
                 if (pathList != null && pathList.waypoints.Count > 0)
                 {
                     transform.position = pathList.waypoints[0].position;
@@ -133,27 +135,17 @@ public class NPCController : MonoBehaviour, IAttackable
         if (animator != null)
         {
             animator.enabled = active;
-            if (!active)
-                animator.speed = 0f;
-            else
-                animator.speed = 1f;
+            animator.speed = active ? 1f : 0f;
         }
 
-        // FSM yönetimi
-        if (!active)
+        if (!active && currentState != null)
         {
-            if (currentState != null)
-            {
-                currentState.Exit();
-                currentState = null;
-            }
+            currentState.Exit();
+            currentState = null;
         }
-        else
+        else if (active && currentState == null && pathList != null && pathList.waypoints.Count > 0)
         {
-            if (currentState == null && pathList != null && pathList.waypoints.Count > 0)
-            {
-                ChangeState(new WalkingState(this, pathList, walkingSpeed));
-            }
+            ChangeState(new WalkingState(this, pathList, walkingSpeed));
         }
     }
 
@@ -161,32 +153,32 @@ public class NPCController : MonoBehaviour, IAttackable
     {
         currentWaypointIndex = index;
     }
-    // NPCController.cs'de þu eklemeleri yapýn:
+
+    public int CurrentWaypointIndex => currentWaypointIndex;
 
     void OnEnable()
     {
-        if (pathList != null && pathList.waypoints.Count > 0 && navMeshAgent != null)
+        if (pathList != null && pathList.waypoints.Count > 0 && navMeshAgent != null && navMeshAgent.isOnNavMesh)
         {
-            if (navMeshAgent.isOnNavMesh)
-            {
-                ChangeState(new WalkingState(this, pathList, walkingSpeed));
-            }
-            else
-            {
-                Debug.LogWarning("NPC OnEnable içinde NavMesh üzerinde deðil!");
-            }
+            ChangeState(new WalkingState(this, pathList, walkingSpeed));
         }
     }
-
 
     void OnDisable()
     {
-        // NPC devre dýþý býrakýldýðýnda mevcut durumu temizle
-        if (currentState != null)
-        {
-            currentState.Exit();
-            currentState = null;
-        }
+        currentState?.Exit();
+        currentState = null;
     }
 
+    public void OnGetUpAnimationComplete()
+    {
+        if (currentKnockoutState != null)
+        {
+            currentKnockoutState.OnGetUpComplete();
+        }
+        else
+        {
+            isInvulnerable = false; // Safety measure
+        }
+    }
 }

@@ -11869,17 +11869,6 @@ MonoBehaviour:
   m_Script: {fileID: 910771039, guid: f56d46228aee4734f9114056c53bb57e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1424922987 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6980455163666298718, guid: 762ff29dc9b8d4a4b96596f2a5f15c56, type: 3}
-  m_PrefabInstance: {fileID: 381864030}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0506df59ebacaff47beaeb31669c4a3a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &1431538559
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -14470,9 +14459,6 @@ MonoBehaviour:
   paths:
   - pathID: 1
     pathList: {fileID: 1084863893}
-    spawnedNPC: {fileID: 0}
-  - pathID: 2
-    pathList: {fileID: 1424922987}
     spawnedNPC: {fileID: 0}
 --- !u!114 &1711625893
 MonoBehaviour:

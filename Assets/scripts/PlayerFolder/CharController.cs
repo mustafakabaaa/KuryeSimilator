@@ -24,7 +24,7 @@ public class CharrController : MonoBehaviour
     public TextMeshProUGUI interactText; // Etkilesim metni
 
     private Animator animator;
-
+    
     private Transform _cameraTarget; // Kamera hedefi (oyuncu veya bisiklet)
     private bool _isControlEnabled = true; // Oyuncu kontrolu etkin mi?
 
@@ -142,11 +142,12 @@ public class CharrController : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, raycastDistance))
         {
+            // Etkileşim kontrolü
             if (hit.collider.TryGetComponent(out Iinterectable interactable))
             {
                 if (interactable.CanInteract())
                 {
-                    interactText.text = interactable.GetInteractionText(); // Dinamik metin
+                    interactText.text = interactable.GetInteractionText();
                     interactText.gameObject.SetActive(true);
                     canInteract = true;
 
@@ -167,11 +168,24 @@ public class CharrController : MonoBehaviour
                 canInteract = false;
             }
 
-            // Saldırı kodu burada kalabilir (değişmeden)
-            if (hit.collider.TryGetComponent(out IAttackable attackable))
+            // Saldırı kontrolü - DEĞİŞTİRİLEN KISIM
+            if (Input.GetMouseButtonDown(0) && hit.collider.TryGetComponent(out IAttackable attackable))
             {
-                if (Input.GetMouseButtonDown(0))
+                // NPC kontrolü doğrudan component üzerinden
+                if (hit.collider.TryGetComponent(out NPCController npcController))
                 {
+                    if (npcController.IsVulnerable())
+                    {
+                        attackable.Attack();
+                    }
+                    else
+                    {
+                        Debug.Log("NPC şu anda hasar alamaz durumda!");
+                    }
+                }
+                else
+                {
+                    // Eğer NPC değilse (başka bir IAttackable nesnesi) direkt saldır
                     attackable.Attack();
                 }
             }
@@ -182,7 +196,6 @@ public class CharrController : MonoBehaviour
             canInteract = false;
         }
     }
-
 
     public void SetCameraTarget(Transform target)
     {
