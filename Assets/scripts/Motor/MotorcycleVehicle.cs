@@ -126,7 +126,7 @@ public class MotorcycleVehicle : MonoBehaviour
         }
         if (interactText == null)
         {
-            GameObject textObj = GameObject.FindGameObjectWithTag("InteractText"); // Obje adýyla bul
+            GameObject textObj = GameObject.FindGameObjectWithTag("interactableText_1"); // Obje adýyla bul
                                                                                    // Veya tag ile: GameObject.FindGameObjectWithTag("InteractText");
 
             if (textObj != null)

@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5dbb4ba124856ec45aa95f053d5453f7, type: 3}
   m_Name: StaminaStat
   m_EditorClassIdentifier: 
+  statID: StaminaStat
   statName: Stamina
   icon: {fileID: 21300000, guid: ecd932264284b1e43ba70e431937c6a4, type: 3}
   baseValue: 100

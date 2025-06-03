@@ -50,6 +50,7 @@ public class UpgradeUI : MonoBehaviour
         _playerInputs.UI.Enable();
         GameEvents.Instance.OnUpgradePointsChanged += UpdateUI; // Direk eriþim
         InitializePanel();
+        UpdateUI();
     }
 
     private void OnDisable()
@@ -75,6 +76,9 @@ public class UpgradeUI : MonoBehaviour
                 UIManager.Instance.SetUpgradeState(true);
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
+
+                UpdateUI();
+
             }
             PersistentMenuManager.Instance.CheckPanels();
         }
@@ -95,6 +99,9 @@ public class UpgradeUI : MonoBehaviour
     {
         panel.SetActive(false);
         CreateButtons();
+        UpdateUI(); // <-- daha kapsamlý güncelleme
+
+
     }
 
     private void LegacyTogglePanel()
@@ -288,6 +295,7 @@ public class UpgradeUI : MonoBehaviour
         }
 
         button.interactable = canAfford && !isMaxedOut;
+        Debug.Log($"Button for {upgrade.affectedStat.statName} - Maxed: {isMaxedOut}, Interactable: {button.interactable}");
 
         // Görsel feedback
         Image buttonImage = button.GetComponent<Image>();
@@ -331,17 +339,49 @@ public class UpgradeUI : MonoBehaviour
             ShowDescription(upgrade);
         }
     }
-
+    public void ForceRefreshUI()
+    {
+        CreateButtons(); // Butonlarý baþtan oluþtur
+        UpdatePointsText(); // Puanlarý güncelle
+    }
     private void RefreshAllButtons()
     {
         for (int i = 0; i < activeButtons.Count; i++)
         {
-            Button button = activeButtons[i].GetComponent<Button>();
+            GameObject buttonObj = activeButtons[i];
+            Button button = buttonObj.GetComponent<Button>();
+            TMP_Text costText = buttonObj.transform.Find("CostText")?.GetComponent<TMP_Text>();
             StatUpgrade upgrade = gameData.availableUpgrades[i];
-            TMP_Text costText = activeButtons[i].transform.Find("CostText")?.GetComponent<TMP_Text>();
 
+            bool isMaxedOut = gameData.IsUpgradeMaxedOut(upgrade);
+            bool canAfford = gameData.upgradePoints >= upgrade.requiredPoints;
+
+            // Görsel ve metin güncelle
             UpdateButtonVisuals(button, costText, upgrade);
+
+            // OnClick temizle
+            button.onClick.RemoveAllListeners();
+
+            // Týklanabilirliði ve listener’ý sadece uygunsa ata
+            if (!isMaxedOut && canAfford)
+            {
+                button.interactable = true;
+                button.onClick.AddListener(() => ApplyUpgrade(upgrade));
+            }
+            else
+            {
+                button.interactable = false;
+            }
         }
+    }
+
+
+    public void OnPanelOpened()
+    {
+        Debug.Log("UpgradeUI: OnPanelOpened called");
+
+        RefreshAllButtons();
+        UpdatePointsText();
     }
 
     private void UpdatePointsText()

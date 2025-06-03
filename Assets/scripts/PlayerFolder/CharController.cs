@@ -48,6 +48,7 @@ public class CharrController : MonoBehaviour
     private bool isMoving = false;
     public float runningStaminaCost = 3f;
     private bool _isCameraLocked = false;
+    private SaveManager saveManager;
 
     private void Awake()
     {
@@ -60,6 +61,8 @@ public class CharrController : MonoBehaviour
         _playerInputs.Player.Look.canceled += ctx => _lookInput = Vector2.zero;
 
         inventoryUIController = GetComponent<InventoryUIController>();
+        characterController = GetComponent<CharacterController>();
+
     }
 
     private void OnEnable()
@@ -74,8 +77,10 @@ public class CharrController : MonoBehaviour
 
     void Start()
     {
+        saveManager = FindObjectOfType<SaveManager>(); // Veya Inspector'dan bağla
+        LoadGameState();
+
         // Component kontrolu
-        characterController = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
 
         if (playerCamera == null)
@@ -108,6 +113,25 @@ public class CharrController : MonoBehaviour
                 sleepStaminaSystem.currentStamina = Mathf.Max(0, sleepStaminaSystem.currentStamina - staminaCost);
             }
         }
+    }
+    public void SaveGameState()
+    {
+        saveManager.SaveGame(this, gameData, sleepStaminaSystem);
+    }
+    public void LoadGameState()
+    {
+        GameData data = saveManager.LoadGame();
+        if (data == null) return;
+
+        // 1. Pozisyon ve rotasyonu yükle
+        characterController.enabled = false;
+        transform.position = data.playerPosition.ToVector3();
+        transform.eulerAngles = new Vector3(0, data.playerRotationY, 0);
+        characterController.enabled = true;
+
+        // 2. İstatistikleri yükle
+        gameData.upgradePoints = data.upgradePoints;
+        sleepStaminaSystem.currentStamina = data.currentStamina;
     }
     private void ApplyStaminaPenalty()
     {

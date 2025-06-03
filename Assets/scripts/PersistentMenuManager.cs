@@ -1,17 +1,17 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 
 public class PersistentMenuManager : MonoBehaviour
 {
     public static PersistentMenuManager Instance { get; private set; }
 
-    // Panel referansları
+    // Panel referanslarÄ±
     public GameObject inventoryPanel;
     public GameObject upgradePanel;
     public GameObject phonePanel;
     public GameObject persistentMenuPanel;
 
-    // Buton referansları
+    // Buton referanslarÄ±
     public Button inventoryButton;
     public Button upgradeButton;
     public Button phoneButton;
@@ -34,7 +34,7 @@ public class PersistentMenuManager : MonoBehaviour
 
     private void Start()
     {
-        // Buton eventlerini bağla
+        // Buton eventlerini baÄŸla
         inventoryButton.onClick.AddListener(() => TogglePanel(inventoryPanel));
         upgradeButton.onClick.AddListener(() => TogglePanel(upgradePanel));
         phoneButton.onClick.AddListener(() => TogglePanel(phonePanel));
@@ -43,28 +43,55 @@ public class PersistentMenuManager : MonoBehaviour
 
     private void TogglePanel(GameObject panel)
     {
-        // Eğer panel zaten açıksa, hiçbir şey yapma (kapatma)
+        bool isActive = !panel.activeSelf;
+
+        // EÄŸer panel zaten aÃ§Ä±ksa, hiÃ§bir ÅŸey yapma (kapatma)
         if (panel.activeSelf)
         {
             return;
         }
 
-        // Diğer tüm panelleri kapat
+        // DiÄŸer tÃ¼m panelleri kapat
         CloseAllPanels();
 
-        // Yeni paneli aç
-        panel.SetActive(true);
+        // Yeni paneli aÃ§
+        panel.SetActive(isActive);
 
-        // UI Manager durumlarını güncelle
+        // UI Manager durumlarÄ±nÄ± gÃ¼ncelle
         if (panel == inventoryPanel) UIManager.Instance.SetInventoryState(true);
         else if (panel == upgradePanel) UIManager.Instance.SetUpgradeState(true);
         else if (panel == phonePanel) UIManager.Instance.SetPhoneUIState(true);
 
-        // Cursor'ı serbest bırak ve menüyü göster
+        // Cursor'Ä± serbest bÄ±rak ve menÃ¼yÃ¼ gÃ¶ster
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         persistentMenuPanel.SetActive(true);
+
+        // EÄŸer aÃ§Ä±lan panel upgrade paneliyse
+        if (panel == upgradePanel && isActive)
+        {
+            // Sahnedeki UpgradeManager objesini bul
+            GameObject upgradeManager = GameObject.Find("UpgradeManager");
+            if (upgradeManager != null)
+            {
+                UpgradeUI upgradeUI = upgradeManager.GetComponent<UpgradeUI>();
+                if (upgradeUI != null)
+                {
+                    upgradeUI.OnPanelOpened();
+                    Debug.Log("UpgradeUI.OnPanelOpened Ã§aÄŸrÄ±ldÄ±.");
+                }
+                else
+                {
+                    Debug.LogWarning("UpgradeUI bileÅŸeni UpgradeManager'da bulunamadÄ±!");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("UpgradeManager objesi sahnede bulunamadÄ±!");
+            }
+        }
     }
+
 
     public void CloseAllPanels()
     {
@@ -72,16 +99,16 @@ public class PersistentMenuManager : MonoBehaviour
         upgradePanel.SetActive(false);
         phonePanel.SetActive(false);
 
-        // UI Manager durumlarını sıfırla
+        // UI Manager durumlarÄ±nÄ± sÄ±fÄ±rla
         UIManager.Instance.SetInventoryState(false);
         UIManager.Instance.SetUpgradeState(false);
         UIManager.Instance.SetPhoneUIState(false);
 
-        // Cursor'ı kilitle
+        // Cursor'Ä± kilitle
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        // Menüyü gizle
+        // MenÃ¼yÃ¼ gizle
         persistentMenuPanel.SetActive(false);
     }
 

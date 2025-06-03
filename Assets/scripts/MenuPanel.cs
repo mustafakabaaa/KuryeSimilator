@@ -8,7 +8,9 @@ public class MenuPanel : MonoBehaviour
     public Button resumeButton; // Devam et butonu
     public Button settingsButton; // Ayarlar butonu
     public Button quitButton; // Çýkýþ butonu
-
+    public Button saveButton;
+    public Button loadButton;
+    private CharrController player;
     private void Start()
     {
         // Butonlara týklama event'larýný ekleyin
@@ -17,6 +19,19 @@ public class MenuPanel : MonoBehaviour
 
         // Panel baþlangýçta kapalý olsun
         menuPanel.SetActive(false);
+       
+        
+        player = FindObjectOfType<CharrController>();
+
+        saveButton.onClick.AddListener(() => {
+            SaveSystem.Instance.SaveGame();
+        });
+
+        loadButton.onClick.AddListener(() => {
+            SaveSystem.Instance.LoadGame();
+        });
+
+
     }
 
     void Update()

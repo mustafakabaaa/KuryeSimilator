@@ -1,6 +1,22 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System;
+using System.Linq;
+
+[System.Serializable]
+public class UpgradeSaveData
+{
+    public string upgradeID; // Unique ID (ScriptableObject name veya custom ID)
+    public int currentLevel;
+    public float currentValue;
+}
+
+[System.Serializable]
+public class GameSaveData
+{
+    public int upgradePoints;
+    public List<UpgradeSaveData> appliedUpgrades = new List<UpgradeSaveData>();
+}
 
 [CreateAssetMenu(fileName = "GameData", menuName = "SC/Game/Data")]
 public class GameDataSO : ScriptableObject
@@ -13,6 +29,26 @@ public class GameDataSO : ScriptableObject
     private Dictionary<CharacterStat, float> activeStats = new Dictionary<CharacterStat, float>();
     private Dictionary<CharacterStat, int> upgradeCounts = new Dictionary<CharacterStat, int>();
 
+    [Header("Save Data")]
+    [SerializeField] private GameSaveData _savedUpgradeData;
+
+    // Property olarak kullaným
+    public GameSaveData savedUpgradeData
+    {
+        get
+        {
+            if (_savedUpgradeData == null)
+            {
+                _savedUpgradeData = new GameSaveData();
+            }
+            return _savedUpgradeData;
+        }
+        set
+        {
+            _savedUpgradeData = value;
+        }
+    }
+
     public bool CanApplyUpgrade(StatUpgrade upgrade)
     {
         return upgradePoints >= upgrade.requiredPoints && !IsUpgradeMaxedOut(upgrade);
@@ -22,9 +58,6 @@ public class GameDataSO : ScriptableObject
     {
         if (!upgradeCounts.ContainsKey(upgrade.affectedStat))
             return false;
-        Debug.Log($"Upgrade uygulandý: {upgrade.affectedStat.statName} (+{upgrade.valueIncrease})"); // Bu satýrý ekleyin
-
-        upgradePoints -= upgrade.requiredPoints;
 
         return upgradeCounts[upgrade.affectedStat] >= upgrade.maxUpgradeCount;
     }
@@ -52,7 +85,6 @@ public class GameDataSO : ScriptableObject
 
         upgradeCounts[upgrade.affectedStat]++;
         OnStatUpgraded?.Invoke(upgrade.affectedStat);
-
     }
 
     public void ResetAllUpgrades()
@@ -60,9 +92,77 @@ public class GameDataSO : ScriptableObject
         activeStats.Clear();
         upgradeCounts.Clear();
     }
+
     public void AddUpgradePoints(int amount)
     {
         upgradePoints += amount;
-        // Burada baþka güncellemeler veya event tetiklemeleri yapabilirsiniz
+    }
+
+    public void SaveUpgradeState()
+    {
+        _savedUpgradeData = new GameSaveData();
+        _savedUpgradeData.upgradePoints = upgradePoints;
+
+        foreach (var entry in upgradeCounts)
+        {
+            _savedUpgradeData.appliedUpgrades.Add(new UpgradeSaveData
+            {
+                upgradeID = entry.Key.name,
+                currentLevel = entry.Value,
+                currentValue = activeStats[entry.Key]
+            });
+        }
+
+    }
+
+    // GameDataSO.cs'de LoadUpgradeState metodunu güçlendirin:
+    public void LoadUpgradeState()
+    {
+        if (_savedUpgradeData == null)
+        {
+            Debug.LogWarning("No saved upgrade data found");
+            return;
+        }
+
+        upgradePoints = _savedUpgradeData.upgradePoints;
+        activeStats.Clear();
+        upgradeCounts.Clear();
+
+        foreach (var savedUpgrade in _savedUpgradeData.appliedUpgrades)
+        {
+            CharacterStat stat = FindStatByID(savedUpgrade.upgradeID);
+            if (stat != null)
+            {
+                activeStats[stat] = savedUpgrade.currentValue;
+                upgradeCounts[stat] = savedUpgrade.currentLevel;
+                Debug.Log($"Loaded upgrade: {stat.name} Lvl:{savedUpgrade.currentLevel}");
+            }
+            else
+            {
+                Debug.LogWarning($"Stat not found: {savedUpgrade.upgradeID}");
+            }
+        }
+    }
+
+    private CharacterStat FindStatByID(string id)
+    {
+        // Tüm availableUpgrades'te ara
+        foreach (var upgrade in availableUpgrades)
+        {
+            if (upgrade.affectedStat != null && upgrade.affectedStat.name == id)
+            {
+                return upgrade.affectedStat;
+            }
+        }
+
+        // Resources'ta ara
+        var allStats = Resources.LoadAll<CharacterStat>("Stats");
+        foreach (var stat in allStats)
+        {
+            if (stat.name == id) return stat;
+        }
+
+        Debug.LogError($"Stat with ID '{id}' not found in available upgrades or Resources/Stats folder");
+        return null;
     }
 }

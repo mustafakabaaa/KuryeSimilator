@@ -6,7 +6,7 @@ public class CharacterProgressionManager : MonoBehaviour
     public static CharacterProgressionManager Instance;
 
     [Header("Config")]
-    public GameDataSO gameData;
+    public GameDataSO gameDataSC;
 
     [Header("Debug")]
     [SerializeField] private int currentUpgradePoints = 0;
@@ -37,9 +37,9 @@ public class CharacterProgressionManager : MonoBehaviour
 
     private void InitializeStats()
     {
-        currentUpgradePoints = gameData.upgradePoints;
+        currentUpgradePoints = gameDataSC.upgradePoints;
 
-        foreach (var upgrade in gameData.availableUpgrades)
+        foreach (var upgrade in gameDataSC.availableUpgrades)
         {
             if (!activeStats.ContainsKey(upgrade.affectedStat))
             {
@@ -54,9 +54,9 @@ public class CharacterProgressionManager : MonoBehaviour
     }
     public void ApplyInventoryUpgrade(InventoryUpgrade upgrade)
     {
-        if (gameData.CanApplyUpgrade(upgrade))
+        if (gameDataSC.CanApplyUpgrade(upgrade))
         {
-            gameData.ApplyUpgrade(upgrade);
+            gameDataSC.ApplyUpgrade(upgrade);
 
             // Inventory referansýný doðru þekilde al
             Inventory inventory = FindObjectOfType<Inventory>();
@@ -76,13 +76,30 @@ public class CharacterProgressionManager : MonoBehaviour
             GameEvents.Instance.TriggerPointsUpdate();
         }
     }
+    public void ReloadStatsFromGameData()
+    {
+        activeStats.Clear();
+
+        foreach (var upgrade in gameDataSC.availableUpgrades)
+        {
+            CharacterStat stat = upgrade.affectedStat;
+
+            if (!activeStats.ContainsKey(stat))
+            {
+                float value = gameDataSC.GetCurrentStatValue(stat);
+                activeStats[stat] = value;
+            }
+        }
+
+        Debug.Log("Statlar yeniden yüklendi.");
+    }
 
     public void ApplyUpgrade(StatUpgrade upgrade)
     {
-        if (gameData.CanApplyUpgrade(upgrade))
+        if (gameDataSC.CanApplyUpgrade(upgrade))
         {
-            gameData.ApplyUpgrade(upgrade);
-            activeStats[upgrade.affectedStat] = gameData.GetCurrentStatValue(upgrade.affectedStat);
+            gameDataSC.ApplyUpgrade(upgrade);
+            activeStats[upgrade.affectedStat] = gameDataSC.GetCurrentStatValue(upgrade.affectedStat);
 
             // Eventleri tetikle
             GameEvents.Instance.TriggerStatUpdate(upgrade.affectedStat, activeStats[upgrade.affectedStat]);
@@ -92,12 +109,12 @@ public class CharacterProgressionManager : MonoBehaviour
 
     public void AddUpgradePoints(int amount)
     {
-        gameData.upgradePoints += amount;
+        gameDataSC.upgradePoints += amount;
         GameEvents.Instance.TriggerPointsUpdate();
     }
 
     public int GetCurrentUpgradePoints()
     {
-        return gameData.upgradePoints;
+        return gameDataSC.upgradePoints;
     }
 }
