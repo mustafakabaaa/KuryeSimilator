@@ -1,43 +1,113 @@
-// SaveManager.cs
-using UnityEngine;
+﻿using UnityEngine;
 using System.IO;
+using System.Collections.Generic;
+using System.Collections;
 
 public class SaveManager : MonoBehaviour
 {
+    public static SaveManager Instance { get; private set; }
+
     private string SAVE_PATH => Path.Combine(Application.persistentDataPath, "save.json");
+    private List<ISaveable> saveableSystems = new List<ISaveable>();
+    private GameData currentGameData;
 
-    public void SaveGame(CharrController player, GameDataSO gameData, SleepStaminaSystem staminaSystem)
+    [Header("References")]
+    public GameDataSO gameDataSO;
+    public SleepStaminaSystem staminaSystem;
+
+    private void Awake()
     {
-        GameData data = new GameData();
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
 
-        // 1. Pozisyon kaydet
-        data.playerPosition = new GameData.Vector3Serializable(player.transform.position);
-        data.playerRotationY = player.transform.eulerAngles.y;
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+       
+       
 
-        // 2. �statistikler
-        data.upgradePoints = gameData.upgradePoints;
-        data.currentStamina = staminaSystem.currentStamina;
-
-        // 3. Save upgrade data
-        gameData.SaveUpgradeState(); // This updates savedUpgradeData
-        data.upgradeData = gameData.savedUpgradeData;
-
-        // JSON'a �evir ve kaydet
-        string json = JsonUtility.ToJson(data, true);
-        File.WriteAllText(SAVE_PATH, json);
-
-        Debug.Log("Oyun kaydedildi: " + SAVE_PATH);
     }
-    public void LoadGameAndApply(GameDataSO gameData)
+    private IEnumerator Start()
     {
-        GameData loadedData = LoadGame();
-        if (loadedData == null) return;
+        // Diğer sistemlerin Awake()'ini bekler
+        yield return new WaitForEndOfFrame();
 
-        gameData.LoadUpgradeState();
+        // En az 1 sistem kaydolana kadar bekle (örneğin UpgradeSystem)
+        yield return new WaitUntil(() => saveableSystems.Count > 0);
 
-        CharacterProgressionManager.Instance.ReloadStatsFromGameData(); // <-- buras� �nemli
+        if (HasSaveData())
+            LoadGame();
+        else
+            InitializeDefaultData();
+    }
+    public bool HasSaveData()
+    {
+        return File.Exists(SAVE_PATH);
+    }
+    public GameData GetCurrentGameData()
+    {
+        return currentGameData;
+    }
+    public void RegisterSystem(ISaveable system)
+    {
+        if (!saveableSystems.Contains(system))
+        {
+            saveableSystems.Add(system);
+            Debug.Log($"System registered: {system.GetType().Name}");
+        }
+    }
 
-        gameData.upgradePoints = loadedData.upgradePoints;
+    public void SaveGame()
+    {
+        currentGameData = new GameData();
+
+        // 1. Önce GameDataSO'ya kaydet
+        gameDataSO.SaveUpgradeState();
+
+        // 2. GameDataSO'dan GameData'ya kopyala
+        currentGameData.upgradeData = gameDataSO.savedUpgradeData;
+        currentGameData.upgradePoints = gameDataSO.upgradePoints;
+        currentGameData.currentStamina = staminaSystem.currentStamina;
+
+        // 3. Diğer sistemleri kaydet (motor, pozisyon vs.)
+        foreach (var system in saveableSystems)
+            system.SaveData(currentGameData);
+
+        // JSON'a yaz
+        string json = JsonUtility.ToJson(currentGameData, true);
+        File.WriteAllText(SAVE_PATH, json);
+    }
+
+    public void LoadGame()
+    {
+        if (!File.Exists(SAVE_PATH))
+        {
+            InitializeDefaultData();
+            return;
+        }
+
+        string json = File.ReadAllText(SAVE_PATH);
+        currentGameData = JsonUtility.FromJson<GameData>(json);
+
+        // 1. GameData'dan GameDataSO'ya yükle
+        gameDataSO.savedUpgradeData = currentGameData.upgradeData;
+        gameDataSO.upgradePoints = currentGameData.upgradePoints;
+        gameDataSO.LoadUpgradeState();  // ↑↑↑ BU SATIR ÇOK ÖNEMLİ ↑↑↑
+
+        // 2. Stamina'yı yükle
+        staminaSystem.currentStamina = currentGameData.currentStamina;
+
+        // 3. Diğer sistemleri yükle
+        foreach (var system in saveableSystems)
+            system?.LoadData(currentGameData);
+    }
+
+    private void InitializeDefaultData()
+    {
+        currentGameData = new GameData();
+        // Varsayılan verileri burada ayarlayabilirsiniz
     }
 
     public void DeleteSave()
@@ -45,29 +115,7 @@ public class SaveManager : MonoBehaviour
         if (File.Exists(SAVE_PATH))
         {
             File.Delete(SAVE_PATH);
-            Debug.Log("Kay�t dosyas� silindi.");
+            Debug.Log("Save file deleted");
         }
-        else
-        {
-            Debug.LogWarning("Silinecek kay�t dosyas� bulunamad�.");
-        }
-    }
-
-    public GameData LoadGame()
-    {
-        if (File.Exists(SAVE_PATH))
-        {
-            string json = File.ReadAllText(SAVE_PATH);
-            GameData data = JsonUtility.FromJson<GameData>(json);
-
-            // Make sure upgradeData isn't null
-            if (data.upgradeData == null)
-            {
-                data.upgradeData = new GameSaveData();
-            }
-
-            return data;
-        }
-        return null;
     }
 }

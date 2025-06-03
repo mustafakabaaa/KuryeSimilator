@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 using UnityEngine;
 using System.Collections;
 
-public class CharrController : MonoBehaviour
+public class CharrController : MonoBehaviour, ISaveable
 {
     [Header("Player Settings")]
     public float moveSpeed = 5f; // Hareket hizi
@@ -62,7 +62,8 @@ public class CharrController : MonoBehaviour
 
         inventoryUIController = GetComponent<InventoryUIController>();
         characterController = GetComponent<CharacterController>();
-
+         // SaveManager'a kendimizi kaydediyoruz
+        
     }
 
     private void OnEnable()
@@ -78,7 +79,7 @@ public class CharrController : MonoBehaviour
     void Start()
     {
         saveManager = FindObjectOfType<SaveManager>(); // Veya Inspector'dan bağla
-        LoadGameState();
+       
 
         // Component kontrolu
         animator = GetComponent<Animator>();
@@ -87,8 +88,9 @@ public class CharrController : MonoBehaviour
         {
             Debug.LogError("PlayerCamera is not assigned.");
         }
-
-
+        if (SaveManager.Instance != null)
+            SaveManager.Instance.RegisterSystem(this);
+        SaveManager.Instance.LoadGame();
     }
 
     void Update()
@@ -114,25 +116,7 @@ public class CharrController : MonoBehaviour
             }
         }
     }
-    public void SaveGameState()
-    {
-        saveManager.SaveGame(this, gameData, sleepStaminaSystem);
-    }
-    public void LoadGameState()
-    {
-        GameData data = saveManager.LoadGame();
-        if (data == null) return;
-
-        // 1. Pozisyon ve rotasyonu yükle
-        characterController.enabled = false;
-        transform.position = data.playerPosition.ToVector3();
-        transform.eulerAngles = new Vector3(0, data.playerRotationY, 0);
-        characterController.enabled = true;
-
-        // 2. İstatistikleri yükle
-        gameData.upgradePoints = data.upgradePoints;
-        sleepStaminaSystem.currentStamina = data.currentStamina;
-    }
+  
     private void ApplyStaminaPenalty()
     {
         if (sleepStaminaSystem != null && sleepStaminaSystem.IsPenaltyActive)
@@ -349,5 +333,42 @@ public class CharrController : MonoBehaviour
         return Physics.Raycast(transform.position, Vector3.down, raycastDistance);
     }
 
+    public void SaveData(GameData data)
+    {
+        if (data == null) return;
+
+        Vector3 currentPosition = transform.position;
+        Debug.Log($"[SAVE] Player Position: {currentPosition}");
+
+        Quaternion currentRotation = transform.rotation;
+
+        characterController.enabled = false;
+        transform.position = currentPosition;
+        transform.rotation = currentRotation;
+        characterController.enabled = true;
+
+        data.playerPosition = new GameData.Vector3Serializable(transform.position);
+        data.playerRotationY = transform.eulerAngles.y;
+        data.currentStamina = sleepStaminaSystem != null ? sleepStaminaSystem.currentStamina : 100f;
+        data.upgradePoints = gameData != null ? gameData.upgradePoints : 0;
+    }
+
+
+    public void LoadData(GameData data)
+    {
+        characterController.enabled = false;
+
+        transform.position = data.playerPosition.ToVector3();
+        transform.eulerAngles = new Vector3(0, data.playerRotationY, 0);
+        velocity = Vector3.zero;
+
+        characterController.enabled = true;
+
+        if (gameData != null)
+            gameData.upgradePoints = data.upgradePoints;
+
+        if (sleepStaminaSystem != null)
+            sleepStaminaSystem.currentStamina = data.currentStamina;
+    }
 
 }

@@ -30,23 +30,13 @@ public class GameDataSO : ScriptableObject
     private Dictionary<CharacterStat, int> upgradeCounts = new Dictionary<CharacterStat, int>();
 
     [Header("Save Data")]
-    [SerializeField] private GameSaveData _savedUpgradeData;
+    [SerializeField] private GameSaveData _savedUpgradeData = new GameSaveData();
 
     // Property olarak kullaným
     public GameSaveData savedUpgradeData
     {
-        get
-        {
-            if (_savedUpgradeData == null)
-            {
-                _savedUpgradeData = new GameSaveData();
-            }
-            return _savedUpgradeData;
-        }
-        set
-        {
-            _savedUpgradeData = value;
-        }
+        get { return _savedUpgradeData ?? (_savedUpgradeData = new GameSaveData()); }
+        set { _savedUpgradeData = value; }
     }
 
     public bool CanApplyUpgrade(StatUpgrade upgrade)

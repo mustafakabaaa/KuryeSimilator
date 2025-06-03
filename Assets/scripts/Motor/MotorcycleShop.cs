@@ -1,8 +1,12 @@
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using static GameData;
 
-public class MotorcycleShop : MonoBehaviour
+public class MotorcycleShop : MonoBehaviour, ISaveable
 {
     [System.Serializable]
     public class MotorcycleItem
@@ -13,39 +17,84 @@ public class MotorcycleShop : MonoBehaviour
         public Sprite motorcycleImage;
         [HideInInspector] public bool isPurchased = false;
     }
+
     public GameObject player;
     public GameObject playerCamera;
-
     public Transform spawnPoint;
+
     [Header("Motorcycle Settings")]
     public MotorcycleItem[] motorcycles;
-    public Transform uiParent; // UI elemanlarýnýn ekleneceði parent
+    public Transform uiParent;
 
     [Header("UI Prefab")]
-    public GameObject motorcycleUIPrefab; // Oluþturulacak UI prefabý
+    public GameObject motorcycleUIPrefab;
+
     private List<MotorcycleVehicle> spawnedMotors = new List<MotorcycleVehicle>();
+
+    private void Awake()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
 
     private void Start()
     {
+        SaveManager.Instance.RegisterSystem(this);
         CreateMotorcycleUI();
-        UpdateAllUI();
 
+        if (SaveManager.Instance.HasSaveData())
+        {
+            LoadMotorcycleFromSave();
+        }
+        else
+        {
+            UpdateAllUI();
+        }
     }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (SaveManager.Instance.HasSaveData())
+        {
+            LoadMotorcycleFromSave();
+        }
+    }
+
+    private void LoadMotorcycleFromSave()
+    {
+        var savedData = SaveManager.Instance.GetCurrentGameData();
+        if (savedData != null && savedData.motorcycleData != null)
+        {
+            LoadData(savedData);
+        }
+    }
+
     public void SpawnMotorcycle(int index)
     {
         if (index < 0 || index >= motorcycles.Length) return;
 
         ClearExistingMotorcycles();
 
-        GameObject newMotor = Instantiate(motorcycles[index].motorcyclePrefab, spawnPoint.position, spawnPoint.rotation);
+        GameObject newMotor = Instantiate(
+            motorcycles[index].motorcyclePrefab,
+            spawnPoint.position,
+            spawnPoint.rotation
+        );
+
         MotorcycleVehicle vehicleScript = newMotor.GetComponent<MotorcycleVehicle>();
 
         if (vehicleScript != null)
         {
             vehicleScript._player = player;
             vehicleScript._playerCamera = playerCamera;
-            spawnedMotors.Add(vehicleScript); // Listeye ekle
+            spawnedMotors.Add(vehicleScript);
         }
+
+        SaveManager.Instance.SaveGame();
     }
 
     private void ClearExistingMotorcycles()
@@ -59,14 +108,12 @@ public class MotorcycleShop : MonoBehaviour
         }
         spawnedMotors.Clear();
     }
+
     private void CreateMotorcycleUI()
     {
         foreach (var bike in motorcycles)
         {
-            // UI elementini oluþtur
             GameObject bikeUI = Instantiate(motorcycleUIPrefab, uiParent);
-
-            // Motor bilgilerini UI'a aktar
             MotorcycleUIElement uiElement = bikeUI.GetComponent<MotorcycleUIElement>();
             if (uiElement != null)
             {
@@ -93,8 +140,85 @@ public class MotorcycleShop : MonoBehaviour
         {
             item.isPurchased = true;
             UpdateAllUI();
+            SaveManager.Instance.SaveGame();
             return true;
         }
         return false;
+    }
+
+    public void SaveData(GameData data)
+    {
+        if (data.motorcycleData == null)
+        {
+            data.motorcycleData = new MotorcycleSaveData();
+        }
+
+        data.motorcycleData.purchasedMotorcycles = motorcycles.Select(m => m.isPurchased).ToArray();
+
+        if (spawnedMotors.Count > 0 && spawnedMotors[0] != null)
+        {
+            data.motorcycleData.activeMotorcycleIndex = GetActiveMotorcycleIndex();
+            data.motorcycleData.motorcyclePosition = new Vector3Serializable(spawnedMotors[0].transform.position);
+            data.motorcycleData.motorcycleRotation = new Vector3Serializable(spawnedMotors[0].transform.eulerAngles);
+        }
+        else
+        {
+            data.motorcycleData.activeMotorcycleIndex = -1;
+        }
+    }
+
+    public void LoadData(GameData data)
+    {
+        if (data.motorcycleData == null) return;
+
+        for (int i = 0; i < Mathf.Min(motorcycles.Length, data.motorcycleData.purchasedMotorcycles.Length); i++)
+        {
+            motorcycles[i].isPurchased = data.motorcycleData.purchasedMotorcycles[i];
+        }
+
+        if (data.motorcycleData.activeMotorcycleIndex >= 0 &&
+            data.motorcycleData.activeMotorcycleIndex < motorcycles.Length)
+        {
+            ClearExistingMotorcycles();
+            SpawnMotorcycle(data.motorcycleData.activeMotorcycleIndex);
+
+            if (spawnedMotors.Count > 0 && spawnedMotors[0] != null)
+            {
+                StartCoroutine(SetMotorTransformAfterFrame(data.motorcycleData));
+            }
+        }
+
+        UpdateAllUI();
+    }
+
+    private IEnumerator SetMotorTransformAfterFrame(MotorcycleSaveData data)
+    {
+        yield return new WaitForFixedUpdate();
+
+        if (spawnedMotors.Count == 0 || spawnedMotors[0] == null) yield break;
+
+        spawnedMotors[0].transform.position = data.motorcyclePosition.ToVector3();
+        spawnedMotors[0].transform.rotation = Quaternion.Euler(data.motorcycleRotation.ToVector3());
+
+        var rb = spawnedMotors[0].GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.velocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+        }
+    }
+
+    private int GetActiveMotorcycleIndex()
+    {
+        if (spawnedMotors.Count == 0) return -1;
+
+        for (int i = 0; i < motorcycles.Length; i++)
+        {
+            if (motorcycles[i].motorcyclePrefab.name == spawnedMotors[0].gameObject.name.Replace("(Clone)", ""))
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 }

@@ -517,7 +517,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &50350644
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -12026,7 +12026,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1398393321}
   - component: {fileID: 1398393322}
-  - component: {fileID: 1398393323}
   m_Layer: 0
   m_Name: SaveManager
   m_TagString: Untagged
@@ -12061,20 +12060,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd4c3b4cfc8cc1846953ab309db05f87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1398393323
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1398393320}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1be7f3dd4bd33a0488ed0af542256773, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  saveManager: {fileID: 1398393322}
-  gameData: {fileID: 11400000, guid: 1fe079cb317ff104dac47a4224721e8f, type: 2}
+  gameDataSO: {fileID: 11400000, guid: 1fe079cb317ff104dac47a4224721e8f, type: 2}
   staminaSystem: {fileID: 163011750}
 --- !u!1 &1401256220
 GameObject:

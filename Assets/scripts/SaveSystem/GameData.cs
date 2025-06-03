@@ -1,16 +1,26 @@
 // GameData.cs
 using UnityEngine;
 using System;
+using static GameData;
+
+[Serializable]
+public class MotorcycleSaveData
+{
+    public bool[] purchasedMotorcycles; // Hangi motorlarýn satýn alýndýðý
+    public int activeMotorcycleIndex; // Aktif motor indexi
+    public Vector3Serializable motorcyclePosition; // Motorun pozisyonu
+    public Vector3Serializable motorcycleRotation; // Motorun rotasyonu
+}
 
 [Serializable]
 public class GameData
 {
-    // Karakter verileri
     public Vector3Serializable playerPosition;
     public float playerRotationY;
-    public GameSaveData upgradeData;
 
-    // Ýstatistikler
+    public GameSaveData upgradeData;
+    public MotorcycleSaveData motorcycleData;
+
     public int upgradePoints;
     public float currentStamina;
 

@@ -24,11 +24,11 @@ public class MenuPanel : MonoBehaviour
         player = FindObjectOfType<CharrController>();
 
         saveButton.onClick.AddListener(() => {
-            SaveSystem.Instance.SaveGame();
+            SaveManager.Instance.SaveGame();
         });
 
         loadButton.onClick.AddListener(() => {
-            SaveSystem.Instance.LoadGame();
+            SaveManager.Instance.LoadGame();
         });
 
 

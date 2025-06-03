@@ -114,6 +114,7 @@ public class MotorcycleVehicle : MonoBehaviour
 
     void Start()
     {
+        
         WheelStartSettings();
         rb = GetComponent<Rigidbody>();
         rb.centerOfMass = COG;
@@ -140,6 +141,7 @@ public class MotorcycleVehicle : MonoBehaviour
                 Debug.LogError("interactableText isimli bir obje bulunamadý!");
             }
         }
+        SaveManager.Instance.SaveGame(); // Durumu kaydet
     }
 
     private void WheelStartSettings()
@@ -235,6 +237,8 @@ public class MotorcycleVehicle : MonoBehaviour
 
         if (interactText != null)
             interactText.gameObject.SetActive(false);
+        
+
     }
 
     public void DismountMotorcycle()
@@ -253,6 +257,8 @@ public class MotorcycleVehicle : MonoBehaviour
         {
             MotorEventManager.Instance.TriggerDismountEvent();
         }
+         // Durumu kaydet
+
     }
 
     private void UpdateEngineSound()
@@ -565,7 +571,14 @@ public class MotorcycleVehicle : MonoBehaviour
             FindObjectOfType<MinimapPlayerIcon>().SetTarget(_player.transform);
         }
     }
-
+    private void OnDestroy()
+    {
+        // Motor yok edilirken kayýt yap
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.SaveGame();
+        }
+    }
     private void playerStatue()
     {
         if (isPlayerOnBoard)
