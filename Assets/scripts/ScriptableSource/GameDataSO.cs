@@ -6,7 +6,7 @@ using System.Linq;
 [System.Serializable]
 public class UpgradeSaveData
 {
-    public string upgradeID; // Unique ID (ScriptableObject name veya custom ID)
+    public string upgradeID;
     public int currentLevel;
     public float currentValue;
 }
@@ -19,7 +19,7 @@ public class GameSaveData
 }
 
 [CreateAssetMenu(fileName = "GameData", menuName = "SC/Game/Data")]
-public class GameDataSO : ScriptableObject
+public class GameDataSO : ScriptableObject, ISaveable
 {
     public event Action<CharacterStat> OnStatUpgraded;
 
@@ -32,11 +32,25 @@ public class GameDataSO : ScriptableObject
     [Header("Save Data")]
     [SerializeField] private GameSaveData _savedUpgradeData = new GameSaveData();
 
-    // Property olarak kullaným
     public GameSaveData savedUpgradeData
     {
         get { return _savedUpgradeData ?? (_savedUpgradeData = new GameSaveData()); }
         set { _savedUpgradeData = value; }
+    }
+
+    // FIXED: Changed from Awake to Start to ensure SaveManager is ready
+    private void Start()
+    {
+        // Register with SaveManager if it exists
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.RegisterSystem(this);
+            Debug.Log("GameDataSO registered with SaveManager");
+        }
+        else
+        {
+            Debug.LogError("SaveManager.Instance is null when trying to register GameDataSO");
+        }
     }
 
     public bool CanApplyUpgrade(StatUpgrade upgrade)
@@ -75,6 +89,52 @@ public class GameDataSO : ScriptableObject
 
         upgradeCounts[upgrade.affectedStat]++;
         OnStatUpgraded?.Invoke(upgrade.affectedStat);
+
+        Debug.Log($"Upgrade applied. Remaining points: {upgradePoints}");
+    }
+
+    // FIXED: Simplified SaveData method
+    public void SaveData(GameData data)
+    {
+        Debug.Log($"GameDataSO.SaveData called - Current upgradePoints: {upgradePoints}");
+
+        // Always save current state
+        SaveUpgradeState();
+
+        // Store both in GameData for consistency
+        data.upgradeData = savedUpgradeData;
+        data.upgradePoints = upgradePoints;
+
+        Debug.Log($"Saved to GameData - upgradePoints: {data.upgradePoints}, upgradeData.upgradePoints: {data.upgradeData.upgradePoints}");
+    }
+
+    // FIXED: Simplified LoadData method
+    public void LoadData(GameData data)
+    {
+        if (data == null)
+        {
+            Debug.LogWarning("GameData is null!");
+            return;
+        }
+
+        Debug.Log($"GameDataSO.LoadData called - Data upgradePoints: {data.upgradePoints}");
+
+        // Load upgrade points (prefer the main field)
+        upgradePoints = data.upgradePoints;
+
+        // Load upgrade data if exists
+        if (data.upgradeData != null)
+        {
+            savedUpgradeData = data.upgradeData;
+            // Use upgradeData.upgradePoints if main field is 0
+            if (upgradePoints == 0 && data.upgradeData.upgradePoints > 0)
+            {
+                upgradePoints = data.upgradeData.upgradePoints;
+            }
+        }
+
+        LoadUpgradeState();
+        Debug.Log($"GameDataSO.LoadData completed - Final upgradePoints: {upgradePoints}");
     }
 
     public void ResetAllUpgrades()
@@ -86,12 +146,14 @@ public class GameDataSO : ScriptableObject
     public void AddUpgradePoints(int amount)
     {
         upgradePoints += amount;
+        Debug.Log($"Added {amount} upgrade points. Total: {upgradePoints}");
     }
 
+    // FIXED: Ensured proper synchronization
     public void SaveUpgradeState()
     {
         _savedUpgradeData = new GameSaveData();
-        _savedUpgradeData.upgradePoints = upgradePoints;
+        _savedUpgradeData.upgradePoints = upgradePoints; // Sync points
 
         foreach (var entry in upgradeCounts)
         {
@@ -99,13 +161,13 @@ public class GameDataSO : ScriptableObject
             {
                 upgradeID = entry.Key.name,
                 currentLevel = entry.Value,
-                currentValue = activeStats[entry.Key]
+                currentValue = activeStats.ContainsKey(entry.Key) ? activeStats[entry.Key] : entry.Key.baseValue
             });
         }
 
+        Debug.Log($"SaveUpgradeState - upgradePoints: {upgradePoints}, savedData.upgradePoints: {_savedUpgradeData.upgradePoints}, appliedUpgrades count: {_savedUpgradeData.appliedUpgrades.Count}");
     }
 
-    // GameDataSO.cs'de LoadUpgradeState metodunu güçlendirin:
     public void LoadUpgradeState()
     {
         if (_savedUpgradeData == null)
@@ -114,7 +176,6 @@ public class GameDataSO : ScriptableObject
             return;
         }
 
-        upgradePoints = _savedUpgradeData.upgradePoints;
         activeStats.Clear();
         upgradeCounts.Clear();
 
@@ -125,18 +186,19 @@ public class GameDataSO : ScriptableObject
             {
                 activeStats[stat] = savedUpgrade.currentValue;
                 upgradeCounts[stat] = savedUpgrade.currentLevel;
-                Debug.Log($"Loaded upgrade: {stat.name} Lvl:{savedUpgrade.currentLevel}");
+                Debug.Log($"Loaded upgrade: {stat.name} Level: {savedUpgrade.currentLevel} Value: {savedUpgrade.currentValue}");
             }
             else
             {
                 Debug.LogWarning($"Stat not found: {savedUpgrade.upgradeID}");
             }
         }
+
+        Debug.Log($"LoadUpgradeState completed - upgradePoints: {upgradePoints}");
     }
 
     private CharacterStat FindStatByID(string id)
     {
-        // Tüm availableUpgrades'te ara
         foreach (var upgrade in availableUpgrades)
         {
             if (upgrade.affectedStat != null && upgrade.affectedStat.name == id)
@@ -145,7 +207,6 @@ public class GameDataSO : ScriptableObject
             }
         }
 
-        // Resources'ta ara
         var allStats = Resources.LoadAll<CharacterStat>("Stats");
         foreach (var stat in allStats)
         {

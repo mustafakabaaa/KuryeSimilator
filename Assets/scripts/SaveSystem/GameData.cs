@@ -6,10 +6,11 @@ using static GameData;
 [Serializable]
 public class MotorcycleSaveData
 {
-    public bool[] purchasedMotorcycles; // Hangi motorlarýn satýn alýndýðý
-    public int activeMotorcycleIndex; // Aktif motor indexi
-    public Vector3Serializable motorcyclePosition; // Motorun pozisyonu
-    public Vector3Serializable motorcycleRotation; // Motorun rotasyonu
+    public bool[] purchasedMotorcycles;
+    public int activeMotorcycleIndex;
+    public Vector3Serializable motorcyclePosition;
+    public Vector3Serializable motorcycleRotation;
+    public bool isPlayerOnBike; // Add this to track if player was on bike
 }
 
 [Serializable]
@@ -23,7 +24,8 @@ public class GameData
 
     public int upgradePoints;
     public float currentStamina;
-
+    public string realWorldTime; // Gerçek dünya saati
+    public DateTime saveDateTime;
     [Serializable]
     public struct Vector3Serializable
     {

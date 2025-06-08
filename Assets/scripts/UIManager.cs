@@ -13,6 +13,7 @@ public class UIManager : MonoBehaviour
     private bool _isBagInventoryOpen;
     private bool _isPCOpen;
     private bool _isMinimapOpen;
+    private bool _isLoadGamePanelOpen;
 
     public delegate void UIStateChangedDelegate();
     public static event UIStateChangedDelegate OnUIStateChanged;
@@ -37,6 +38,7 @@ public class UIManager : MonoBehaviour
         if (_isPhoneUIOpen) FindObjectOfType<OrderUI>()?.CloseUI();
         if (_isDialogueOpen) FindObjectOfType<DialogueUI>()?.CloseDialogue();
         if (_isPCOpen) FindAnyObjectByType<PCUIController>()?.ClosePCUI();
+        if (_isLoadGamePanelOpen) FindObjectOfType<LoadGamePanel>()?.ClosePanel();
     }
     public bool CanOpenNewUI()
     {
@@ -51,6 +53,12 @@ public class UIManager : MonoBehaviour
     private void Update()
     {
         
+    }
+    public void SetLoadGamePanelState(bool state)
+    {
+        if (state && !CanOpenNewUI()) return;
+        _isLoadGamePanelOpen = state;
+        OnUIStateChanged?.Invoke();
     }
     // UI durum güncellemeleri (event tetikleyerek)
     public void SetBagInventoryState(bool state)
@@ -110,7 +118,7 @@ public class UIManager : MonoBehaviour
     public bool IsUpgradeOpen() => _isUpgradeOpen;
     public bool IsMenuOpen() => _isMenuOpen;
     public bool IsPCOpen() => _isPCOpen;
-
+    public bool IsLoadGamePanelOpen() => _isLoadGamePanelOpen;
     public bool IsAnyUIOpen() =>
         _isInventoryOpen ||
         _isUpgradeOpen ||
@@ -118,5 +126,6 @@ public class UIManager : MonoBehaviour
         _isMenuOpen ||
         _isDialogueOpen ||
         _isBagInventoryOpen ||
-        _isPCOpen;
+        _isPCOpen ||
+        _isLoadGamePanelOpen;
 }

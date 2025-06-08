@@ -9,8 +9,13 @@ public class MenuPanel : MonoBehaviour
     public Button settingsButton; // Ayarlar butonu
     public Button quitButton; // Çýkýþ butonu
     public Button saveButton;
-    public Button loadButton;
+
+    // ESKÝ: public LoadGamePanel loadGamePanel; 
+    // YENÝ: SaveGamePanel kullan
+    public SaveGamePanel saveGamePanel; // Yeni eklenen save panel referansý
+
     private CharrController player;
+
     private void Start()
     {
         // Butonlara týklama event'larýný ekleyin
@@ -19,19 +24,19 @@ public class MenuPanel : MonoBehaviour
 
         // Panel baþlangýçta kapalý olsun
         menuPanel.SetActive(false);
-       
-        
+
         player = FindObjectOfType<CharrController>();
 
-        saveButton.onClick.AddListener(() => {
-            SaveManager.Instance.SaveGame();
-        });
+        // ESKÝ: saveButton.onClick.AddListener(ShowLoadPanel);
+        // YENÝ: SaveGamePanel'i aç
+        saveButton.onClick.AddListener(ShowSavePanel);
+    }
 
-        loadButton.onClick.AddListener(() => {
-            SaveManager.Instance.LoadGame();
-        });
-
-
+    // ESKÝ ShowLoadPanel yerine yeni ShowSavePanel
+    public void ShowSavePanel()
+    {
+        UIManager.Instance.CloseAllOpenPanels();
+        saveGamePanel.ShowPanel(); // SaveGamePanel'i aç
     }
 
     void Update()
@@ -65,8 +70,6 @@ public class MenuPanel : MonoBehaviour
         menuPanel.SetActive(true);
         UIManager.Instance.SetMenuState(true);
         Time.timeScale = 0f; // Oyunu duraklat
-                             // Tüm sesleri durdur
-
         AudioListener.pause = true;
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -76,32 +79,23 @@ public class MenuPanel : MonoBehaviour
     {
         menuPanel.SetActive(false);
         UIManager.Instance.SetMenuState(false);
-        // Tüm sesleri yeniden baþlat
         AudioListener.pause = false;
-
         Time.timeScale = 1f;
-
         StartCoroutine(ForceHideCursor());
     }
 
     private IEnumerator ForceHideCursor()
     {
         yield return null; // 1 frame bekle
-
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-
-        // Input sistemini resetle
         UnityEngine.EventSystems.EventSystem.current.SetSelectedGameObject(null);
         UnityEngine.Input.ResetInputAxes();
     }
 
     private void QuitGame()
     {
-        // Oyunu kapat (Editor'de çalýþmaz, build'de çalýþýr)
         Application.Quit();
-
-        // Editor için
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
 #endif

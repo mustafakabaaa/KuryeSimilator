@@ -45,8 +45,7 @@ public class MotorcycleShop : MonoBehaviour, ISaveable
     {
         SaveManager.Instance.RegisterSystem(this);
         CreateMotorcycleUI();
-
-        if (SaveManager.Instance.HasSaveData())
+        if (SaveManager.Instance.HasAnySaveData()) // HasSaveData() yerine HasAnySaveData()
         {
             LoadMotorcycleFromSave();
         }
@@ -58,7 +57,7 @@ public class MotorcycleShop : MonoBehaviour, ISaveable
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (SaveManager.Instance.HasSaveData())
+        if (SaveManager.Instance.HasAnySaveData()) // HasSaveData() yerine HasAnySaveData()
         {
             LoadMotorcycleFromSave();
         }
@@ -76,6 +75,7 @@ public class MotorcycleShop : MonoBehaviour, ISaveable
     public void SpawnMotorcycle(int index)
     {
         if (index < 0 || index >= motorcycles.Length) return;
+        if (!motorcycles[index].isPurchased) return;
 
         ClearExistingMotorcycles();
 
@@ -86,7 +86,6 @@ public class MotorcycleShop : MonoBehaviour, ISaveable
         );
 
         MotorcycleVehicle vehicleScript = newMotor.GetComponent<MotorcycleVehicle>();
-
         if (vehicleScript != null)
         {
             vehicleScript._player = player;
@@ -94,7 +93,6 @@ public class MotorcycleShop : MonoBehaviour, ISaveable
             spawnedMotors.Add(vehicleScript);
         }
 
-        SaveManager.Instance.SaveGame();
     }
 
     private void ClearExistingMotorcycles()
@@ -160,22 +158,27 @@ public class MotorcycleShop : MonoBehaviour, ISaveable
             data.motorcycleData.activeMotorcycleIndex = GetActiveMotorcycleIndex();
             data.motorcycleData.motorcyclePosition = new Vector3Serializable(spawnedMotors[0].transform.position);
             data.motorcycleData.motorcycleRotation = new Vector3Serializable(spawnedMotors[0].transform.eulerAngles);
+            data.motorcycleData.isPlayerOnBike = spawnedMotors[0].IsPlayerOnBoard;
         }
         else
         {
             data.motorcycleData.activeMotorcycleIndex = -1;
+            data.motorcycleData.isPlayerOnBike = false;
         }
     }
 
+    // Enhance LoadData to properly restore state
     public void LoadData(GameData data)
     {
         if (data.motorcycleData == null) return;
 
+        // Load purchase status
         for (int i = 0; i < Mathf.Min(motorcycles.Length, data.motorcycleData.purchasedMotorcycles.Length); i++)
         {
             motorcycles[i].isPurchased = data.motorcycleData.purchasedMotorcycles[i];
         }
 
+        // Spawn active motorcycle if one was active
         if (data.motorcycleData.activeMotorcycleIndex >= 0 &&
             data.motorcycleData.activeMotorcycleIndex < motorcycles.Length)
         {
@@ -185,10 +188,21 @@ public class MotorcycleShop : MonoBehaviour, ISaveable
             if (spawnedMotors.Count > 0 && spawnedMotors[0] != null)
             {
                 StartCoroutine(SetMotorTransformAfterFrame(data.motorcycleData));
+
+                // Restore player on bike state if needed
+                if (data.motorcycleData.isPlayerOnBike)
+                {
+                    spawnedMotors[0].MountMotorcycle();
+                }
             }
         }
 
         UpdateAllUI();
+    }
+    public bool IsMotorcyclePurchased(int index)
+    {
+        if (index < 0 || index >= motorcycles.Length) return false;
+        return motorcycles[index].isPurchased;
     }
 
     private IEnumerator SetMotorTransformAfterFrame(MotorcycleSaveData data)

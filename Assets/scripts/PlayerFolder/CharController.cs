@@ -90,7 +90,7 @@ public class CharrController : MonoBehaviour, ISaveable
         }
         if (SaveManager.Instance != null)
             SaveManager.Instance.RegisterSystem(this);
-        SaveManager.Instance.LoadGame();
+        //SaveManager.Instance.LoadGame();
     }
 
     void Update()
@@ -338,7 +338,7 @@ public class CharrController : MonoBehaviour, ISaveable
         if (data == null) return;
 
         Vector3 currentPosition = transform.position;
-        Debug.Log($"[SAVE] Player Position: {currentPosition}");
+        //Debug.Log($"[SAVE] Player Position: {currentPosition}");
 
         Quaternion currentRotation = transform.rotation;
 
@@ -350,7 +350,6 @@ public class CharrController : MonoBehaviour, ISaveable
         data.playerPosition = new GameData.Vector3Serializable(transform.position);
         data.playerRotationY = transform.eulerAngles.y;
         data.currentStamina = sleepStaminaSystem != null ? sleepStaminaSystem.currentStamina : 100f;
-        data.upgradePoints = gameData != null ? gameData.upgradePoints : 0;
     }
 
 
@@ -364,8 +363,7 @@ public class CharrController : MonoBehaviour, ISaveable
 
         characterController.enabled = true;
 
-        if (gameData != null)
-            gameData.upgradePoints = data.upgradePoints;
+        
 
         if (sleepStaminaSystem != null)
             sleepStaminaSystem.currentStamina = data.currentStamina;

@@ -2,12 +2,12 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Collections;
+using System;
 
 public class SaveManager : MonoBehaviour
 {
     public static SaveManager Instance { get; private set; }
 
-    private string SAVE_PATH => Path.Combine(Application.persistentDataPath, "save.json");
     private List<ISaveable> saveableSystems = new List<ISaveable>();
     private GameData currentGameData;
 
@@ -25,97 +25,231 @@ public class SaveManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
-       
-       
 
+        Debug.Log("SaveManager Instance created");
     }
+
     private IEnumerator Start()
     {
-        // Diğer sistemlerin Awake()'ini bekler
+        // FIXED: Give more time for systems to register
         yield return new WaitForEndOfFrame();
+        yield return new WaitForSeconds(0.1f); // Additional delay
 
-        // En az 1 sistem kaydolana kadar bekle (örneğin UpgradeSystem)
+        // Manually register GameDataSO if not already registered
+        if (gameDataSO != null && !saveableSystems.Contains(gameDataSO))
+        {
+            RegisterSystem(gameDataSO);
+        }
+
+        // Wait for at least one system to register
         yield return new WaitUntil(() => saveableSystems.Count > 0);
 
-        if (HasSaveData())
-            LoadGame();
+        Debug.Log($"SaveManager Start completed. Registered systems: {saveableSystems.Count}");
+
+        // Auto-load logic
+        if (HasAnySaveData())
+        {
+            string lastSave = GetLastSaveFileName();
+            if (!string.IsNullOrEmpty(lastSave))
+            {
+                LoadSpecificSave(lastSave);
+            }
+            else
+            {
+                InitializeDefaultData();
+            }
+        }
         else
+        {
             InitializeDefaultData();
+        }
     }
+
+    public bool HasAnySaveData()
+    {
+        string[] files = Directory.GetFiles(Application.persistentDataPath, "*.json");
+        return files.Length > 0;
+    }
+
     public bool HasSaveData()
     {
-        return File.Exists(SAVE_PATH);
+        return HasAnySaveData();
     }
+
+    public void LoadGame()
+    {
+        if (HasAnySaveData())
+        {
+            string lastSave = GetLastSaveFileName();
+            if (!string.IsNullOrEmpty(lastSave))
+            {
+                LoadSpecificSave(lastSave);
+            }
+        }
+        else
+        {
+            Debug.Log("No save files found");
+        }
+    }
+
+    private string GetLastSaveFileName()
+    {
+        string[] files = Directory.GetFiles(Application.persistentDataPath, "*.json");
+
+        if (files.Length == 0) return null;
+
+        string lastFile = files[0];
+        System.DateTime lastTime = File.GetLastWriteTime(lastFile);
+
+        foreach (string file in files)
+        {
+            System.DateTime fileTime = File.GetLastWriteTime(file);
+            if (fileTime > lastTime)
+            {
+                lastTime = fileTime;
+                lastFile = file;
+            }
+        }
+
+        return Path.GetFileNameWithoutExtension(lastFile);
+    }
+
     public GameData GetCurrentGameData()
     {
         return currentGameData;
     }
+
     public void RegisterSystem(ISaveable system)
     {
         if (!saveableSystems.Contains(system))
         {
             saveableSystems.Add(system);
-            Debug.Log($"System registered: {system.GetType().Name}");
+            Debug.Log($"System registered: {system.GetType().Name} - Total systems: {saveableSystems.Count}");
+        }
+        else
+        {
+            Debug.Log($"System already registered: {system.GetType().Name}");
         }
     }
 
-    public void SaveGame()
+    // FIXED: Cleaner save process
+    public void SaveGame(string saveName = "default")
     {
+        Debug.Log($"SaveGame called with name: {saveName}");
+
         currentGameData = new GameData();
+        currentGameData.saveDateTime = DateTime.Now;
+        currentGameData.realWorldTime = DateTime.Now.ToString("HH:mm:ss");
 
-        // 1. Önce GameDataSO'ya kaydet
-        gameDataSO.SaveUpgradeState();
+        Debug.Log($"Registered systems count: {saveableSystems.Count}");
 
-        // 2. GameDataSO'dan GameData'ya kopyala
-        currentGameData.upgradeData = gameDataSO.savedUpgradeData;
-        currentGameData.upgradePoints = gameDataSO.upgradePoints;
-        currentGameData.currentStamina = staminaSystem.currentStamina;
-
-        // 3. Diğer sistemleri kaydet (motor, pozisyon vs.)
+        // Save all registered systems
         foreach (var system in saveableSystems)
-            system.SaveData(currentGameData);
+        {
+            try
+            {
+                Debug.Log($"Saving system: {system.GetType().Name}");
+                system.SaveData(currentGameData);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error saving system {system.GetType().Name}: {e.Message}");
+            }
+        }
 
-        // JSON'a yaz
+        // Save MotorcycleShop separately if needed
+        var motorcycleShop = FindObjectOfType<MotorcycleShop>();
+        if (motorcycleShop != null && !saveableSystems.Contains(motorcycleShop))
+        {
+            Debug.Log("Saving MotorcycleShop data");
+            motorcycleShop.SaveData(currentGameData);
+        }
+
+        // Write to file
+        string savePath = Path.Combine(Application.persistentDataPath, $"{saveName}.json");
         string json = JsonUtility.ToJson(currentGameData, true);
-        File.WriteAllText(SAVE_PATH, json);
+        File.WriteAllText(savePath, json);
+
+        Debug.Log($"Game saved to: {savePath}");
+        Debug.Log($"Final save data - upgradePoints: {currentGameData.upgradePoints}");
     }
 
-    public void LoadGame()
+    public void LoadSpecificSave(string saveName)
     {
-        if (!File.Exists(SAVE_PATH))
+        string savePath = Path.Combine(Application.persistentDataPath, $"{saveName}.json");
+
+        if (!File.Exists(savePath))
         {
+            Debug.LogWarning($"Save file not found: {savePath}");
             InitializeDefaultData();
             return;
         }
 
-        string json = File.ReadAllText(SAVE_PATH);
-        currentGameData = JsonUtility.FromJson<GameData>(json);
+        try
+        {
+            string json = File.ReadAllText(savePath);
+            currentGameData = JsonUtility.FromJson<GameData>(json);
 
-        // 1. GameData'dan GameDataSO'ya yükle
-        gameDataSO.savedUpgradeData = currentGameData.upgradeData;
-        gameDataSO.upgradePoints = currentGameData.upgradePoints;
-        gameDataSO.LoadUpgradeState();  // ↑↑↑ BU SATIR ÇOK ÖNEMLİ ↑↑↑
+            Debug.Log($"Loading save: {saveName}");
+            Debug.Log($"Loaded upgradePoints: {currentGameData.upgradePoints}");
 
-        // 2. Stamina'yı yükle
-        staminaSystem.currentStamina = currentGameData.currentStamina;
+            // Load data for all registered systems
+            foreach (var system in saveableSystems)
+            {
+                try
+                {
+                    Debug.Log($"Loading data for system: {system.GetType().Name}");
+                    system.LoadData(currentGameData);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Error loading system {system.GetType().Name}: {e.Message}");
+                }
+            }
 
-        // 3. Diğer sistemleri yükle
-        foreach (var system in saveableSystems)
-            system?.LoadData(currentGameData);
+            // Load stamina if available
+            if (staminaSystem != null)
+            {
+                staminaSystem.currentStamina = currentGameData.currentStamina;
+            }
+
+            Debug.Log($"Save loaded successfully: {saveName}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Error loading save {saveName}: {e.Message}");
+            InitializeDefaultData();
+        }
     }
 
     private void InitializeDefaultData()
     {
         currentGameData = new GameData();
-        // Varsayılan verileri burada ayarlayabilirsiniz
+        Debug.Log("Default data initialized");
     }
 
-    public void DeleteSave()
+    public void DeleteSave(string saveName)
     {
-        if (File.Exists(SAVE_PATH))
+        string savePath = Path.Combine(Application.persistentDataPath, $"{saveName}.json");
+
+        if (File.Exists(savePath))
         {
-            File.Delete(SAVE_PATH);
-            Debug.Log("Save file deleted");
+            File.Delete(savePath);
+            Debug.Log($"Save deleted: {saveName}");
         }
+    }
+
+    public List<string> GetAllSaveFiles()
+    {
+        List<string> saveFiles = new List<string>();
+        string[] files = Directory.GetFiles(Application.persistentDataPath, "*.json");
+
+        foreach (string file in files)
+        {
+            string fileName = Path.GetFileNameWithoutExtension(file);
+            saveFiles.Add(fileName);
+        }
+
+        return saveFiles;
     }
 }

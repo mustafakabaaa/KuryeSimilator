@@ -138,10 +138,10 @@ public class MotorcycleVehicle : MonoBehaviour
             }
             else
             {
-                Debug.LogError("interactableText isimli bir obje bulunamadý!");
+                //Debug.LogError("interactableText isimli bir obje bulunamadý!");
             }
         }
-        SaveManager.Instance.SaveGame(); // Durumu kaydet
+       
     }
 
     private void WheelStartSettings()
@@ -571,14 +571,7 @@ public class MotorcycleVehicle : MonoBehaviour
             FindObjectOfType<MinimapPlayerIcon>().SetTarget(_player.transform);
         }
     }
-    private void OnDestroy()
-    {
-        // Motor yok edilirken kayýt yap
-        if (SaveManager.Instance != null)
-        {
-            SaveManager.Instance.SaveGame();
-        }
-    }
+    
     private void playerStatue()
     {
         if (isPlayerOnBoard)
