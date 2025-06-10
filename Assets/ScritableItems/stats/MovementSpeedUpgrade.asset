@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   affectedStat: {fileID: 11400000, guid: c586e8db0278eaf4fbe0cac9f8a55dca, type: 2}
   valueIncrease: 1
-  requiredPoints: 1
-  maxUpgradeCount: 3
+  requiredPoints: 3
+  maxUpgradeCount: 2
   description: "hg\u0131zlama ekleme  yap"
+  icon: {fileID: 0}

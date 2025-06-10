@@ -8,8 +8,7 @@ public class CharrController : MonoBehaviour, ISaveable
     [Header("Player Settings")]
     public float moveSpeed = 5f; // Hareket hizi
 
-    public float jumpForce = 1.5f; // Z�plama kuvveti
-    private bool isJumping = false; // Z�plama durumu
+   
     private InventoryUIController inventoryUIController;
 
     [Header("References")]
@@ -131,10 +130,7 @@ public class CharrController : MonoBehaviour, ISaveable
             moveSpeed = gameData.GetCurrentStatValue(speedStat);
 
         }
-        if (gameData != null && jumpForceStat != null)
-        {
-            jumpForce = gameData.GetCurrentStatValue(jumpForceStat);
-        }
+       
     }
 
 
@@ -296,20 +292,10 @@ public class CharrController : MonoBehaviour, ISaveable
 
         animator.SetBool("isWalking", move.magnitude > 0.1f);
 
+        // Zıplama ile ilgili kodu tamamen kaldırın ve yerine sadece yerçekimi ekleyin
         if (IsGrounded() && velocity.y < 0)
         {
-            velocity.y = -2f;
-            if (Keyboard.current.spaceKey.wasPressedThisFrame)
-            {
-                velocity.y = Mathf.Sqrt(jumpForce * -2f * Physics.gravity.y);
-                animator.SetBool("isJumping", true);
-                isJumping = true;
-            }
-            else if (isJumping)
-            {
-                animator.SetBool("isJumping", false);
-                isJumping = false;
-            }
+            velocity.y = -2f; // Yere sabitle
         }
         else
         {

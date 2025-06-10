@@ -34,7 +34,12 @@ public class SaveManager : MonoBehaviour
         // FIXED: Give more time for systems to register
         yield return new WaitForEndOfFrame();
         yield return new WaitForSeconds(0.1f); // Additional delay
-
+                                               // OrderManager'ı bul ve kaydet
+        var orderManager = FindObjectOfType<OrderManager>();
+        if (orderManager != null && !saveableSystems.Contains(orderManager))
+        {
+            RegisterSystem(orderManager);
+        }
         // Manually register GameDataSO if not already registered
         if (gameDataSO != null && !saveableSystems.Contains(gameDataSO))
         {
@@ -64,7 +69,20 @@ public class SaveManager : MonoBehaviour
             InitializeDefaultData();
         }
     }
+    // SaveManager.cs içine ekle
+    public void ResetGameData()
+    {
+        InitializeDefaultData();
 
+        // OrderManager'ı bul ve resetle
+        var orderManager = FindObjectOfType<OrderManager>();
+        if (orderManager != null)
+        {
+            orderManager.ResetAllOrders();
+        }
+
+        Debug.Log("Game data reset complete");
+    }
     public bool HasAnySaveData()
     {
         string[] files = Directory.GetFiles(Application.persistentDataPath, "*.json");

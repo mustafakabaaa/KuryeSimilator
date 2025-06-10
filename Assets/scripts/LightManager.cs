@@ -23,7 +23,7 @@ public class LightManager : MonoBehaviour
             TimeOfDay += Time.deltaTime * timeMultiplier;
             TimeOfDay %= 24;
 
-            // Gece 12'yi geçtiysek gün döngüsünü sýfýrla
+            // Trigger day completion when passing midnight
             if (previousTime > 23.9f && TimeOfDay < 0.1f)
             {
                 OnDayCycleCompleted?.Invoke();

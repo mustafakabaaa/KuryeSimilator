@@ -11873,11 +11873,15 @@ PrefabInstance:
     - target: {fileID: 4664322994268695228, guid: b9f42de6425d7a64492e24f3f8462954, type: 3}
       propertyPath: interactText
       value: 
-      objectReference: {fileID: 866366413}
+      objectReference: {fileID: 68961868}
     - target: {fileID: 4664322994268695228, guid: b9f42de6425d7a64492e24f3f8462954, type: 3}
       propertyPath: _playerCamera
       value: 
       objectReference: {fileID: 676056220}
+    - target: {fileID: 4664322994268695228, guid: b9f42de6425d7a64492e24f3f8462954, type: 3}
+      propertyPath: playerLayer.m_Bits
+      value: 64
+      objectReference: {fileID: 0}
     - target: {fileID: 4664322994268695230, guid: b9f42de6425d7a64492e24f3f8462954, type: 3}
       propertyPath: m_Name
       value: FinalBike
@@ -12359,7 +12363,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.3962264, g: 0.38688144, b: 0.38688144, a: 0.39607844}
+  m_Color: {r: 0.3962264, g: 0.38688144, b: 0.38688144, a: 0.79607844}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -14374,8 +14378,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5311561, y: 0.5}
   m_AnchorMax: {x: 0.5311561, y: 0.5}
-  m_AnchoredPosition: {x: -87.16002, y: -120.19}
-  m_SizeDelta: {x: 1841.8, y: 1036.1}
+  m_AnchoredPosition: {x: -87.714, y: -127.779}
+  m_SizeDelta: {x: 1840.7, y: 1020.963}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1512801705
 MonoBehaviour:
@@ -15863,7 +15867,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 5
-  jumpForce: 1.5
   playerCamera: {fileID: 963194228}
   crosshairImage: {fileID: 0}
   interactText: {fileID: 866366413}

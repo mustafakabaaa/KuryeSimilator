@@ -12,12 +12,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 49e491260452c4e4f8d51b6f0430daa3, type: 3}
   m_Name: GameDataSCObject
   m_EditorClassIdentifier: 
-  upgradePoints: 6000
+  upgradePoints: 123099
   availableUpgrades:
-  - {fileID: 11400000, guid: 0c0bd0ad43b856a45b3fc714f8441f40, type: 2}
   - {fileID: 11400000, guid: 81946386ae80b5e4c9bd68a25dd19b1a, type: 2}
   - {fileID: 11400000, guid: 258f0e1b831475d40937c0f5e625b704, type: 2}
   - {fileID: 11400000, guid: f434c5ad3efa67d4eb1035b4de37d5e8, type: 2}
   _savedUpgradeData:
-    upgradePoints: 0
-    appliedUpgrades: []
+    upgradePoints: 123099
+    appliedUpgrades:
+    - upgradeID: MovementSpeed
+      currentLevel: 3
+      currentValue: 8
+    - upgradeID: InventoryStat
+      currentLevel: 12
+      currentValue: 20
+    - upgradeID: StaminaStat
+      currentLevel: 2
+      currentValue: 150

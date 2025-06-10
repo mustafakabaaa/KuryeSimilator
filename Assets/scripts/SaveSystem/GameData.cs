@@ -2,6 +2,22 @@
 using UnityEngine;
 using System;
 using static GameData;
+using System.Collections.Generic;
+
+[Serializable]
+public class OrderSaveData
+{
+    public List<string> completedOrderIDs = new List<string>();
+    public int currentDayIndex;
+}
+
+[Serializable]
+public class SleepSaveData
+{
+    public float currentTimeOfDay;
+    public float lastSleepTime;
+    public bool isSleeping;
+}
 
 [Serializable]
 public class MotorcycleSaveData
@@ -16,16 +32,17 @@ public class MotorcycleSaveData
 [Serializable]
 public class GameData
 {
+    public OrderSaveData orderData;
+    public SleepSaveData sleepData;
     public Vector3Serializable playerPosition;
     public float playerRotationY;
-
     public GameSaveData upgradeData;
     public MotorcycleSaveData motorcycleData;
-
     public int upgradePoints;
     public float currentStamina;
     public string realWorldTime; // Gerçek dünya saati
     public DateTime saveDateTime;
+
     [Serializable]
     public struct Vector3Serializable
     {

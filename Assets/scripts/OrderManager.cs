@@ -2,8 +2,9 @@
 using System.Linq;
 using JetBrains.Annotations;
 using UnityEngine;
+using System;
 
-public class OrderManager : MonoBehaviour
+public class OrderManager : MonoBehaviour, ISaveable
 {
     public static OrderManager Instance;
     public GameDataSO gameData;
@@ -14,24 +15,104 @@ public class OrderManager : MonoBehaviour
     public List<SCOrderData> availableOrders = new List<SCOrderData>();
     public List<SCOrderData> activeOrders = new List<SCOrderData>();
 
+    // Tamamlanan siparişlerin takibi için
+    private HashSet<string> completedOrderIDs = new HashSet<string>();
+
     [Header("NPC Ayarları")]
     public GameObject npcPrefab;
-    private Dictionary<string, GameObject> spawnedNPCs = new Dictionary<string, GameObject>(); // Spawn edilen NPC'leri sakla
+    private Dictionary<string, GameObject> spawnedNPCs = new Dictionary<string, GameObject>();
     OrderUI orderUI = new OrderUI();
     private string missingText = "Eksik ürünler:\n";
+
     public delegate void OrdersUpdatedDelegate();
     public static event OrdersUpdatedDelegate OnOrdersUpdated;
+
     private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
+            // SaveManager'a kayıt ol
+            if (SaveManager.Instance != null)
+            {
+                SaveManager.Instance.RegisterSystem(this);
+                Debug.Log("OrderManager SaveManager'a kaydedildi");
+            }
         }
         else
         {
             Destroy(gameObject);
         }
     }
+
+    private void OnEnable()
+    {
+        // LightManager'ın gün döngüsü eventini dinle
+        LightManager.OnDayCycleCompleted += OnDayCompleted;
+    }
+
+    private void OnDisable()
+    {
+        // Event dinlemeyi durdur
+        LightManager.OnDayCycleCompleted -= OnDayCompleted;
+    }
+
+    // OrderManager.cs içinde bu metodu güncelleyin
+    public void OnDayCompleted()
+    {
+        Debug.Log("Gün tamamlandı! Yeni güne geçiliyor...");
+
+        // Clear completed orders for the new day
+        completedOrderIDs.Clear();
+
+        // Move to the next day
+        currentDayIndex++;
+
+        // Start the new day
+        StartNewDay();
+
+        // Save the game state after day transition
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.SaveGame();
+        }
+    }
+    public void ResetAllOrders()
+    {
+        completedOrderIDs.Clear();
+        currentDayIndex = 0;
+        CleanupDay();
+        StartNewDay();
+    }
+
+    public void SaveData(GameData data)
+    {
+        if (data.orderData == null)
+        {
+            data.orderData = new OrderSaveData();
+        }
+
+        data.orderData.completedOrderIDs = completedOrderIDs.ToList();
+        data.orderData.currentDayIndex = currentDayIndex;
+
+        Debug.Log($"OrderManager saved - Day: {currentDayIndex}, Completed orders: {completedOrderIDs.Count}");
+    }
+
+    public void LoadData(GameData data)
+    {
+        if (data.orderData != null)
+        {
+            completedOrderIDs = new HashSet<string>(data.orderData.completedOrderIDs);
+            currentDayIndex = data.orderData.currentDayIndex;
+
+            Debug.Log($"OrderManager loaded - Day: {currentDayIndex}, Completed orders: {completedOrderIDs.Count}");
+
+            // Start the loaded day
+            StartNewDay();
+        }
+    }
+
+ 
 
     private void Start()
     {
@@ -40,22 +121,32 @@ public class OrderManager : MonoBehaviour
 
     public void StartNewDay()
     {
-        // Mevcut gün index kontrolü
+        // Check if we've completed all days
         if (currentDayIndex >= days.Length)
         {
             Debug.Log("Tüm günler tamamlandı!");
+
+            // Optional: Loop back to day 0 or handle game completion
+            // currentDayIndex = 0;
             return;
         }
 
-        // Temizlik yap
+        // Clean up previous day
         CleanupDay();
 
-        // Yeni gün verilerini yükle
+        // Load the current day's data
         SCDayData currentDay = days[currentDayIndex];
-        availableOrders.AddRange(currentDay.orders);
 
-        Debug.Log($"Yeni gün başladı: {currentDay.dayName}");
-        currentDayIndex++;
+        // Add only orders that haven't been completed
+        foreach (SCOrderData order in currentDay.orders)
+        {
+            if (!completedOrderIDs.Contains(order.orderID))
+            {
+                availableOrders.Add(order);
+            }
+        }
+
+        Debug.Log($"Yeni gün başladı: {currentDay.dayName} (Gün {currentDayIndex + 1}/{days.Length}). {availableOrders.Count} yeni sipariş mevcut.");
     }
 
     public List<SCOrderData> GetAvailableOrders()
@@ -82,9 +173,8 @@ public class OrderManager : MonoBehaviour
             availableOrders.Remove(order);
             activeOrders.Add(order);
 
-            // EKSİK OLAN KISIMLAR:
-            SpawnNPCForOrder(order); // NPC oluştur
-            SpawnOrderItemsAtRestaurant(order); // Sipariş itemlerini spawnla
+            SpawnNPCForOrder(order);
+            SpawnOrderItemsAtRestaurant(order);
 
             OnOrdersUpdated?.Invoke();
             return true;
@@ -100,14 +190,13 @@ public class OrderManager : MonoBehaviour
             return;
         }
 
-        // NPC'yi deliveryPosition'da oluştur
         GameObject npc = Instantiate(npcPrefab, order.deliveryPosition, Quaternion.identity);
         MusteriNPC npcScript = npc.GetComponent<MusteriNPC>();
 
         if (npcScript != null)
         {
-            npcScript.SetOrder(order); // Diyalog ve sipariş bilgisini NPC'ye ver
-            spawnedNPCs.Add(order.orderID, npc); // NPC'yi dictionary'de sakla
+            npcScript.SetOrder(order);
+            spawnedNPCs.Add(order.orderID, npc);
         }
         else
         {
@@ -115,22 +204,17 @@ public class OrderManager : MonoBehaviour
         }
     }
 
-
-
     public bool AreAllOrdersCompleted()
     {
-        // If there are available orders that haven't been accepted yet, return false
         if (availableOrders.Count > 0)
         {
             return false;
         }
-
-        // Only return true if all accepted orders have been completed
         return activeOrders.Count == 0;
     }
+
     public void CompleteOrder(string orderID)
     {
-        // Siparişi bul
         SCOrderData order = activeOrders.FirstOrDefault(o => o.orderID == orderID);
         if (order == null)
         {
@@ -138,7 +222,6 @@ public class OrderManager : MonoBehaviour
             return;
         }
 
-        // Gereken tüm itemleri ve miktarlarını hesapla
         Dictionary<string, int> requiredItems = new Dictionary<string, int>();
         foreach (SCItem item in order.requiredItems)
         {
@@ -148,7 +231,6 @@ public class OrderManager : MonoBehaviour
                 requiredItems.Add(item.itemID, 1);
         }
 
-        // Envanter kontrolü
         bool canComplete = true;
         foreach (var item in requiredItems)
         {
@@ -159,7 +241,6 @@ public class OrderManager : MonoBehaviour
             }
         }
 
-        // Eksik varsa
         if (!canComplete)
         {
             Debug.Log("[OrderManager] Sipariş tamamlanamaz: Ürünler eksik");
@@ -167,38 +248,36 @@ public class OrderManager : MonoBehaviour
             return;
         }
 
-        // Tüm ürünler mevcutsa
         Debug.Log("[OrderManager] Tüm ürünler mevcut, sipariş tamamlanıyor...");
 
-        // Envanterden ürünleri sil
         foreach (var item in requiredItems)
         {
             Inventory.Instance.RemoveItem(item.Key, item.Value);
         }
 
-        // NPC'yi temizle
         if (spawnedNPCs.TryGetValue(orderID, out GameObject npc))
         {
             npc.GetComponent<MusteriNPC>()?.CompleteOrder();
             spawnedNPCs.Remove(orderID);
         }
 
-        // Siparişi kaldır
+        // Siparişi tamamlanmış olarak işaretle
+        completedOrderIDs.Add(orderID);
         activeOrders.Remove(order);
 
-        // Ödülleri ver
         WalletManager.Instance.AddMoney(order.reward);
         gameData.AddUpgradePoints(order.upgradePointReward);
         GameEvents.Instance?.TriggerPointsUpdate();
-        // Event tetikle
+
         OnOrdersUpdated?.Invoke();
 
         Debug.Log($"[OrderManager] Sipariş tamamlandı: {order.orderName}");
     }
+
     private void SpawnOrderItemsAtRestaurant(SCOrderData order)
     {
         if (order.requiredItems == null || order.requiredItems.Length == 0) return;
-        
+
         for (int i = 0; i < order.requiredItems.Length; i++)
         {
             SCItem requiredItem = order.requiredItems[i];
@@ -219,20 +298,21 @@ public class OrderManager : MonoBehaviour
             Debug.LogWarning("olusturuldu");
         }
     }
+
     public void CleanupDay()
     {
-        // Tüm NPC'leri yok et
         foreach (var npcEntry in spawnedNPCs)
         {
             if (npcEntry.Value != null)
             {
-                Destroy(npcEntry.Value); // NPC'yi sahneden sil
+                Destroy(npcEntry.Value);
             }
         }
         availableOrders.Clear();
-        spawnedNPCs.Clear(); // Dictionary'yi temizle
-        activeOrders.Clear(); // Aktif siparişleri temizle
+        spawnedNPCs.Clear();
+        activeOrders.Clear();
     }
+
     public void CancelOrder(string orderID)
     {
         SCOrderData order = activeOrders.FirstOrDefault(o => o.orderID == orderID);
@@ -242,24 +322,22 @@ public class OrderManager : MonoBehaviour
             return;
         }
 
-        // NPC'yi temizle
         if (spawnedNPCs.TryGetValue(orderID, out GameObject npc))
         {
             Destroy(npc);
             spawnedNPCs.Remove(orderID);
         }
 
-        // Restaurant'taki itemleri temizle (eğer varsa)
-        // RestaurantManager.Instance.ClearOrderItems(orderID);
-
-        // Siparişi aktif listesinden çıkar (AVAILABLE'A EKLEME!)
         activeOrders.Remove(order);
-
-        // Eğer siparişin bir daha gösterilmemesini istiyorsanız:
-        // availableOrders'a EKLEMEYİN ve direkt yok sayın.
-        // Veya bir "canceledOrders" listesi tutabilirsiniz.
         WalletManager.Instance.SpendMoney(order.reward);
         OnOrdersUpdated?.Invoke();
         Debug.Log($"[OrderManager] Sipariş iptal edildi ve listeden kaldırıldı: {order.orderName}");
+    }
+
+    // Debug için - günü manuel olarak tamamla
+    [ContextMenu("Complete Day Manually")]
+    public void CompleteDayManually()
+    {
+        OnDayCompleted();
     }
 }
