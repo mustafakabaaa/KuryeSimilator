@@ -24,7 +24,7 @@ public class SaveManager : MonoBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject);
+        //DontDestroyOnLoad(gameObject);
 
         Debug.Log("SaveManager Instance created");
     }
@@ -108,6 +108,7 @@ public class SaveManager : MonoBehaviour
         {
             Debug.Log("No save files found");
         }
+
     }
 
     private string GetLastSaveFileName()

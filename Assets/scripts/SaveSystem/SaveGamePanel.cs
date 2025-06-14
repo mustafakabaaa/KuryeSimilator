@@ -247,7 +247,7 @@ public class SaveGamePanel : MonoBehaviour
 
         for (int i = 1; i <= maxSaveSlots; i++)
         {
-            string potentialName = $"save_{i:D2}";
+            string potentialName = $"MDL_{i:D2}";
 
             if (!existingSaves.Any(s => s.fileName == potentialName))
             {

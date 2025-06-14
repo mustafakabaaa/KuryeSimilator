@@ -181,7 +181,7 @@ public class MotorcycleVehicle : MonoBehaviour
         UpdateEngineSound();
         if (interactText == null)
         {
-            interactText = GameObject.FindGameObjectWithTag("InteractText")?.GetComponent<TextMeshProUGUI>();
+            interactText = GameObject.FindGameObjectWithTag("MotorText")?.GetComponent<TextMeshProUGUI>();
         }
     }
 
