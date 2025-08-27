@@ -17,11 +17,11 @@ public class MotorcycleUIElement : MonoBehaviour
     {
         currentBike = bike;
         shop = shopReference;
-        buyButton.onClick.RemoveAllListeners(); // Öncekileri temizle
+        buyButton.onClick.RemoveAllListeners(); // ï¿½ncekileri temizle
         buyButton.onClick.AddListener(OnBuyButtonClicked);
         UpdateUI();
 
-        // Para deðiþimlerini dinle
+        // Para deï¿½iï¿½imlerini dinle
         WalletManager.Instance.walletAsset.OnBalanceChanged += UpdateUI;
     }
 

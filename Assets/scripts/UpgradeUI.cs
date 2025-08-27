@@ -51,6 +51,7 @@ public class UpgradeUI : MonoBehaviour
         GameEvents.Instance.OnUpgradePointsChanged += UpdateUI; // Direk eriþim
         InitializePanel();
         UpdateUI();
+        UIManager.OnCloseUpgrade += ClosePanel;
     }
 
     private void OnDisable()
@@ -58,6 +59,7 @@ public class UpgradeUI : MonoBehaviour
         _playerInputs.UI.ToggleUpgrade.performed -= OnToggleUpgrade;
         _playerInputs.UI.Disable();
         GameEvents.Instance.OnUpgradePointsChanged -= UpdateUI;
+        UIManager.OnCloseUpgrade -= ClosePanel;
     }
     private void OnToggleUpgrade(InputAction.CallbackContext context)
     {

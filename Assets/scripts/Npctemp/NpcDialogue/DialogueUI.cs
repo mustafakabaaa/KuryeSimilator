@@ -66,7 +66,17 @@ public class DialogueUI : MonoBehaviour
 
         ShowNode(dialogue.nodes[dialogue.startNodeIndex]);
     }
+    private void OnEnable()
+    {
+        
+        UIManager.OnCloseDialogue += CloseDialogue; // ✅ Ekle
+    }
 
+    private void OnDisable()
+    {
+        
+        UIManager.OnCloseDialogue -= CloseDialogue; // ✅ Ekle
+    }
     public void CloseDialogue()
     {  // Kamera kilidini kaldır
         CharrController playerController = FindObjectOfType<CharrController>();

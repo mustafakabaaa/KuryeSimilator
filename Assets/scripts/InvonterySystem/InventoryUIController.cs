@@ -33,12 +33,15 @@ public class InventoryUIController : MonoBehaviour
     {
         _playerInputs.UI.InventorKey.performed += OnInventoryToggle;
         _playerInputs.UI.Enable();
+        UIManager.OnCloseInventory += CloseInventory;
+
     }
 
     private void OnDisable()
     {
         _playerInputs.UI.InventorKey.performed -= OnInventoryToggle;
         _playerInputs.UI.Disable();
+        UIManager.OnCloseInventory -= CloseInventory;
     }
     private void OnInventoryToggle(InputAction.CallbackContext context)
     {
@@ -170,7 +173,7 @@ public class InventoryUIController : MonoBehaviour
     public void UpdateUI(SCInventory inventory)
     {
         //Debug.Log($"UI Güncelleniyor. Açık slot sayısı: {inventory.maxUnlockedSlots}");
-
+        if (inventory == null) return; // Bu kontrol eksik
         for (int i = 0; i < uiList.Count; i++)
         {
             bool slotUnlocked = inventory.IsSlotUnlocked(i);

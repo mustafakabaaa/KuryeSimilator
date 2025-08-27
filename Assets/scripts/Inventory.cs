@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class Inventory : MonoBehaviour
+public class Inventory : MonoBehaviour, ISaveable
 {
     public static Inventory Instance; // Singleton örneði
 
@@ -452,4 +452,95 @@ public class Inventory : MonoBehaviour
         return -1; // Boþ slot yok
     }
 
+    public void SaveData(GameData data)
+    {
+        if (data.inventorySaveData == null)
+        {
+            data.inventorySaveData = new InventorySaveData();
+        }
+
+        // Oyuncu envanterini kaydet
+        data.inventorySaveData.playerInventorySlots = new List<SlotSaveData>();
+        foreach (Slot slot in playerInventory.inventorySlots)
+        {
+            SlotSaveData slotData = new SlotSaveData
+            {
+                itemName = slot.item?.itemName ?? "",
+                itemCount = slot.itemCount,
+                isFull = slot.isFull
+            };
+            data.inventorySaveData.playerInventorySlots.Add(slotData);
+        }
+
+        // Çanta envanterini kaydet
+        data.inventorySaveData.bagInventorySlots = new List<SlotSaveData>();
+        foreach (Slot slot in bagInventory.inventorySlots)
+        {
+            SlotSaveData slotData = new SlotSaveData
+            {
+                itemName = slot.item?.itemName ?? "",
+                itemCount = slot.itemCount,
+                isFull = slot.isFull
+            };
+            data.inventorySaveData.bagInventorySlots.Add(slotData);
+        }
+    }
+
+    public void LoadData(GameData data)
+    {
+        if (data.inventorySaveData == null) return;
+
+        // Oyuncu envanterini yükle
+        for (int i = 0; i < data.inventorySaveData.playerInventorySlots.Count && i < playerInventory.inventorySlots.Count; i++)
+        {
+            SlotSaveData slotData = data.inventorySaveData.playerInventorySlots[i];
+
+            if (!string.IsNullOrEmpty(slotData.itemName))
+            {
+                // ScriptableObject'ten item'ý bul
+                SCItem item = Resources.Load<SCItem>($"Items/{slotData.itemName}");
+                if (item != null)
+                {
+                    playerInventory.inventorySlots[i].item = item;
+                    playerInventory.inventorySlots[i].itemCount = slotData.itemCount;
+                    playerInventory.inventorySlots[i].isFull = slotData.isFull;
+                }
+            }
+            else
+            {
+                // Boþ slot
+                playerInventory.inventorySlots[i] = new Slot();
+            }
+        }
+
+        // Çanta envanterini yükle
+        for (int i = 0; i < data.inventorySaveData.bagInventorySlots.Count && i < bagInventory.inventorySlots.Count; i++)
+        {
+            SlotSaveData slotData = data.inventorySaveData.bagInventorySlots[i];
+
+            if (!string.IsNullOrEmpty(slotData.itemName))
+            {
+                // ScriptableObject'ten item'ý bul
+                SCItem item = Resources.Load<SCItem>($"Items/{slotData.itemName}");
+                if (item != null)
+                {
+                    bagInventory.inventorySlots[i].item = item;
+                    bagInventory.inventorySlots[i].itemCount = slotData.itemCount;
+                    bagInventory.inventorySlots[i].isFull = slotData.isFull;
+                }
+            }
+            else
+            {
+                // Boþ slot
+                bagInventory.inventorySlots[i] = new Slot();
+            }
+        }
+
+        // UI'ý güncelle
+        if (inventoryUIController != null)
+        {
+            inventoryUIController.UpdateUI(playerInventory);
+            inventoryUIController.UpdateUI(bagInventory);
+        }
+    }
 }

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -16,7 +16,17 @@ public class InfoPanelController : MonoBehaviour
         // Baslangicta infoPanel'i gizle
         infoPanel.SetActive(false);
     }
+    private void OnEnable()
+    {
+        // Mevcut kodlar...
+        UIManager.OnCloseInfoPanel += HideOrderInfo; // ✅ Ekle
+    }
 
+    private void OnDisable()
+    {
+        // Mevcut kodlar...
+        UIManager.OnCloseInfoPanel -= HideOrderInfo; // ✅ Ekle
+    }
     public void ShowOrderInfo(SCOrderData orderData)
     {
         infoPanel.SetActive(true);
@@ -27,7 +37,7 @@ public class InfoPanelController : MonoBehaviour
         infoDeliveryAddressText.text = "Address: " + orderData.deliveryAddress;
         infoRewardText.text = orderData.reward.ToString() + "$";
 
-        // Gerekli item'leri grupla ve say�lar�yla birlikte g�ster
+        // Gerekli item'leri grupla ve sayılarıyla birlikte göster
         var groupedItems = new Dictionary<string, int>();
         foreach (SCItem item in orderData.requiredItems)
         {

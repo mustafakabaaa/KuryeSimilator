@@ -74,8 +74,7 @@ public class MotorcycleVehicle : MonoBehaviour
     [SerializeField] private float idleRPM = 1000f;
     [SerializeField] private AnimationCurve torqueCurve;
 
-    [Header("UI References")]
-    [SerializeField] private TextMeshProUGUI interactText;
+
 
     [Header("Reverse Settings")]
     [SerializeField] private float maxReverseSpeed = 10f;
@@ -125,23 +124,6 @@ public class MotorcycleVehicle : MonoBehaviour
             engineAudioSource.playOnAwake = true;
             engineAudioSource.Play();
         }
-        if (interactText == null)
-        {
-            GameObject textObj = GameObject.FindGameObjectWithTag("interactableText_1"); // Obje adýyla bul
-                                                                                   // Veya tag ile: GameObject.FindGameObjectWithTag("InteractText");
-
-            if (textObj != null)
-            {
-                interactText = textObj.GetComponent<TextMeshProUGUI>();
-                if (interactText == null)
-                    Debug.LogError("interactableText objesinde TextMeshProUGUI yok!");
-            }
-            else
-            {
-                //Debug.LogError("interactableText isimli bir obje bulunamadý!");
-            }
-        }
-       
     }
 
     private void WheelStartSettings()
@@ -179,10 +161,6 @@ public class MotorcycleVehicle : MonoBehaviour
 
         CheckPlayerInRange();
         UpdateEngineSound();
-        if (interactText == null)
-        {
-            interactText = GameObject.FindGameObjectWithTag("MotorText")?.GetComponent<TextMeshProUGUI>();
-        }
     }
 
     private void CheckPlayerInRange()
@@ -194,17 +172,19 @@ public class MotorcycleVehicle : MonoBehaviour
         {
             currentPlayer = hitColliders[0].gameObject;
 
-            if (!isPlayerOnBoard && interactText != null)
+            if (!isPlayerOnBoard && InteractionManager.Instance != null)
             {
-                interactText.text = "Bin (F)";
-                interactText.gameObject.SetActive(true); // <-- Oyuncu BÝNMEMÝÞSE ve yakýndaysa göster
+                // InteractionManager'a kayÄ±t ol
+                InteractionManager.Instance.RegisterVehicle(this, transform, "Bin (F)", true);
             }
         }
         else
         {
             currentPlayer = null;
-            if (interactText != null)
-                interactText.gameObject.SetActive(false); // <-- Oyuncu yakýnda deðilse her durumda gizle
+            if (InteractionManager.Instance != null)
+            {
+                InteractionManager.Instance.UnregisterVehicle(this);
+            }
         }
     }
 
@@ -235,8 +215,11 @@ public class MotorcycleVehicle : MonoBehaviour
             MotorEventManager.Instance.TriggerMountEvent(this);
         }
 
-        if (interactText != null)
-            interactText.gameObject.SetActive(false);
+        // InteractionManager'dan kaydÄ± kaldÄ±r
+        if (InteractionManager.Instance != null)
+        {
+            InteractionManager.Instance.UnregisterVehicle(this);
+        }
         
 
     }
@@ -248,17 +231,16 @@ public class MotorcycleVehicle : MonoBehaviour
         changeCamera();
         playerStatue();
 
-        // Motoru terk ettikten hemen sonra kontrol yap:
-        isPlayerInRange = true; // Geçici olarak "yakýnda" kabul et
-        currentPlayer = _player; // Oyuncu referansýný koru
-        CheckPlayerInRange(); // Yazýyý güncelle
+        // Ä°ndikten sonra InteractionManager'a tekrar kayÄ±t ol
+        if (InteractionManager.Instance != null && currentPlayer != null)
+        {
+            InteractionManager.Instance.RegisterVehicle(this, transform, "Bin (F)", true);
+        }
 
         if (MotorEventManager.Instance != null)
         {
             MotorEventManager.Instance.TriggerDismountEvent();
         }
-         // Durumu kaydet
-
     }
 
     private void UpdateEngineSound()

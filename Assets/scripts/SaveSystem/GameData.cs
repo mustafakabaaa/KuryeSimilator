@@ -31,7 +31,10 @@ public class MotorcycleSaveData
 
 [Serializable]
 public class GameData
-{
+{// Mevcut deï¿½iï¿½kenlerden sonra ekle
+    public InventorySaveData inventorySaveData;
+    // Mevcut deï¿½iï¿½kenlerden sonra ekle
+    public ItemSaveData itemData;
     public OrderSaveData orderData;
     public SleepSaveData sleepData;
     public Vector3Serializable playerPosition;
@@ -40,7 +43,7 @@ public class GameData
     public MotorcycleSaveData motorcycleData;
     public int upgradePoints;
     public float currentStamina;
-    public string realWorldTime; // Gerçek dünya saati
+    public string realWorldTime; // Gerï¿½ek dï¿½nya saati
     public DateTime saveDateTime;
 
     [Serializable]

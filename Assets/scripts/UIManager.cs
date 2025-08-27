@@ -18,6 +18,15 @@ public class UIManager : MonoBehaviour
     public delegate void UIStateChangedDelegate();
     public static event UIStateChangedDelegate OnUIStateChanged;
 
+    public static event System.Action OnCloseInventory;
+    public static event System.Action OnCloseUpgrade;
+    public static event System.Action OnUpgrade;
+    public static event System.Action OnCloseOrderUI;
+    public static event System.Action OnCloseInfoPanel;
+    public static event System.Action OnCloseDialogue;
+    public static event System.Action OnClosePC;
+    public static event System.Action OnCloseLoadGame;
+
     private void Awake()
     {
         if (Instance == null)
@@ -32,13 +41,13 @@ public class UIManager : MonoBehaviour
 
     public void CloseAllOpenPanels()
     {
-        if (_isInfoPanel) FindAnyObjectByType<InfoPanelController>()?.HideOrderInfo();
-        if (_isInventoryOpen) FindObjectOfType<InventoryUIController>()?.CloseInventory();
-        if (_isUpgradeOpen) FindObjectOfType<UpgradeUI>()?.ClosePanel();
-        if (_isPhoneUIOpen) FindObjectOfType<OrderUI>()?.CloseUI();
-        if (_isDialogueOpen) FindObjectOfType<DialogueUI>()?.CloseDialogue();
-        if (_isPCOpen) FindAnyObjectByType<PCUIController>()?.ClosePCUI();
-        if (_isLoadGamePanelOpen) FindObjectOfType<LoadGamePanel>()?.ClosePanel();
+        if (_isInfoPanel) OnCloseInfoPanel?.Invoke();
+        if (_isInventoryOpen) OnCloseInventory?.Invoke();
+        if (_isUpgradeOpen)  OnCloseUpgrade?.Invoke();
+        if (_isPhoneUIOpen)     OnCloseOrderUI?.Invoke();
+        if (_isDialogueOpen) OnCloseDialogue?.Invoke();
+        if (_isPCOpen) OnClosePC?.Invoke();
+        if (_isLoadGamePanelOpen) OnCloseLoadGame?.Invoke();
     }
     public bool CanOpenNewUI()
     {
@@ -50,10 +59,7 @@ public class UIManager : MonoBehaviour
         }
         return true;
     }
-    private void Update()
-    {
-        
-    }
+    
     public void SetLoadGamePanelState(bool state)
     {
         if (state && !CanOpenNewUI()) return;

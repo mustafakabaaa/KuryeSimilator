@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,11 +6,11 @@ using UnityEngine.InputSystem;
 
 public class OrderUI : MonoBehaviour
 {
-    public GameObject orderUIPanel; // Sipariþlerin gösterileceði UI paneli
-    public Transform orderContainer; // Sipariþlerin ekleneceði container (ScrollView Content)
+    public GameObject orderUIPanel; // SipariÅŸlerin gÃ¶sterileceÄŸi UI paneli
+    public Transform orderContainer; // SipariÅŸlerin ekleneceÄŸi container (ScrollView Content)
     public GameObject orderPrefab; // Order prefab'i
-    public Button toggleOrdersButton; // Geçiþ butonu
-    public Button cancelOrderButton; // Ýptal butonu (Inspector'dan atanacak)
+    public Button toggleOrdersButton; // GeÃ§iÅŸ butonu
+    public Button cancelOrderButton; // Ä°ptal butonu (Inspector'dan atanacak)
 
     private bool isUIOpen = false;
     private bool showingActiveOrders = false;
@@ -36,8 +36,9 @@ public class OrderUI : MonoBehaviour
     {
         OrderManager.OnOrdersUpdated += OnOrderListUpdated;
 
-        _playerInputs.UI.OrderKey.performed += OnToggleOrdersInput;  // InventorKey yerine senin input adý neyse onu yaz
+        _playerInputs.UI.OrderKey.performed += OnToggleOrdersInput;  // InventorKey yerine senin input adÄ± neyse onu yaz
         _playerInputs.UI.Enable();
+        UIManager.OnCloseOrderUI += CloseUI; // âœ… Ekle
     }
 
     private void OnDisable()
@@ -46,6 +47,7 @@ public class OrderUI : MonoBehaviour
 
         _playerInputs.UI.OrderKey.performed -= OnToggleOrdersInput;
         _playerInputs.UI.Disable();
+        UIManager.OnCloseOrderUI -= CloseUI; // âœ… Ekle
     }
     private void OnToggleOrdersInput(InputAction.CallbackContext context)
     {
@@ -63,7 +65,7 @@ public class OrderUI : MonoBehaviour
     {
         if (toggleOrdersButton == null || cancelOrderButton == null)
         {
-            Debug.LogError("Butonlar inspector'da atanmamýþ!");
+            Debug.LogError("Butonlar inspector'da atanmamÄ±ÅŸ!");
             return;
         }
 
@@ -74,7 +76,7 @@ public class OrderUI : MonoBehaviour
         // Buton dinleyicilerini ekle
         toggleOrdersButton.onClick.AddListener(ToggleOrders);
         cancelOrderButton.onClick.AddListener(OnCancelOrderClicked);
-        cancelOrderButton.gameObject.SetActive(false); // Baþlangýçta gizli
+        cancelOrderButton.gameObject.SetActive(false); // BaÅŸlangÄ±Ã§ta gizli
     }
 
     
@@ -99,7 +101,7 @@ public class OrderUI : MonoBehaviour
         orderUIPanel.SetActive(false);
         UIManager.Instance.SetPhoneUIState(false);
         SetCursorState(false);
-        FindAnyObjectByType<InfoPanelController>()?.HideOrderInfo();
+        //FindAnyObjectByType<InfoPanelController>()?.HideOrderInfo();
     }
 
     private void OnCancelOrderClicked()
@@ -109,10 +111,10 @@ public class OrderUI : MonoBehaviour
             SCOrderData activeOrder = OrderManager.Instance.GetActiveOrders()[0];
             OrderManager.Instance.CancelOrder(activeOrder.orderID);
 
-            // UI'yi güncelle
+            // UI'yi gÃ¼ncelle
             OnOrderListUpdated();
 
-            // Cancel butonunu gizle (artýk aktif sipariþ yoksa)
+            // Cancel butonunu gizle (artÄ±k aktif sipariÅŸ yoksa)
             cancelOrderButton.gameObject.SetActive(false);
         }
     }
@@ -122,13 +124,13 @@ public class OrderUI : MonoBehaviour
         showingActiveOrders = !showingActiveOrders;
         LoadOrders();
 
-        // Cancel butonunu sadece aktif sipariþ varsa göster
+        // Cancel butonunu sadece aktif sipariÅŸ varsa gÃ¶ster
         cancelOrderButton.gameObject.SetActive(
             showingActiveOrders &&
             OrderManager.Instance.GetActiveOrders().Count > 0
         );
 
-        // Toggle buton metnini güncelle
+        // Toggle buton metnini gÃ¼ncelle
         TextMeshProUGUI buttonText = toggleOrdersButton.GetComponentInChildren<TextMeshProUGUI>();
         if (buttonText != null)
         {

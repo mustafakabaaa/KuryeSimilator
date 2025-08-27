@@ -34,12 +34,22 @@ public class SaveManager : MonoBehaviour
         // FIXED: Give more time for systems to register
         yield return new WaitForEndOfFrame();
         yield return new WaitForSeconds(0.1f); // Additional delay
-                                               // OrderManager'ı bul ve kaydet
+
+        // OrderManager'ı bul ve kaydet
         var orderManager = FindObjectOfType<OrderManager>();
         if (orderManager != null && !saveableSystems.Contains(orderManager))
         {
             RegisterSystem(orderManager);
         }
+
+        // ✅ YENİ: Inventory sistemini bul ve kaydet
+        var inventory = FindObjectOfType<Inventory>();
+        if (inventory != null && !saveableSystems.Contains(inventory))
+        {
+            RegisterSystem(inventory);
+            Debug.Log("Inventory system registered to SaveManager");
+        }
+
         // Manually register GameDataSO if not already registered
         if (gameDataSO != null && !saveableSystems.Contains(gameDataSO))
         {

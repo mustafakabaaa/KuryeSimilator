@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class MenuPanel : MonoBehaviour
@@ -9,7 +10,7 @@ public class MenuPanel : MonoBehaviour
     public Button settingsButton; // Ayarlar butonu
     public Button quitButton; // Çýkýþ butonu
     public Button saveButton;
-
+    public Button backMeninMenu;
     // ESKÝ: public LoadGamePanel loadGamePanel; 
     // YENÝ: SaveGamePanel kullan
     public SaveGamePanel saveGamePanel; // Yeni eklenen save panel referansý
@@ -21,7 +22,7 @@ public class MenuPanel : MonoBehaviour
         // Butonlara týklama event'larýný ekleyin
         resumeButton.onClick.AddListener(ResumeGame);
         quitButton.onClick.AddListener(QuitGame);
-
+        backMeninMenu.onClick.AddListener(BackMeinMenu);
         // Panel baþlangýçta kapalý olsun
         menuPanel.SetActive(false);
 
@@ -75,6 +76,10 @@ public class MenuPanel : MonoBehaviour
         Cursor.visible = true;
     }
 
+    private void BackMeinMenu()
+    {
+        SceneManager.LoadScene(0);
+    }
     private void ResumeGame()
     {
         menuPanel.SetActive(false);

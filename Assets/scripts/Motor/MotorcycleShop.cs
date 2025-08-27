@@ -178,9 +178,26 @@ public class MotorcycleShop : MonoBehaviour, ISaveable
             motorcycles[i].isPurchased = data.motorcycleData.purchasedMotorcycles[i];
         }
 
+        // Sahnedeki tüm motor objelerini bul
+        MotorcycleVehicle[] allMotors = FindObjectsOfType<MotorcycleVehicle>();
+        
+        // Motor satın alınmamışsa motor objelerini devre dışı bırak
+        bool anyMotorPurchased = motorcycles.Any(m => m.isPurchased);
+        if (!anyMotorPurchased)
+        {
+            foreach (var motor in allMotors)
+            {
+                if (motor != null && motor.gameObject != null)
+                {
+                    motor.gameObject.SetActive(false);
+                }
+            }
+        }
+
         // Spawn active motorcycle if one was active
         if (data.motorcycleData.activeMotorcycleIndex >= 0 &&
-            data.motorcycleData.activeMotorcycleIndex < motorcycles.Length)
+            data.motorcycleData.activeMotorcycleIndex < motorcycles.Length &&
+            motorcycles[data.motorcycleData.activeMotorcycleIndex].isPurchased)
         {
             ClearExistingMotorcycles();
             SpawnMotorcycle(data.motorcycleData.activeMotorcycleIndex);

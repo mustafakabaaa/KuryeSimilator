@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.IO;
@@ -33,13 +33,22 @@ public class LoadGamePanel : MonoBehaviour
         gameObject.SetActive(false);
         UIManager.Instance.SetLoadGamePanelState(false);
     }
+    private void OnEnable()
+    {
+        // Mevcut kodlar...
+        UIManager.OnCloseLoadGame += ClosePanel; // âœ… Ekle
+    }
 
-
+    private void OnDisable()
+    {
+        // Mevcut kodlar...
+        UIManager.OnCloseLoadGame -= ClosePanel; // âœ… Ekle
+    }
     private void RefreshSaveList()
     {
         foreach (Transform child in saveItemContainer)
         {
-            Destroy(child.gameObject); // Parantezler kaldýrýldý
+            Destroy(child.gameObject); // Parantezler kaldÄ±rÄ±ldÄ±
         }
 
         var saves = Directory.GetFiles(Application.persistentDataPath, "*.json")
@@ -55,7 +64,7 @@ public class LoadGamePanel : MonoBehaviour
             if (texts.Length > 0) texts[0].text = saveName;
             if (texts.Length > 1) texts[1].text = File.GetLastWriteTime(savePath).ToString("dd.MM.yyyy HH:mm");
 
-            // Buton ayarlarý
+            // Buton ayarlarÄ±
             var buttons = item.GetComponentsInChildren<Button>();
             if (buttons.Length > 0)
                 buttons[0].onClick.AddListener(() => LoadSave(saveName));

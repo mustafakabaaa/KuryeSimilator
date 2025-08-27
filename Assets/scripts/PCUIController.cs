@@ -19,8 +19,16 @@ public class PCUIController : MonoBehaviour
         if (_pcUI.activeSelf) ClosePCUI();
         else OpenPCUI();
     }
-   
-   
+    private void OnEnable()
+    {
+        UIManager.OnClosePC += ClosePCUI;
+
+    }
+    private void OnDisable()
+    {
+        UIManager.OnClosePC -= ClosePCUI;
+    }
+
 
     public void OpenPCUI()
     {

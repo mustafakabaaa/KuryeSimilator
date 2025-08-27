@@ -62,8 +62,7 @@ public class BicycleVehicle : MonoBehaviour
     public bool frontGrounded;
     public bool rearGrounded;
 
-    [Header("UI References")]
-    [SerializeField] private TextMeshProUGUI interactText;
+
 
     [Header("Interaction Settings")]
     [SerializeField] private float interactionRadius = 3f;
@@ -97,11 +96,6 @@ public class BicycleVehicle : MonoBehaviour
         StopEmitTrail();
         rb = GetComponent<Rigidbody>();
         rb.centerOfMass = COG;
-
-        if (interactText == null)
-        {
-            interactText = GameObject.FindGameObjectWithTag("InteractText")?.GetComponent<TextMeshProUGUI>();
-        }
     }
 
     void Update()
@@ -118,17 +112,19 @@ public class BicycleVehicle : MonoBehaviour
         {
             currentPlayer = hitColliders[0].gameObject;
 
-            if (!isPlayerOnBoard && interactText != null)
+            if (!isPlayerOnBoard && InteractionManager.Instance != null)
             {
-                interactText.text = "Bin (F)";
-                interactText.gameObject.SetActive(true);
+                // InteractionManager'a kayıt ol
+                InteractionManager.Instance.RegisterVehicle(this, transform, "Bin (F)", true);
             }
         }
         else
         {
             currentPlayer = null;
-            if (interactText != null)
-                interactText.gameObject.SetActive(false);
+            if (InteractionManager.Instance != null)
+            {
+                InteractionManager.Instance.UnregisterVehicle(this);
+            }
         }
     }
 
@@ -154,8 +150,11 @@ public class BicycleVehicle : MonoBehaviour
         changeCamera();
         playerStatue();
 
-        if (interactText != null)
-            interactText.gameObject.SetActive(false);
+        // InteractionManager'dan kaydı kaldır
+        if (InteractionManager.Instance != null)
+        {
+            InteractionManager.Instance.UnregisterVehicle(this);
+        }
     }
 
     public void DismountBicycle()
@@ -165,10 +164,11 @@ public class BicycleVehicle : MonoBehaviour
         changeCamera();
         playerStatue();
 
-        // Bisikletten indikten hemen sonra kontrol yap:
-        isPlayerInRange = true;
-        currentPlayer = _player;
-        CheckPlayerInRange();
+        // İndikten sonra InteractionManager'a tekrar kayıt ol
+        if (InteractionManager.Instance != null && currentPlayer != null)
+        {
+            InteractionManager.Instance.RegisterVehicle(this, transform, "Bin (F)", true);
+        }
     }
 
     void FixedUpdate()

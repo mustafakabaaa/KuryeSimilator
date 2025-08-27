@@ -23,7 +23,7 @@ public class SaveSlotContextMenu : MonoBehaviour
         deleteButton.onClick.AddListener(DeleteSave);
         cancelButton.onClick.AddListener(CloseMenu);
 
-        // Baþlangýçta kapalý
+        // Baï¿½langï¿½ï¿½ta kapalï¿½
         contextMenuPanel.SetActive(false);
     }
 
@@ -32,12 +32,12 @@ public class SaveSlotContextMenu : MonoBehaviour
         currentSaveFileName = saveFileName;
         parentPanel = parent;
 
-        // Baþlýk güncelle
+        // Baï¿½lï¿½k gï¿½ncelle
         titleText.text = $"Save: {saveFileName}";
 
-        // RectTransform ile canvas'ýn ortasýna konumlandýr
+        // RectTransform ile canvas'ï¿½n ortasï¿½na konumlandï¿½r
         RectTransform menuRect = contextMenuPanel.GetComponent<RectTransform>();
-        // Anchor'ý center'a ayarla ve pozisyonu sýfýrla
+        // Anchor'ï¿½ center'a ayarla ve pozisyonu sï¿½fï¿½rla
         menuRect.anchoredPosition = Vector2.zero;
 
         contextMenuPanel.SetActive(true);
@@ -54,14 +54,14 @@ public class SaveSlotContextMenu : MonoBehaviour
         Vector3[] canvasCorners = new Vector3[4];
         canvasRect.GetWorldCorners(canvasCorners);
 
-        // Sað kenara taþma kontrolü
+        // Saï¿½ kenara taï¿½ma kontrolï¿½
         if (menuCorners[2].x > canvasCorners[2].x)
         {
             float overflow = menuCorners[2].x - canvasCorners[2].x;
             menuRect.position -= new Vector3(overflow + 10, 0, 0);
         }
 
-        // Alt kenara taþma kontrolü
+        // Alt kenara taï¿½ma kontrolï¿½
         if (menuCorners[0].y < canvasCorners[0].y)
         {
             float overflow = canvasCorners[0].y - canvasCorners[0].y;
@@ -73,7 +73,7 @@ public class SaveSlotContextMenu : MonoBehaviour
     {
         Debug.Log($"Loading save: {currentSaveFileName}");
 
-        // Save dosyasýndan chapter title'ý al (þimdilik sadece log için)
+        // Save dosyasï¿½ndan chapter title'ï¿½ al (ï¿½imdilik sadece log iï¿½in)
         string chapterTitle = GetChapterTitleFromSave(currentSaveFileName);
         Debug.Log($"Chapter title: {chapterTitle}");
 
@@ -94,7 +94,7 @@ public class SaveSlotContextMenu : MonoBehaviour
 
     private void DeleteSave()
     {
-        // Silme onayý iste
+        // Silme onayï¿½ iste
         ShowDeleteConfirmation();
     }
 
@@ -102,14 +102,14 @@ public class SaveSlotContextMenu : MonoBehaviour
     {
         // Unity-friendly onay sistemi
         Debug.Log($"Delete confirmation for: {currentSaveFileName}");
-        // Þimdilik direkt sil (isterseniz özel onay popup'ý ekleyebiliriz)
+        // ï¿½imdilik direkt sil (isterseniz ï¿½zel onay popup'ï¿½ ekleyebiliriz)
         SaveManager.Instance.DeleteSave(currentSaveFileName);
         parentPanel.RefreshSaveList1();
         CloseMenu();
-        // TODO: Özel onay popup'ý eklenebilir
+        // TODO: ï¿½zel onay popup'ï¿½ eklenebilir
     }
 
-    // Save dosyasýndan chapter title'ý alan metod
+    // Save dosyasï¿½ndan chapter title'ï¿½ alan metod
     private string GetChapterTitleFromSave(string saveFileName)
     {
         try
@@ -118,14 +118,14 @@ public class SaveSlotContextMenu : MonoBehaviour
             if (System.IO.File.Exists(savePath))
             {
                 string json = System.IO.File.ReadAllText(savePath);
-                // Bu kýsmý oyununuzun save formatýna göre ayarlayýn
-                // Örnek: JSON'dan chapter bilgisini çekin
-                return "Chapter 02: The Journey Begins"; // Bu satýrý save dosyanýzdan gerçek veri alacak þekilde deðiþtirin
+                // Bu kï¿½smï¿½ oyununuzun save formatï¿½na gï¿½re ayarlayï¿½n
+                // ï¿½rnek: JSON'dan chapter bilgisini ï¿½ekin
+                return "Chapter 02: The Journey Begins"; // Bu satï¿½rï¿½ save dosyanï¿½zdan gerï¿½ek veri alacak ï¿½ekilde deï¿½iï¿½tirin
             }
         }
         catch (System.Exception e)
         {
-            Debug.LogError($"Save dosyasý okunamadý: {e.Message}");
+            Debug.LogError($"Save dosyasï¿½ okunamadï¿½: {e.Message}");
         }
 
         return "Unknown Chapter";
@@ -137,17 +137,31 @@ public class SaveSlotContextMenu : MonoBehaviour
         currentSaveFileName = "";
     }
 
-    // Menü dýþýna týklanýnca kapat
+    // MenÃ¼ dÄ±ÅŸÄ±na tÄ±klanÄ±nca kapat
     private void Update()
     {
         if (contextMenuPanel.activeSelf && Input.GetMouseButtonDown(0))
         {
-            if (!RectTransformUtility.RectangleContainsScreenPoint(
-                contextMenuPanel.GetComponent<RectTransform>(),
-                Input.mousePosition,
-                GetComponentInParent<Canvas>().worldCamera))
+            Canvas parentCanvas = GetComponentInParent<Canvas>();
+            if (parentCanvas != null && parentCanvas.worldCamera != null)
             {
-                CloseMenu();
+                if (!RectTransformUtility.RectangleContainsScreenPoint(
+                    contextMenuPanel.GetComponent<RectTransform>(),
+                    Input.mousePosition,
+                    parentCanvas.worldCamera))
+                {
+                    CloseMenu();
+                }
+            }
+            else
+            {
+                // Canvas veya camera bulunamazsa basit kontrol yap
+                if (!RectTransformUtility.RectangleContainsScreenPoint(
+                    contextMenuPanel.GetComponent<RectTransform>(),
+                    Input.mousePosition))
+                {
+                    CloseMenu();
+                }
             }
         }
     }
