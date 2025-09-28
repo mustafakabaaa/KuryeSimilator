@@ -146,6 +146,8 @@ public class BicycleVehicle : MonoBehaviour
 
         isPlayerOnBoard = true;
         _player = currentPlayer;
+        
+        
 
         changeCamera();
         playerStatue();

@@ -207,6 +207,8 @@ public class MotorcycleVehicle : MonoBehaviour
         isPlayerOnBoard = true;
         _player = currentPlayer;
         
+        // Son kullanılan aracı kaydet
+        
         changeCamera();
         playerStatue();
 
