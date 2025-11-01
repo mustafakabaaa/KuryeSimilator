@@ -8,7 +8,8 @@ public class PersistentMenuManager : MonoBehaviour
     // Panel referansları
     public GameObject inventoryPanel;
     public GameObject upgradePanel;
-    public GameObject phonePanel;
+    public GameObject phoneMainPanel;
+
     public GameObject persistentMenuPanel;
 
     // Buton referansları
@@ -37,7 +38,7 @@ public class PersistentMenuManager : MonoBehaviour
         // Buton eventlerini bağla
         inventoryButton.onClick.AddListener(() => TogglePanel(inventoryPanel));
         upgradeButton.onClick.AddListener(() => TogglePanel(upgradePanel));
-        phoneButton.onClick.AddListener(() => TogglePanel(phonePanel));
+        phoneButton.onClick.AddListener(() => TogglePanel(phoneMainPanel));
         closeButton.onClick.AddListener(CloseAllPanels);
     }
 
@@ -60,7 +61,7 @@ public class PersistentMenuManager : MonoBehaviour
         // UI Manager durumlarını güncelle
         if (panel == inventoryPanel) UIManager.Instance.SetInventoryState(true);
         else if (panel == upgradePanel) UIManager.Instance.SetUpgradeState(true);
-        else if (panel == phonePanel) UIManager.Instance.SetPhoneUIState(true);
+        else if (panel == phoneMainPanel) UIManager.Instance.SetPhoneUIState(true);
 
         // Cursor'ı serbest bırak ve menüyü göster
         Cursor.lockState = CursorLockMode.None;
@@ -97,13 +98,18 @@ public class PersistentMenuManager : MonoBehaviour
     {
         inventoryPanel.SetActive(false);
         upgradePanel.SetActive(false);
-        phonePanel.SetActive(false);
+        phoneMainPanel.SetActive(false);
+        if (OrderUI.Instance != null)
+        {
+            OrderUI.Instance.CloseUI();
+        }
+
 
         // UI Manager durumlarını sıfırla
         UIManager.Instance.SetInventoryState(false);
         UIManager.Instance.SetUpgradeState(false);
         UIManager.Instance.SetPhoneUIState(false);
-
+        UIManager.Instance.SetPhoneMain(false);
         // Cursor'ı kilitle
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -116,7 +122,7 @@ public class PersistentMenuManager : MonoBehaviour
     {
         bool shouldShowMenu = inventoryPanel.activeSelf ||
                             upgradePanel.activeSelf ||
-                            phonePanel.activeSelf;
+                            phoneMainPanel.activeSelf;
 
         persistentMenuPanel.SetActive(shouldShowMenu);
     }

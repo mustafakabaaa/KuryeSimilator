@@ -11,6 +11,7 @@ public class OrderUI : MonoBehaviour
     public GameObject orderPrefab; // Order prefab'i
     public Button toggleOrdersButton; // Geçiş butonu
     public Button cancelOrderButton; // İptal butonu (Inspector'dan atanacak)
+    public Button backButton; // 📱 Geri butonu (Inspector'dan atanacak)
 
     private bool isUIOpen = false;
     private bool showingActiveOrders = false;
@@ -77,11 +78,18 @@ public class OrderUI : MonoBehaviour
         toggleOrdersButton.onClick.AddListener(ToggleOrders);
         cancelOrderButton.onClick.AddListener(OnCancelOrderClicked);
         cancelOrderButton.gameObject.SetActive(false); // Başlangıçta gizli
+        backButton.onClick.AddListener(OnBackButtonClicked);
+
+    }
+    private void OnBackButtonClicked()
+    {
+        CloseUI(); // OrderUI'yi kapat
+        PhoneMainUI.Instance.Open(); // Ana telefon menüsünü aç
     }
 
-    
 
-    private void OpenUI()
+
+    public void OpenUI()
     {
         isUIOpen = true;
         orderUIPanel.SetActive(true);

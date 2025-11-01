@@ -1,9 +1,9 @@
 using UnityEngine;
 
-public class WalletManager : MonoBehaviour
+public class WalletManager : MonoBehaviour, ISaveable
 {
     public static WalletManager Instance { get; private set; }
-    [Tooltip("Inspector’dan sürükleyip býrakacaðýn CurrencyWallet asset’i")]
+    [Tooltip("Inspectorï¿½dan sï¿½rï¿½kleyip bï¿½rakacaï¿½ï¿½n CurrencyWallet assetï¿½i")]
     public CurrencyWallet walletAsset;
 
     void Awake()
@@ -16,13 +16,20 @@ public class WalletManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        // Opsiyonel: PlayerPrefs’ten önceki session bakiyesini yükle
-        walletAsset.balance = PlayerPrefs.GetInt("PlayerBalance", walletAsset.balance);
+        // Opsiyonel: PlayerPrefsï¿½ten ï¿½nceki session bakiyesini yï¿½kle
+        // PlayerPrefs yÃ¼kleme artÄ±k SaveManager tarafÄ±ndan yapÄ±lÄ±yor
+        // walletAsset.balance = PlayerPrefs.GetInt("PlayerBalance", walletAsset.balance);
     }
-    //private void Start()
-    //{
-    //    AddMoney(1000);
-    //}
+
+    private void Start()
+    {
+        // SaveManager'a kayÄ±t ol
+        if (SaveManager.Instance != null)
+        {
+            SaveManager.Instance.RegisterSystem(this);
+            Debug.Log("WalletManager registered with SaveManager");
+        }
+    }
 
     public void AddMoney(int amount)
     {
@@ -42,6 +49,32 @@ public class WalletManager : MonoBehaviour
     }
     void Save()
     {
-        PlayerPrefs.SetInt("PlayerBalance", walletAsset.balance);
+        // ArtÄ±k SaveManager sistemi kullanÄ±lÄ±yor, PlayerPrefs'e gerek yok
+        // PlayerPrefs.SetInt("PlayerBalance", walletAsset.balance);
+    }
+
+    // ISaveable interface implementation
+    public void SaveData(GameData data)
+    {
+        if (data.walletData == null)
+        {
+            data.walletData = new WalletSaveData();
+        }
+
+        data.walletData.balance = walletAsset.balance;
+        Debug.Log($"[WalletManager] SaveData called - Balance: {walletAsset.balance}");
+    }
+
+    public void LoadData(GameData data)
+    {
+        if (data.walletData != null)
+        {
+            walletAsset.balance = data.walletData.balance;
+            Debug.Log($"[WalletManager] LoadData called - Balance loaded: {walletAsset.balance}");
+        }
+        else
+        {
+            Debug.LogWarning("[WalletManager] No wallet data found in save file");
+        }
     }
 }

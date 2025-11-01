@@ -30,6 +30,12 @@ public class MotorcycleSaveData
 }
 
 [Serializable]
+public class WalletSaveData
+{
+    public int balance;
+}
+
+[Serializable]
 public class GameData
 {// Mevcut de�i�kenlerden sonra ekle
     public InventorySaveData inventorySaveData;
@@ -41,6 +47,7 @@ public class GameData
     public float playerRotationY;
     public GameSaveData upgradeData;
     public MotorcycleSaveData motorcycleData;
+    public WalletSaveData walletData;
     public int upgradePoints;
     public float currentStamina;
     public string realWorldTime; // Ger�ek d�nya saati

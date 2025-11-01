@@ -38,18 +38,19 @@ public class GameDataSO : ScriptableObject, ISaveable
         set { _savedUpgradeData = value; }
     }
 
-    // FIXED: Changed from Awake to Start to ensure SaveManager is ready
-    private void Start()
+    // FIXED: ScriptableObject'lerde Start() ve Invoke() çalışmaz, sadece OnEnable() kullanıyoruz
+    private void OnEnable()
     {
-        // Register with SaveManager if it exists
+        // ScriptableObject'lerde OnEnable() çalışır
+        // SaveManager hazırsa hemen kayıt ol, değilse SaveManager'ın manuel kaydına güven
         if (SaveManager.Instance != null)
         {
             SaveManager.Instance.RegisterSystem(this);
-            Debug.Log("GameDataSO registered with SaveManager");
+            Debug.Log("GameDataSO registered with SaveManager via OnEnable");
         }
         else
         {
-            Debug.LogError("SaveManager.Instance is null when trying to register GameDataSO");
+            Debug.Log("GameDataSO OnEnable: SaveManager not ready yet, will rely on manual registration");
         }
     }
 

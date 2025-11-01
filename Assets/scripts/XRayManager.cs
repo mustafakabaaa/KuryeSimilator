@@ -1,22 +1,24 @@
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.InputSystem;
 
 public class XRayManager : MonoBehaviour
 {
     public static XRayManager Instance;
 
-    public UniversalRendererData rendererData; // Inspector’dan baðla
-    public string featureName = "RenderObjects"; // X-Ray feature adý
+    public UniversalRendererData rendererData; // Inspectordan bala
+    public string featureName = "RenderObjects"; // X-Ray feature ad
     public float defaultDuration = 3f;
 
     private ScriptableRendererFeature xrayFeature;
+    private Keyboard keyboard;
 
     void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject); // Sahne deðiþince silinmez
+            DontDestroyOnLoad(gameObject); // Sahne deiince silinmez
         }
         else
         {
@@ -27,21 +29,24 @@ public class XRayManager : MonoBehaviour
 
     void Start()
     {
-        // Render Feature’ý bul
+        // Render Feature bul
         foreach (var feature in rendererData.rendererFeatures)
         {
             if (feature.name == featureName)
             {
                 xrayFeature = feature;
-                xrayFeature.SetActive(false); // Baþlangýçta kapalý
+                xrayFeature.SetActive(false); // Balangta kapal
                 break;
             }
         }
+
+        // Input System Keyboard referansÄ±
+        keyboard = Keyboard.current;
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.X))
+        if (keyboard != null && keyboard.xKey.wasPressedThisFrame)
         {
             ShowXRay(defaultDuration);
         }
@@ -60,3 +65,4 @@ public class XRayManager : MonoBehaviour
         xrayFeature.SetActive(false);
     }
 }
+

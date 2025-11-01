@@ -50,10 +50,19 @@ public class SaveManager : MonoBehaviour
             Debug.Log("Inventory system registered to SaveManager");
         }
 
-        // Manually register GameDataSO if not already registered
+        // Manually register GameDataSO if not already registered (Backup registration)
         if (gameDataSO != null && !saveableSystems.Contains(gameDataSO))
         {
             RegisterSystem(gameDataSO);
+            Debug.Log("GameDataSO manually registered as backup in SaveManager");
+        }
+
+        // Manually register WalletManager if not already registered
+        var walletManager = FindObjectOfType<WalletManager>();
+        if (walletManager != null && !saveableSystems.Contains(walletManager))
+        {
+            RegisterSystem(walletManager);
+            Debug.Log("WalletManager manually registered in SaveManager");
         }
 
         // Wait for at least one system to register

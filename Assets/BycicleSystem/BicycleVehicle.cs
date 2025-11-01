@@ -61,6 +61,9 @@ public class BicycleVehicle : MonoBehaviour
     [SerializeField] private bool isPlayerOnBoard = false;
     public bool frontGrounded;
     public bool rearGrounded;
+    
+    // Public property for VehicleManager access
+    public bool IsPlayerOnBoard => isPlayerOnBoard;
 
 
 

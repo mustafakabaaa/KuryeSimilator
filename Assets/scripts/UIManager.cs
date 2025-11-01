@@ -14,6 +14,7 @@ public class UIManager : MonoBehaviour
     private bool _isPCOpen;
     private bool _isMinimapOpen;
     private bool _isLoadGamePanelOpen;
+    private bool _isPhoneMain;
 
     public delegate void UIStateChangedDelegate();
     public static event UIStateChangedDelegate OnUIStateChanged;
@@ -26,7 +27,7 @@ public class UIManager : MonoBehaviour
     public static event System.Action OnCloseDialogue;
     public static event System.Action OnClosePC;
     public static event System.Action OnCloseLoadGame;
-
+    public static event System.Action OnClosePhoneMenu;
     private void Awake()
     {
         if (Instance == null)
@@ -48,6 +49,7 @@ public class UIManager : MonoBehaviour
         if (_isDialogueOpen) OnCloseDialogue?.Invoke();
         if (_isPCOpen) OnClosePC?.Invoke();
         if (_isLoadGamePanelOpen) OnCloseLoadGame?.Invoke();
+        if (_isPhoneMain) OnClosePhoneMenu?.Invoke();
     }
     public bool CanOpenNewUI()
     {
@@ -59,7 +61,12 @@ public class UIManager : MonoBehaviour
         }
         return true;
     }
-    
+    public void SetPhoneMain(bool state)
+    {
+        if (state && !CanOpenNewUI()) return;
+        _isPhoneMain = state;
+        OnUIStateChanged.Invoke();
+    }
     public void SetLoadGamePanelState(bool state)
     {
         if (state && !CanOpenNewUI()) return;
@@ -125,6 +132,7 @@ public class UIManager : MonoBehaviour
     public bool IsMenuOpen() => _isMenuOpen;
     public bool IsPCOpen() => _isPCOpen;
     public bool IsLoadGamePanelOpen() => _isLoadGamePanelOpen;
+    public bool IsPhoneMain() => _isPhoneMain;
     public bool IsAnyUIOpen() =>
         _isInventoryOpen ||
         _isUpgradeOpen ||
@@ -133,5 +141,6 @@ public class UIManager : MonoBehaviour
         _isDialogueOpen ||
         _isBagInventoryOpen ||
         _isPCOpen ||
-        _isLoadGamePanelOpen;
+        _isLoadGamePanelOpen ||
+        _isPhoneMain;
 }
