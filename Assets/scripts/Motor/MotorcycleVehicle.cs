@@ -15,6 +15,7 @@ public class MotorcycleVehicle : MonoBehaviour
     public Transform handle;
     bool braking;
 
+    
     private MotorcycleControls controls;
     Rigidbody rb;
     public Vector3 COG;
@@ -46,6 +47,12 @@ public class MotorcycleVehicle : MonoBehaviour
     [Header("Wheels Transform")]
     [SerializeField] Transform frontWheelTransform;
     [SerializeField] Transform backWheelTransform;
+
+    [Header("Odometer")]
+    [SerializeField] private float totalKilometre = 0f;
+    private Vector3 lastPosition;
+    
+    public float TotalKilometre => totalKilometre;
 
     [Header("Camera & DropOff Point Offset")]
     [SerializeField] private Transform _dropOfPoint;
@@ -117,6 +124,7 @@ public class MotorcycleVehicle : MonoBehaviour
         WheelStartSettings();
         rb = GetComponent<Rigidbody>();
         rb.centerOfMass = COG;
+        lastPosition = transform.position;
 
         if (engineAudioSource != null)
         {
@@ -292,6 +300,26 @@ public class MotorcycleVehicle : MonoBehaviour
             LeanOnTurn();
             ApplyDownforce();
         }
+        
+        UpdateOdometer();
+    }
+
+    private void UpdateOdometer()
+    {
+        Vector3 currentPosition = transform.position;
+        float distance = Vector3.Distance(lastPosition, currentPosition);
+        
+        if (distance > 0.001f && (frontWheel.isGrounded || backWheel.isGrounded))
+        {
+            totalKilometre += distance / 1000f;
+        }
+        
+        lastPosition = currentPosition;
+    }
+
+    public void SetTotalKilometre(float km)
+    {
+        totalKilometre = km;
     }
 
     public void GetInput()

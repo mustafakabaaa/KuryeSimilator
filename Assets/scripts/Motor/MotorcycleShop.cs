@@ -291,6 +291,20 @@ public class MotorcycleShop : MonoBehaviour, ISaveable
             data.motorcycleData.activeMotorcycleIndex = -1;
             data.motorcycleData.isPlayerOnBike = false;
         }
+
+        data.motorcycleData.motorcycleKilometres = new float[motorcycles.Length];
+        for (int i = 0; i < motorcycles.Length; i++)
+        {
+            var motor = GetMotorcycleByIndex(i);
+            if (motor != null)
+            {
+                data.motorcycleData.motorcycleKilometres[i] = motor.TotalKilometre;
+            }
+            else
+            {
+                data.motorcycleData.motorcycleKilometres[i] = 0f;
+            }
+        }
     }
 
     // Enhance LoadData to properly restore state
@@ -325,6 +339,18 @@ public class MotorcycleShop : MonoBehaviour, ISaveable
                 if (data.motorcycleData.isPlayerOnBike)
                 {
                     activeMotor.MountMotorcycle();
+                }
+            }
+        }
+
+        if (data.motorcycleData.motorcycleKilometres != null)
+        {
+            for (int i = 0; i < Mathf.Min(motorcycles.Length, data.motorcycleData.motorcycleKilometres.Length); i++)
+            {
+                var motor = GetMotorcycleByIndex(i);
+                if (motor != null)
+                {
+                    motor.SetTotalKilometre(data.motorcycleData.motorcycleKilometres[i]);
                 }
             }
         }

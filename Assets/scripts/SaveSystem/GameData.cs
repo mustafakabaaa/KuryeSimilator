@@ -27,6 +27,7 @@ public class MotorcycleSaveData
     public Vector3Serializable motorcyclePosition;
     public Vector3Serializable motorcycleRotation;
     public bool isPlayerOnBike; // Add this to track if player was on bike
+    public float[] motorcycleKilometres;
 }
 
 [Serializable]

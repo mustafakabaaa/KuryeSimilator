@@ -5,6 +5,7 @@ public class MotorHUD : MonoBehaviour
 {
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI hizGostergesi;
+    [SerializeField] private TextMeshProUGUI kilometreGostergesi;
     [SerializeField] private GameObject hudPanel;
 
     [Header("Display Settings")]
@@ -15,10 +16,10 @@ public class MotorHUD : MonoBehaviour
 
     private void OnEnable()
     {
-        // Null kontrolü ekledik
+        // Null kontrolï¿½ ekledik
         if (MotorEventManager.Instance == null)
         {
-            Debug.LogError("MotorEventManager bulunamadý! Sahneye ekleyin.");
+            Debug.LogError("MotorEventManager bulunamadï¿½! Sahneye ekleyin.");
             return;
         }
 
@@ -28,7 +29,7 @@ public class MotorHUD : MonoBehaviour
 
     private void OnDisable()
     {
-        // Null kontrolü ekledik
+        // Null kontrolï¿½ ekledik
         if (MotorEventManager.Instance == null) return;
 
         MotorEventManager.Instance.OnMotorcycleMounted -= HandleMotorcycleMounted;
@@ -70,5 +71,10 @@ public class MotorHUD : MonoBehaviour
         hizGostergesi.text = kmhGoster ?
             $"{hiz.ToString(hizFormat)} km/s" :
             $"{(hiz * 0.621371f).ToString(hizFormat)} mph";
+
+        if (kilometreGostergesi != null)
+        {
+            kilometreGostergesi.text = $"{currentMotor.TotalKilometre:F1} km";
+        }
     }
 }
