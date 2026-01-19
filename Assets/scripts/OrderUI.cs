@@ -33,23 +33,7 @@ public class OrderUI : MonoBehaviour
     }
 
 
-    private void OnEnable()
-    {
-        OrderManager.OnOrdersUpdated += OnOrderListUpdated;
-
-        _playerInputs.UI.OrderKey.performed += OnToggleOrdersInput;  // InventorKey yerine senin input adı neyse onu yaz
-        _playerInputs.UI.Enable();
-        UIManager.OnCloseOrderUI += CloseUI; // ✅ Ekle
-    }
-
-    private void OnDisable()
-    {
-        OrderManager.OnOrdersUpdated -= OnOrderListUpdated;
-
-        _playerInputs.UI.OrderKey.performed -= OnToggleOrdersInput;
-        _playerInputs.UI.Disable();
-        UIManager.OnCloseOrderUI -= CloseUI; // ✅ Ekle
-    }
+    
     private void OnToggleOrdersInput(InputAction.CallbackContext context)
     {
         if (orderUIPanel.activeSelf)

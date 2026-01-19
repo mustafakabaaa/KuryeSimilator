@@ -42,10 +42,16 @@ public class PhoneMainUI : MonoBehaviour
         closeButton.onClick.AddListener(Close);
     }
 
-    // ?? Phone tuþuna basýldýðýnda
+    // ?? Phone tuï¿½una basï¿½ldï¿½ï¿½ï¿½nda
     private void OnPhoneKeyPressed(InputAction.CallbackContext ctx)
     {
-        if (isOpen)
+        // EÄŸer OrderUI aÃ§Ä±ksa, Ã¶nce onu kapat ve Phone'u aÃ§
+        if (OrderUI.Instance != null && UIManager.Instance.IsPhoneUIOpen())
+        {
+            OrderUI.Instance.CloseUI();
+            Open();
+        }
+        else if (isOpen)
         {
             Close();
         }
@@ -82,7 +88,7 @@ public class PhoneMainUI : MonoBehaviour
     // ?? Order butonu
     private void OpenOrders()
     {
-        Close(); // Ana menüyü kapat
-        OrderUI.Instance.OpenUI(); // Order UI'yi aç
+        Close(); // Ana menï¿½yï¿½ kapat
+        OrderUI.Instance.OpenUI(); // Order UI'yi aï¿½
     }
 }
