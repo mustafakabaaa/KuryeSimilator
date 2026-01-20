@@ -4,6 +4,14 @@ using System;
 using static GameData;
 using System.Collections.Generic;
 
+public enum ArizaSeviyesi
+{
+    Saglam = 0,
+    Hafif = 1,
+    Orta = 2,
+    Agir = 3
+}
+
 [Serializable]
 public class OrderSaveData
 {
@@ -28,6 +36,8 @@ public class MotorcycleSaveData
     public Vector3Serializable motorcycleRotation;
     public bool isPlayerOnBike; // Add this to track if player was on bike
     public float[] motorcycleKilometres;
+    public ArizaSeviyesi[] arizaSeviyeleri;
+    public float[] sonArizaKontrolKm;
 }
 
 [Serializable]

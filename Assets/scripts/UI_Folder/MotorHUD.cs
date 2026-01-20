@@ -1,11 +1,13 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MotorHUD : MonoBehaviour
 {
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI hizGostergesi;
     [SerializeField] private TextMeshProUGUI kilometreGostergesi;
+    [SerializeField] private Image arizaCarki;
     [SerializeField] private GameObject hudPanel;
 
     [Header("Display Settings")]
@@ -75,6 +77,23 @@ public class MotorHUD : MonoBehaviour
         if (kilometreGostergesi != null)
         {
             kilometreGostergesi.text = $"{currentMotor.TotalKilometre:F1} km";
+        }
+
+        if (arizaCarki != null)
+        {
+            arizaCarki.color = GetArizaRengi(currentMotor.ArizaSeviyesi);
+        }
+    }
+
+    private Color GetArizaRengi(ArizaSeviyesi seviye)
+    {
+        switch (seviye)
+        {
+            case ArizaSeviyesi.Saglam: return Color.green;
+            case ArizaSeviyesi.Hafif: return Color.yellow;
+            case ArizaSeviyesi.Orta: return new Color(1f, 0.5f, 0f); // Turuncu
+            case ArizaSeviyesi.Agir: return Color.red;
+            default: return Color.white;
         }
     }
 }

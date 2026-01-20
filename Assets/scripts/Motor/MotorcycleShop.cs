@@ -305,6 +305,23 @@ public class MotorcycleShop : MonoBehaviour, ISaveable
                 data.motorcycleData.motorcycleKilometres[i] = 0f;
             }
         }
+
+        data.motorcycleData.arizaSeviyeleri = new ArizaSeviyesi[motorcycles.Length];
+        data.motorcycleData.sonArizaKontrolKm = new float[motorcycles.Length];
+        for (int i = 0; i < motorcycles.Length; i++)
+        {
+            var motor = GetMotorcycleByIndex(i);
+            if (motor != null)
+            {
+                data.motorcycleData.arizaSeviyeleri[i] = motor.ArizaSeviyesi;
+                data.motorcycleData.sonArizaKontrolKm[i] = motor.TotalKilometre - (motor.TotalKilometre % 50f);
+            }
+            else
+            {
+                data.motorcycleData.arizaSeviyeleri[i] = ArizaSeviyesi.Saglam;
+                data.motorcycleData.sonArizaKontrolKm[i] = 0f;
+            }
+        }
     }
 
     // Enhance LoadData to properly restore state
@@ -351,6 +368,18 @@ public class MotorcycleShop : MonoBehaviour, ISaveable
                 if (motor != null)
                 {
                     motor.SetTotalKilometre(data.motorcycleData.motorcycleKilometres[i]);
+                }
+            }
+        }
+
+        if (data.motorcycleData.arizaSeviyeleri != null && data.motorcycleData.sonArizaKontrolKm != null)
+        {
+            for (int i = 0; i < Mathf.Min(motorcycles.Length, data.motorcycleData.arizaSeviyeleri.Length); i++)
+            {
+                var motor = GetMotorcycleByIndex(i);
+                if (motor != null)
+                {
+                    motor.SetArizaVerisi(data.motorcycleData.arizaSeviyeleri[i], data.motorcycleData.sonArizaKontrolKm[i]);
                 }
             }
         }

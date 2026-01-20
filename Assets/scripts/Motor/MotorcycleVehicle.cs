@@ -54,6 +54,15 @@ public class MotorcycleVehicle : MonoBehaviour
     
     public float TotalKilometre => totalKilometre;
 
+    [Header("Ariza Sistemi")]
+    [SerializeField] private ArizaSeviyesi arizaSeviyesi = ArizaSeviyesi.Saglam;
+    [SerializeField] private float sonArizaKontrolKm = 0f;
+    [SerializeField] private float motorGucuCarpani = 1f;
+    private const float ARIZA_KONTROL_ARALIGI = 2f;
+    
+    public ArizaSeviyesi ArizaSeviyesi => arizaSeviyesi;
+    public float MotorGucuCarpani => motorGucuCarpani;
+
     [Header("Camera & DropOff Point Offset")]
     [SerializeField] private Transform _dropOfPoint;
     [SerializeField] private GameObject _vehicleCamera;
@@ -312,6 +321,13 @@ public class MotorcycleVehicle : MonoBehaviour
         if (distance > 0.001f && (frontWheel.isGrounded || backWheel.isGrounded))
         {
             totalKilometre += distance / 1000f;
+            
+            // 50km'de bir ariza kontrolü
+            if (totalKilometre - sonArizaKontrolKm >= ARIZA_KONTROL_ARALIGI)
+            {
+                CheckArizaRisk();
+                sonArizaKontrolKm = totalKilometre;
+            }
         }
         
         lastPosition = currentPosition;
@@ -404,9 +420,9 @@ public class MotorcycleVehicle : MonoBehaviour
 
         if (verticalInput > 0.1f)
         {
-            float availableTorque = torqueCurve.Evaluate(engineRPM / maxRPM) * motorForce;
+            float availableTorque = torqueCurve.Evaluate(engineRPM / maxRPM) * motorForce * motorGucuCarpani;
 
-            if (currentSpeed < maxSpeed)
+            if (currentSpeed < maxSpeed * motorGucuCarpani)
             {
                 backWheel.motorTorque = verticalInput * availableTorque;
             }
@@ -609,5 +625,180 @@ public class MotorcycleVehicle : MonoBehaviour
     {
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(transform.position, interactionRadius);
+    }
+
+    private void CheckArizaRisk()
+    {
+        if (arizaSeviyesi == ArizaSeviyesi.Agir) return; // Ağır arıza zaten var
+
+        float arizaOlasiligi = GetArizaOlasiligi();
+        float rastgele = Random.Range(0f, 1f);
+
+        if (rastgele < arizaOlasiligi)
+        {
+            ArizaOlustur();
+        }
+    }
+
+    private float GetArizaOlasiligi()
+    {
+        if (totalKilometre < 500f) return 0.02f;      // %2
+        if (totalKilometre < 1000f) return 0.07f;      // %7
+        if (totalKilometre < 4000f) return 0.18f;     // %18
+        return 0.30f;                                   // %30+
+    }
+
+    private void ArizaOlustur()
+    {
+        float rastgele = Random.Range(0f, 1f);
+
+        if (rastgele < 0.70f) // %70 hafif
+        {
+            arizaSeviyesi = ArizaSeviyesi.Hafif;
+            motorGucuCarpani = 0.9f;
+            Debug.Log("Hafif arıza oluştu! Motor gücü %10 düştü.");
+        }
+        else if (rastgele < 0.95f) // %25 orta
+        {
+            arizaSeviyesi = ArizaSeviyesi.Orta;
+            motorGucuCarpani = 0.7f;
+            Debug.Log("Orta arıza oluştu! Motor gücü %30 düştü.");
+        }
+        else // %5 ağır
+        {
+            arizaSeviyesi = ArizaSeviyesi.Agir;
+            motorGucuCarpani = 0f;
+            Debug.Log("Ağır arıza oluştu! Motor stop etti!");
+        }
+    }
+
+    public void TamirEt()
+    {
+        arizaSeviyesi = ArizaSeviyesi.Saglam;
+        motorGucuCarpani = 1f;
+        Debug.Log("Motor tamir edildi!");
+    }
+
+    public void SetArizaVerisi(ArizaSeviyesi seviye, float sonKontrol)
+    {
+        arizaSeviyesi = seviye;
+        sonArizaKontrolKm = sonKontrol;
+        
+        // Arıza seviyesine göre güç çarpanını ayarla
+        switch (arizaSeviyesi)
+        {
+            case ArizaSeviyesi.Saglam:
+                motorGucuCarpani = 1f;
+                break;
+            case ArizaSeviyesi.Hafif:
+                motorGucuCarpani = 0.9f;
+                break;
+            case ArizaSeviyesi.Orta:
+                motorGucuCarpani = 0.7f;
+                break;
+            case ArizaSeviyesi.Agir:
+                motorGucuCarpani = 0f;
+                break;
+        }
+    }
+
+    // Test Metotları
+    [ContextMenu("Ariza Riski Test Et")]
+    void TestArizaRiski() {
+        Debug.Log($"📍 Mevcut KM: {totalKilometre:F1}");
+        Debug.Log($"🎯 Ariza Olasılığı: {GetArizaOlasiligi()*100:F1}%");
+        Debug.Log($"⚠️ Mevcut Ariza: {arizaSeviyesi}");
+        Debug.Log($"🔧 Motor Gücü Çarpanı: {motorGucuCarpani*100:F0}%");
+        CheckArizaRisk();
+    }
+
+    [ContextMenu("Ariza Sansı Dene (100 Test)")]
+    void ArizaSansiDene() {
+        Debug.Log($"=== {totalKilometre:F1} KM'DE 100 ARIZA TESTİ ===");
+        
+        int saglamSayisi = 0;
+        int hafifAriza = 0;
+        int ortaAriza = 0;
+        int agirAriza = 0;
+        
+        float arizaOlasiligi = GetArizaOlasiligi();
+        
+        for (int i = 0; i < 100; i++)
+        {
+            float rastgele = Random.Range(0f, 1f);
+            
+            if (rastgele < arizaOlasiligi)
+            {
+                float arizaRastgele = Random.Range(0f, 1f);
+                if (arizaRastgele < 0.70f) hafifAriza++;
+                else if (arizaRastgele < 0.95f) ortaAriza++;
+                else agirAriza++;
+            }
+            else
+            {
+                saglamSayisi++;
+            }
+        }
+        
+        Debug.Log($"🎯 Teorik Risk: {arizaOlasiligi*100:F1}%");
+        Debug.Log($"📊 Sonuçlar:");
+        Debug.Log($"   ✅ Sağlam: {saglamSayisi}%");
+        Debug.Log($"   🟡 Hafif Arıza: {hafifAriza}%");
+        Debug.Log($"   🟠 Orta Arıza: {ortaAriza}%");
+        Debug.Log($"   🔴 Ağır Arıza: {agirAriza}%");
+        Debug.Log($"=== TEST BİTTİ ===");
+    }
+
+    [ContextMenu("KM 500 Yap (Düşük Risk)")]
+    void Km500Yap() {
+        SetTotalKilometre(500f);
+        sonArizaKontrolKm = 450f;
+        Debug.Log($"📍 Kilometre 500 yapıldı - Risk: {GetArizaOlasiligi()*100:F1}%");
+    }
+
+    [ContextMenu("KM 5000 Yap (Orta Risk)")]
+    void Km5000Yap() {
+        SetTotalKilometre(5000f);
+        sonArizaKontrolKm = 4999f; // 1km aralık ile
+        Debug.Log($"📍 Kilometre 5000 yapıldı - Risk: {GetArizaOlasiligi()*100:F1}%");
+    }
+
+    [ContextMenu("KM 15000 Yap (Yüksek Risk)")]
+    void Km15000Yap() {
+        SetTotalKilometre(15000f);
+        sonArizaKontrolKm = 14999f; // 1km aralık ile
+        Debug.Log($"📍 Kilometre 15000 yapıldı - Risk: {GetArizaOlasiligi()*100:F1}%");
+    }
+
+    [ContextMenu("50km Sür (Ariza Kontrolü Tetikle)")]
+    void Km50Sur() {
+        SetTotalKilometre(totalKilometre + 50f);
+        Debug.Log($"📍 50km sürüldü - Toplam: {totalKilometre:F1}km");
+        CheckArizaRisk();
+    }
+
+    [ContextMenu("Arızayı Tamir Et")]
+    void ArizayiTamirEt() {
+        TamirEt();
+        Debug.Log($"🔧 Motor tamir edildi - Ariza: {arizaSeviyesi}");
+    }
+
+    [ContextMenu("Tüm Durumları Test Et")]
+    void TumDurumlariTestEt() {
+        Debug.Log("=== ARIZA SİSTEMİ TEST BAŞLATILIYOR ===");
+        
+        // 500km test
+        Km500Yap();
+        TestArizaRiski();
+        
+        // 5000km test  
+        Km5000Yap();
+        TestArizaRiski();
+        
+        // 15000km test
+        Km15000Yap();
+        TestArizaRiski();
+        
+        Debug.Log("=== ARIZA SİSTEMİ TEST BİTTİ ===");
     }
 }
