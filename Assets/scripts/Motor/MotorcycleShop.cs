@@ -395,7 +395,7 @@ public class MotorcycleShop : MonoBehaviour, ISaveable
     /// <summary>
     /// Belirli bir motoru index'e göre bul
     /// </summary>
-    private MotorcycleVehicle GetMotorcycleByIndex(int index)
+    public MotorcycleVehicle GetMotorcycleByIndex(int index)
     {
         foreach (var motor in spawnedMotors)
         {

@@ -670,6 +670,13 @@ public class MotorcycleVehicle : MonoBehaviour
             motorGucuCarpani = 0f;
             Debug.Log("Ağır arıza oluştu! Motor stop etti!");
         }
+
+        // UI'ı haberdar et
+        var motorcycleShop = FindObjectOfType<MotorcycleShop>();
+        if (motorcycleShop != null)
+        {
+            motorcycleShop.UpdateAllUI();
+        }
     }
 
     public void TamirEt()
