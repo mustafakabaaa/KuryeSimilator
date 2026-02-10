@@ -1,0 +1,151 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: UI_tr
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: tr
+  m_SharedData: {fileID: 11400000, guid: 300e1f8adfb134a47b13330405d2fa49, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 65241399296
+    m_Localized: "Sipari\u015Fi tamamlayamazs\u0131n!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 296284635136
+    m_Localized: "Eksik olan \xFCr\xFCnler:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 599616700416
+    m_Localized: "Eksik \xFCr\xFCnler:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 740339793920
+    m_Localized: "Te\u015Fekk\xFCrler!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 856673009664
+    m_Localized: Konus (E)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7026741657600
+    m_Localized: "Bo\u015F Kay\u0131t Yuvas\u0131"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7129615351808
+    m_Localized: 'ID:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7189950414848
+    m_Localized: "\u0130sim:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7270137118720
+    m_Localized: 'Adres:'
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7360935411712
+    m_Localized: "Sipari\u015Fler:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7405529251840
+    m_Localized: "\xD6d\xFCl:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7485426548736
+    m_Localized: "Gerekli \xDCr\xFCnler:"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7625520496640
+    m_Localized: "Zaten aktif bir sipari\u015Finiz var!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7713458274304
+    m_Localized: "SAH\u0130P"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7796643905536
+    m_Localized: SATIN AL
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7890957025280
+    m_Localized: "TAM\u0130R ET"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45723855929344
+    m_Localized: AL (E)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46494223745024
+    m_Localized: UYU (E)
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46644027506688
+    m_Localized: "A\xC7 (E)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47098471956480
+    m_Localized: "PC A\xC7 (E)"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53767658586112
+    m_Localized: DEVAM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53839557345280
+    m_Localized: "AYARLAR\r"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53912802476032
+    m_Localized: CIKIS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53988404805632
+    m_Localized: KAYDET
+    m_Metadata:
+      m_Items: []
+  - m_Id: 54061821902848
+    m_Localized: "ANA MEN\xDC"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 422042640891904
+    m_Localized: YENI OYUN
+    m_Metadata:
+      m_Items: []
+  - m_Id: 422089717760000
+    m_Localized: DEVAM
+    m_Metadata:
+      m_Items: []
+  - m_Id: 422176816676864
+    m_Localized: OYUNU YUKLE
+    m_Metadata:
+      m_Items: []
+  - m_Id: 422249432662016
+    m_Localized: AYARLAR
+    m_Metadata:
+      m_Items: []
+  - m_Id: 422373516951552
+    m_Localized: CIKIS
+    m_Metadata:
+      m_Items: []
+  - m_Id: 422430790172672
+    m_Localized: GERI
+    m_Metadata:
+      m_Items: []
+  - m_Id: 780832720601088
+    m_Localized: Bin (F)
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

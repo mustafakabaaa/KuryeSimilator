@@ -11,7 +11,7 @@ public class Item : MonoBehaviour, Iinterectable, ISaveable
 
     private void Awake()
     {
-        // Unique ID oluþtur
+        // Unique ID oluï¿½tur
         if (string.IsNullOrEmpty(itemID))
         {
             itemID = System.Guid.NewGuid().ToString();
@@ -25,7 +25,7 @@ public class Item : MonoBehaviour, Iinterectable, ISaveable
         if (inventory.AddItem(item))
         {
             canBePickedUp = false;
-            Destroy(gameObject); // ? Sipariþ tabanlý sistem için uygun
+            Destroy(gameObject); // ? Sipariï¿½ tabanlï¿½ sistem iï¿½in uygun
 
         }
     }
@@ -35,7 +35,7 @@ public class Item : MonoBehaviour, Iinterectable, ISaveable
         if (!canBePickedUp)
             return "";
 
-        return "AL (E)";
+        return "ui.interact_pickup";
     }
 
     public bool CanInteract()
@@ -43,7 +43,7 @@ public class Item : MonoBehaviour, Iinterectable, ISaveable
         return canBePickedUp;
     }
 
-    // ? DÜZELT: SaveData metodu
+    // ? Dï¿½ZELT: SaveData metodu
     public void SaveData(GameData data)
     {
         if (data.itemData == null)
@@ -63,7 +63,7 @@ public class Item : MonoBehaviour, Iinterectable, ISaveable
         data.itemData.items.Add(itemState);
     }
 
-    // ? DÜZELT: LoadData metodu
+    // ? Dï¿½ZELT: LoadData metodu
     public void LoadData(GameData data)
     {
         if (data.itemData == null) return;

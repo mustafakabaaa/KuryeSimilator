@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class OrderUIElement : MonoBehaviour
 {
+    private const string UiTable = "UI";
+    private const string OrdersTable = "Orders";
     public TextMeshProUGUI orderNameText; // Sipariþ adý
     public TextMeshProUGUI orderRewardText; // Sipariþ ödülü
     public TextMeshProUGUI requiredItemsText; // Gerekli item'ler
@@ -28,11 +30,14 @@ public class OrderUIElement : MonoBehaviour
         currentOrder = order;
 
         // UI elementlerini güncelle
-        orderNameText.text = order.orderName;
-        orderRewardText.text = "Reward: " + order.reward.ToString();
+        string rewardLabel = LocalizationHelper.Localize(UiTable, "ui.order_reward");
+        string requiredLabel = LocalizationHelper.Localize(UiTable, "ui.order_required_items");
+
+        orderNameText.text = LocalizationHelper.Localize(OrdersTable, order.orderName);
+        orderRewardText.text = $"{rewardLabel} {order.reward}";
 
         // Gerekli item'leri göster
-        requiredItemsText.text = "Required Items: ";
+        requiredItemsText.text = $"{requiredLabel} ";
         foreach (SCItem item in order.requiredItems)
         {
             requiredItemsText.text += item.itemName + ", ";
@@ -55,7 +60,10 @@ public class OrderUIElement : MonoBehaviour
         }
         else
         {
-            ToastManager.Instance.ShowToast("Zaten aktif bir  siparisiniz var!", 3f);
+            ToastManager.Instance.ShowToast(
+                LocalizationHelper.Localize(UiTable, "ui.order_already_active"),
+                3f
+            );
         }
     }
 

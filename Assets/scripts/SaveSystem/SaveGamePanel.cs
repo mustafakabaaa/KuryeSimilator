@@ -8,6 +8,7 @@ using System;
 
 public class SaveGamePanel : MonoBehaviour
 {
+    private const string UiTable = "UI";
     [Header("UI Elements")]
     public GameObject panel;
     public Transform saveItemContainer;
@@ -215,7 +216,7 @@ public class SaveGamePanel : MonoBehaviour
         var text = item.GetComponentInChildren<TextMeshProUGUI>();
         if (text != null)
         {
-            text.text = "Empty Save Slot";
+            text.text = LocalizationHelper.Localize(UiTable, "ui.save_empty_slot");
         }
 
         // Button event'ini ayarla - Yeni save oluþtur

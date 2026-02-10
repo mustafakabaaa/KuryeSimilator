@@ -5,6 +5,7 @@ using System.Collections;
 
 public class CharrController : MonoBehaviour, ISaveable
 {
+    private const string UiTable = "UI";
     [Header("Player Settings")]
     public float moveSpeed = 5f; // Hareket hizi
 
@@ -151,7 +152,7 @@ public class CharrController : MonoBehaviour, ISaveable
             {
                 if (interactable.CanInteract())
                 {
-                    interactText.text = interactable.GetInteractionText();
+                    interactText.text = LocalizationHelper.Localize(UiTable, interactable.GetInteractionText());
                     interactText.gameObject.SetActive(true);
                     canInteract = true;
 

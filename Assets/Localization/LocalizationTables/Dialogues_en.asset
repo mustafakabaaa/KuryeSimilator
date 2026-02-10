@@ -1,0 +1,108 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Dialogues_en
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: en
+  m_SharedData: {fileID: 11400000, guid: a607ea5ddee2fbc4c8488f4725757525, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 1194926850048
+    m_Localized: Hello, did you bring my order?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1280155107328
+    m_Localized: Yes, here it is.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1371993587712
+    m_Localized: No, not yet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1515807883264
+    m_Localized: Great! Thank you.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1656942018560
+    m_Localized: You're welcome.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1756393160704
+    m_Localized: Alright, I'll wait...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1841793384448
+    m_Localized: Goodbye.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1916846260224
+    m_Localized: Welcome! How can I help?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2070055796736
+    m_Localized: I want to deliver my order.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2190381989888
+    m_Localized: I haven't completed the order yet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2285475250176
+    m_Localized: Great, I'm checking the order... Everything looks complete. Thank
+      you!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2405998575616
+    m_Localized: You're welcome!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2527000051712
+    m_Localized: Hello! Is your order ready?
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2589042196480
+    m_Localized: Yes, I want to deliver the order.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2670239727616
+    m_Localized: I haven't finished yet.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2796643467264
+    m_Localized: Thanks! I'm checking the order now...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2905930252288
+    m_Localized: Sure, go ahead.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3001795264512
+    m_Localized: Hmm... Everything seems complete.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3092295761920
+    m_Localized: Enjoy your meal!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3162990755840
+    m_Localized: Thank you. Here's your reward!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3218955354112
+    m_Localized: Thanks, see you!
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

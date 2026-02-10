@@ -1,0 +1,156 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: UI Shared Data
+  m_EditorClassIdentifier: 
+  m_TableCollectionName: UI
+  m_TableCollectionNameGuidString: 300e1f8adfb134a47b13330405d2fa49
+  m_Entries:
+  - m_Id: 65241399296
+    m_Key: ui.order_incomplete
+    m_Metadata:
+      m_Items: []
+  - m_Id: 296284635136
+    m_Key: ui.missing_items
+    m_Metadata:
+      m_Items: []
+  - m_Id: 599616700416
+    m_Key: ui.missing_items_short
+    m_Metadata:
+      m_Items: []
+  - m_Id: 740339793920
+    m_Key: ui.thanks
+    m_Metadata:
+      m_Items: []
+  - m_Id: 856673009664
+    m_Key: ui.interact_talk
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7026741657600
+    m_Key: ui.save_empty_slot
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7129615351808
+    m_Key: ui.info_id
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7189950414848
+    m_Key: ui.info_name
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7270137118720
+    m_Key: ui.info_address
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7360935411712
+    m_Key: ui.info_items
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7405529251840
+    m_Key: ui.order_reward
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7485426548736
+    m_Key: ui.order_required_items
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7625520496640
+    m_Key: ui.order_already_active
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7713458274304
+    m_Key: ui.motor_owned
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7796643905536
+    m_Key: ui.motor_buy
+    m_Metadata:
+      m_Items: []
+  - m_Id: 7890957025280
+    m_Key: ui.motor_repair
+    m_Metadata:
+      m_Items: []
+  - m_Id: 45723855929344
+    m_Key: ui.interact_pickup
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46494223745024
+    m_Key: ui.interact_sleep
+    m_Metadata:
+      m_Items: []
+  - m_Id: 46644027506688
+    m_Key: ui.interact_open
+    m_Metadata:
+      m_Items: []
+  - m_Id: 47098471956480
+    m_Key: ui.interact_pc_open
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53767658586112
+    m_Key: ui.menu_resume
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53839557345280
+    m_Key: ui.menu_settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53912802476032
+    m_Key: ui.menu_quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 53988404805632
+    m_Key: ui.menu_save
+    m_Metadata:
+      m_Items: []
+  - m_Id: 54061821902848
+    m_Key: ui.menu_main_menu
+    m_Metadata:
+      m_Items: []
+  - m_Id: 422042640891904
+    m_Key: ui.main_new_game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 422089717760000
+    m_Key: ui.main_continue
+    m_Metadata:
+      m_Items: []
+  - m_Id: 422176816676864
+    m_Key: ui.main_load_game
+    m_Metadata:
+      m_Items: []
+  - m_Id: 422249432662016
+    m_Key: ui.main_settings
+    m_Metadata:
+      m_Items: []
+  - m_Id: 422373516951552
+    m_Key: ui.main_quit
+    m_Metadata:
+      m_Items: []
+  - m_Id: 422430790172672
+    m_Key: ui.main_back
+    m_Metadata:
+      m_Items: []
+  - m_Id: 780832720601088
+    m_Key: ui.interact_drive
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 7298461621540618242
+  references:
+    version: 2
+    RefIds:
+    - rid: 7298461621540618242
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1770555384107

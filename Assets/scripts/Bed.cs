@@ -12,7 +12,7 @@ public class Bed : MonoBehaviour, Iinterectable
 
     public string GetInteractionText()
     {
-        return "UYU (E)";
+        return "ui.interact_sleep";
     }
 
     public void Interact()
@@ -21,17 +21,17 @@ public class Bed : MonoBehaviour, Iinterectable
 
         if (sleepManager != null)
         {
-            Debug.Log("Yataða yatýlmaya çalýþýlýyor.");
+            Debug.Log("Yataï¿½a yatï¿½lmaya ï¿½alï¿½ï¿½ï¿½lï¿½yor.");
             isSleeping = true;
 
             bool sleepStarted = sleepManager.RequestSleep(() =>
             {
-                isSleeping = false; // Uyku bittiðinde tekrar aç
+                isSleeping = false; // Uyku bittiï¿½inde tekrar aï¿½
             });
 
             if (!sleepStarted)
             {
-                isSleeping = false; // Uyku baþlayamadýysa tekrar aç
+                isSleeping = false; // Uyku baï¿½layamadï¿½ysa tekrar aï¿½
             }
         }
     }

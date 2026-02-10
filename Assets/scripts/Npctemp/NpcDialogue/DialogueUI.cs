@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.Collections;
@@ -6,6 +6,9 @@ using System.Collections;
 public class DialogueUI : MonoBehaviour
 {
     public static DialogueUI Instance;
+    private const string DialogueTable = "Dialogues";
+    private const string UiTable = "UI";
+    private const string NpcNameTable = "Orders";
 
     [Header("UI Referansları")]
     [SerializeField] private GameObject panel;
@@ -55,7 +58,7 @@ public class DialogueUI : MonoBehaviour
         }
 
         DialogueManager.Instance.SetCurrentDialogue(dialogue);
-        npcNameText.text = npcName;
+        npcNameText.text = LocalizationHelper.Localize(NpcNameTable, npcName);
         panel.SetActive(true);
 
         if (dialogue.startNodeIndex < 0 || dialogue.startNodeIndex >= dialogue.nodes.Length)
@@ -113,7 +116,7 @@ public class DialogueUI : MonoBehaviour
     }
     private void ShowNode(DialogueNode node)
     {
-        npcDialogueText.text = node.npcText;
+        npcDialogueText.text = LocalizationHelper.Localize(DialogueTable, node.npcText);
 
         // Önceki seçenekleri temizle
         foreach (Transform child in optionsParent)
@@ -130,7 +133,8 @@ public class DialogueUI : MonoBehaviour
         foreach (var option in node.playerOptions)
         {
             GameObject button = Instantiate(optionButtonPrefab, optionsParent);
-            button.GetComponentInChildren<TextMeshProUGUI>().text = option.text;
+            button.GetComponentInChildren<TextMeshProUGUI>().text =
+                LocalizationHelper.Localize(DialogueTable, option.text);
             button.GetComponent<Button>().onClick.AddListener(() => SelectOption(option.nextNodeIndex));
         }
     }
@@ -153,7 +157,7 @@ public class DialogueUI : MonoBehaviour
         panel.SetActive(true);
 
         // Mesajı göster
-        npcDialogueText.text = message;
+        npcDialogueText.text = LocalizationHelper.Localize(UiTable, message);
 
         // Seçenekleri temizle
         foreach (Transform child in optionsParent)

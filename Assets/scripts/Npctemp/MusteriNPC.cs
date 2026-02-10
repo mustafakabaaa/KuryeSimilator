@@ -1,10 +1,11 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 public class MusteriNPC : MonoBehaviour, Iinterectable
 {
+    private const string UiTable = "UI";
     // Etkileşim ve Sipariş
     private SCOrderData assignedOrder;
     private string npcName = "Müşteri";
@@ -85,8 +86,10 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
         // Eksik varsa formatlı mesaj göster
         if (!hasAllItems)
         {
-            string message = "<color=#ff0000>Siparişi tamamlayamazsın!</color>\n";
-            message += "Eksik olan ürünler:\n";
+            string header = LocalizationHelper.Localize(UiTable, "ui.order_incomplete");
+            string missingLabel = LocalizationHelper.Localize(UiTable, "ui.missing_items");
+            string message = $"<color=#ff0000>{header}</color>\n";
+            message += $"{missingLabel}\n";
             message += string.Join("\n", missingItems);
 
             DialogueUI.Instance.ShowSimpleMessage(message);
@@ -110,7 +113,8 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
     }
     public void SayMissingItems(List<string> missingItems)
     {
-        string message = "Eksik ürünler: " + string.Join(", ", missingItems);
+        string prefix = LocalizationHelper.Localize(UiTable, "ui.missing_items_short");
+        string message = $"{prefix} {string.Join(", ", missingItems)}";
         DialogueUI.Instance.ShowSimpleMessage(message);
     }
     private IEnumerator LookAtPlayerSmoothly()
@@ -144,7 +148,7 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
         orderCompleted = true;
         // İsteğe bağlı: Teşekkür animasyonu veya diyalog
         GetComponent<Animator>()?.SetTrigger("ThankYou");
-        DialogueUI.Instance.ShowSimpleMessage("Teşekkürler!");
+        DialogueUI.Instance.ShowSimpleMessage("ui.thanks");
     }
     private bool IsVisibleToPlayer()
     {
@@ -192,7 +196,7 @@ public class MusteriNPC : MonoBehaviour, Iinterectable
 
     public string GetInteractionText()
     {
-        return "KONUS (E)";
+        return LocalizationHelper.Localize(UiTable, "ui.interact_talk");
     }
 
     public bool CanInteract()

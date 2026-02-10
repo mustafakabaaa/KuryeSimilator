@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
 public class InfoPanelController : MonoBehaviour
 {
+    private const string UiTable = "UI";
+    private const string OrdersTable = "Orders";
     public GameObject infoPanel; // InfoImage objesi
     public TextMeshProUGUI infoOrderIDText;
     public TextMeshProUGUI infoOrderNameText;
@@ -32,10 +34,14 @@ public class InfoPanelController : MonoBehaviour
         infoPanel.SetActive(true);
 
         // Siparis verilerini UI elementlerine ata
-        infoOrderIDText.text = "ID: " + orderData.orderID;
-        infoOrderNameText.text = "Name: " + orderData.orderName;
-        infoDeliveryAddressText.text = "Address: " + orderData.deliveryAddress;
-        infoRewardText.text = orderData.reward.ToString() + "$";
+        string idLabel = LocalizationHelper.Localize(UiTable, "ui.info_id");
+        string nameLabel = LocalizationHelper.Localize(UiTable, "ui.info_name");
+        string addressLabel = LocalizationHelper.Localize(UiTable, "ui.info_address");
+
+        infoOrderIDText.text = $"{idLabel} {orderData.orderID}";
+        infoOrderNameText.text = $"{nameLabel} {LocalizationHelper.Localize(OrdersTable, orderData.orderName)}";
+        infoDeliveryAddressText.text = $"{addressLabel} {orderData.deliveryAddress}";
+        infoRewardText.text = $"{orderData.reward}$";
 
         // Gerekli item'leri grupla ve sayılarıyla birlikte göster
         var groupedItems = new Dictionary<string, int>();
@@ -51,7 +57,8 @@ public class InfoPanelController : MonoBehaviour
             }
         }
 
-        infoRequiredItemsText.text = "Orders: ";
+        string itemsLabel = LocalizationHelper.Localize(UiTable, "ui.info_items");
+        infoRequiredItemsText.text = $"{itemsLabel} ";
         bool firstItem = true;
         foreach (var item in groupedItems)
         {

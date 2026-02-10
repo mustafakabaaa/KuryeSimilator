@@ -18,8 +18,8 @@ public class SaveSlotButton : MonoBehaviour
 
     private void OnClick()
     {
-        Debug.Log("Loading save: " + saveFileName);
-        SaveManager.Instance.LoadSpecificSave(saveFileName);
+        Debug.Log("[MainMenu] Selected save to load: " + saveFileName);
+        SaveManager.Instance.SetPendingLoad(saveFileName);
 
         // Game sahnesini yükle
         SceneLoader.Load(SceneList.GameScene);

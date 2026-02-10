@@ -3,15 +3,15 @@
     "nodes": [
         {
             "nodeId": "node1",
-            "npcText": "Merhaba, siparişimi getirdiniz mi?",
+            "npcText": "dlg.dialogue_data.node1.npc",
             "options": [
                 {
-                    "text": "Evet, işte burada",
+                    "text": "dlg.dialogue_data.node1.opt1",
                     "nextNodeId": "node2",
                     "tipEffect": 10
                 },
                 {
-                    "text": "Hayır, henüz değil",
+                    "text": "dlg.dialogue_data.node1.opt2",
                     "nextNodeId": "node3",
                     "tipEffect": 0
                 }
@@ -19,10 +19,10 @@
         },
         {
             "nodeId": "node2",
-            "npcText": "Harika! Teşekkür ederim.",
+            "npcText": "dlg.dialogue_data.node2.npc",
             "options": [
                 {
-                    "text": "Rica ederim",
+                    "text": "dlg.dialogue_data.node2.opt1",
                     "nextNodeId": "-1",
                     "tipEffect": 5
                 }
@@ -30,9 +30,9 @@
         },
         {
             "nodeId": "node3",
-            "npcText": "Tamam, bekliyorum...",
+            "npcText": "dlg.dialogue_data.node3.npc",
             "options": [{
-                    "text": "güle güle",
+                    "text": "dlg.dialogue_data.node3.opt1",
                     "nextNodeId": "-2",
                     "tipEffect": 0
                 }]

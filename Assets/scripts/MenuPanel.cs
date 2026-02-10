@@ -2,42 +2,73 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using TMPro;
 
 public class MenuPanel : MonoBehaviour
 {
-    public GameObject menuPanel; // Inspector'dan atayacaðýnýz panel
+    private const string UiTable = "UI";
+    public GameObject menuPanel; // Inspector'dan atayacaï¿½ï¿½nï¿½z panel
     public Button resumeButton; // Devam et butonu
     public Button settingsButton; // Ayarlar butonu
-    public Button quitButton; // Çýkýþ butonu
+    public Button quitButton; // ï¿½ï¿½kï¿½ï¿½ butonu
     public Button saveButton;
     public Button backMeninMenu;
-    // ESKÝ: public LoadGamePanel loadGamePanel; 
-    // YENÝ: SaveGamePanel kullan
-    public SaveGamePanel saveGamePanel; // Yeni eklenen save panel referansý
+    // ESKï¿½: public LoadGamePanel loadGamePanel; 
+    // YENï¿½: SaveGamePanel kullan
+    public SaveGamePanel saveGamePanel; // Yeni eklenen save panel referansï¿½
 
     private CharrController player;
 
     private void Start()
     {
-        // Butonlara týklama event'larýný ekleyin
+        // Butonlara tï¿½klama event'larï¿½nï¿½ ekleyin
         resumeButton.onClick.AddListener(ResumeGame);
         quitButton.onClick.AddListener(QuitGame);
         backMeninMenu.onClick.AddListener(BackMeinMenu);
-        // Panel baþlangýçta kapalý olsun
+        // Panel baï¿½langï¿½ï¿½ta kapalï¿½ olsun
         menuPanel.SetActive(false);
 
         player = FindObjectOfType<CharrController>();
 
-        // ESKÝ: saveButton.onClick.AddListener(ShowLoadPanel);
-        // YENÝ: SaveGamePanel'i aç
+        // ESKï¿½: saveButton.onClick.AddListener(ShowLoadPanel);
+        // YENï¿½: SaveGamePanel'i aï¿½
         saveButton.onClick.AddListener(ShowSavePanel);
+        ApplyLocalization();
     }
 
-    // ESKÝ ShowLoadPanel yerine yeni ShowSavePanel
+    private void OnEnable()
+    {
+        ApplyLocalization();
+    }
+
+    private void ApplyLocalization()
+    {
+        SetButtonText(resumeButton, "ui.menu_resume");
+        SetButtonText(settingsButton, "ui.menu_settings");
+        SetButtonText(quitButton, "ui.menu_quit");
+        SetButtonText(saveButton, "ui.menu_save");
+        SetButtonText(backMeninMenu, "ui.menu_main_menu");
+    }
+
+    private void SetButtonText(Button button, string key)
+    {
+        if (button == null)
+        {
+            return;
+        }
+
+        TextMeshProUGUI text = button.GetComponentInChildren<TextMeshProUGUI>();
+        if (text != null)
+        {
+            text.text = LocalizationHelper.Localize(UiTable, key);
+        }
+    }
+
+    // ESKï¿½ ShowLoadPanel yerine yeni ShowSavePanel
     public void ShowSavePanel()
     {
         UIManager.Instance.CloseAllOpenPanels();
-        saveGamePanel.ShowPanel(); // SaveGamePanel'i aç
+        saveGamePanel.ShowPanel(); // SaveGamePanel'i aï¿½
     }
 
     void Update()
@@ -46,21 +77,21 @@ public class MenuPanel : MonoBehaviour
         {
             if (menuPanel.activeSelf)
             {
-                // Menü açýksa kapat ve oyunu devam ettir
+                // Menï¿½ aï¿½ï¿½ksa kapat ve oyunu devam ettir
                 ResumeGame();
             }
             else
             {
-                // Diðer tüm panelleri kapat
+                // Diï¿½er tï¿½m panelleri kapat
                 UIManager.Instance.CloseAllOpenPanels();
 
-                // Persistent menüyü de kapat
+                // Persistent menï¿½yï¿½ de kapat
                 if (PersistentMenuManager.Instance != null)
                 {
                     PersistentMenuManager.Instance.CloseAllPanels();
                 }
 
-                // Pause menüsünü aç
+                // Pause menï¿½sï¿½nï¿½ aï¿½
                 PauseGame();
             }
         }

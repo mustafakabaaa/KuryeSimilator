@@ -1,0 +1,112 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5b11a58205ec3474ca216360e9fa74a8, type: 3}
+  m_Name: Dialogues Shared Data
+  m_EditorClassIdentifier: 
+  m_TableCollectionName: Dialogues
+  m_TableCollectionNameGuidString: a607ea5ddee2fbc4c8488f4725757525
+  m_Entries:
+  - m_Id: 1194926850048
+    m_Key: dlg.dialogue_data.node1.npc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1280155107328
+    m_Key: dlg.dialogue_data.node1.opt1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1371993587712
+    m_Key: dlg.dialogue_data.node1.opt2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1515807883264
+    m_Key: dlg.dialogue_data.node2.npc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1656942018560
+    m_Key: dlg.dialogue_data.node2.opt1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1756393160704
+    m_Key: dlg.dialogue_data.node3.npc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1841793384448
+    m_Key: dlg.dialogue_data.node3.opt1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1916846260224
+    m_Key: dlg.diyalogue2.node1.npc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2070055796736
+    m_Key: dlg.diyalogue2.node1.opt1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2190381989888
+    m_Key: dlg.diyalogue2.node1.opt2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2285475250176
+    m_Key: dlg.diyalogue2.node2.npc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2405998575616
+    m_Key: dlg.diyalogue2.node2.opt1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2527000051712
+    m_Key: dlg.diyalogue3.node1.npc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2589042196480
+    m_Key: dlg.diyalogue3.node1.opt1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2670239727616
+    m_Key: dlg.diyalogue3.node1.opt2
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2796643467264
+    m_Key: dlg.diyalogue3.node2.npc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2905930252288
+    m_Key: dlg.diyalogue3.node2.opt1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3001795264512
+    m_Key: dlg.diyalogue3.node3.npc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3092295761920
+    m_Key: dlg.diyalogue3.node3.opt1
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3162990755840
+    m_Key: dlg.diyalogue3.node4.npc
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3218955354112
+    m_Key: dlg.diyalogue3.node4.opt1
+    m_Metadata:
+      m_Items: []
+  m_Metadata:
+    m_Items: []
+  m_KeyGenerator:
+    rid: 7298461621540618245
+  references:
+    version: 2
+    RefIds:
+    - rid: 7298461621540618245
+      type: {class: DistributedUIDGenerator, ns: UnityEngine.Localization.Tables, asm: Unity.Localization}
+      data:
+        m_CustomEpoch: 1770555780995

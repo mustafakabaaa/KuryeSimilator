@@ -1,0 +1,108 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e9620f8c34305754d8cc9a7e49e852d9, type: 3}
+  m_Name: Dialogues_tr
+  m_EditorClassIdentifier: 
+  m_LocaleId:
+    m_Code: tr
+  m_SharedData: {fileID: 11400000, guid: a607ea5ddee2fbc4c8488f4725757525, type: 2}
+  m_Metadata:
+    m_Items: []
+  m_TableData:
+  - m_Id: 1194926850048
+    m_Localized: "Merhaba, sipari\u015Fimi getirdiniz mi?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1280155107328
+    m_Localized: "Evet, i\u015Fte burada"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1371993587712
+    m_Localized: "Hay\u0131r, hen\xFCz de\u011Fil."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1515807883264
+    m_Localized: "Harika! Te\u015Fekk\xFCr ederim."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1656942018560
+    m_Localized: Rica ederim.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1756393160704
+    m_Localized: Tamam, bekliyorum...
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1841793384448
+    m_Localized: "g\xFCle g\xFCle."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 1916846260224
+    m_Localized: "Ho\u015F geldiniz! Yard\u0131mc\u0131 olabilir miyim?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2070055796736
+    m_Localized: "Sipari\u015Fimi teslim etmek istiyorum."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2190381989888
+    m_Localized: "Hen\xFCz sipari\u015Fi tamamlamad\u0131m."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2285475250176
+    m_Localized: "Harika, sipari\u015Fi kontrol ediyorum... Her \u015Fey eksiksiz
+      g\xF6r\xFCn\xFCyor. Te\u015Fekk\xFCrler!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2405998575616
+    m_Localized: Rica ederim!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2527000051712
+    m_Localized: "Merhaba! Sipari\u015Finiz haz\u0131r m\u0131?"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2589042196480
+    m_Localized: "Evet, sipari\u015Fi teslim etmek istiyorum."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2670239727616
+    m_Localized: "\"Hen\xFCz tamamlamad\u0131m."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2796643467264
+    m_Localized: "Te\u015Fekk\xFCrler! \u015Eimdi sipari\u015Fi kontrol ediyorum..."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 2905930252288
+    m_Localized: Tabii, buyurun.
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3001795264512
+    m_Localized: "Hmm... Her \u015Fey tam g\xF6r\xFCn\xFCyor."
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3092295761920
+    m_Localized: Afiyet olsun!
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3162990755840
+    m_Localized: "Te\u015Fekk\xFCr ederim. Bu da sizin \xF6d\xFCl\xFCn\xFCz!"
+    m_Metadata:
+      m_Items: []
+  - m_Id: 3218955354112
+    m_Localized: "Te\u015Fekk\xFCrler, g\xF6r\xFC\u015Fmek \xFCzere!"
+    m_Metadata:
+      m_Items: []
+  references:
+    version: 2
+    RefIds: []

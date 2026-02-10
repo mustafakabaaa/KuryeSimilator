@@ -1,4 +1,4 @@
-// LaptopInteraction.cs (laptop prefabýnda)
+// LaptopInteraction.cs (laptop prefabï¿½nda)
 using UnityEngine;
 
 public class LaptopInteraction : MonoBehaviour,Iinterectable
@@ -10,12 +10,12 @@ public class LaptopInteraction : MonoBehaviour,Iinterectable
 
     public string GetInteractionText()
     {
-        return "PC Ac (E)";
+        return "ui.interact_pc_open";
     }
 
     public void Interact()
     {
-        // Sahnedeki PCUIController'ý bul ve tetikle
+        // Sahnedeki PCUIController'ï¿½ bul ve tetikle
         FindObjectOfType<PCUIController>()?.TogglePCUI();
     }
 }

@@ -192,7 +192,7 @@ public class MotorcycleVehicle : MonoBehaviour
             if (!isPlayerOnBoard && InteractionManager.Instance != null)
             {
                 // InteractionManager'a kayıt ol
-                InteractionManager.Instance.RegisterVehicle(this, transform, "Bin (F)", true);
+                InteractionManager.Instance.RegisterVehicle(this, transform, "ui.interact_drive", true);
             }
         }
         else
@@ -253,7 +253,7 @@ public class MotorcycleVehicle : MonoBehaviour
         // İndikten sonra InteractionManager'a tekrar kayıt ol
         if (InteractionManager.Instance != null && currentPlayer != null)
         {
-            InteractionManager.Instance.RegisterVehicle(this, transform, "Bin (F)", true);
+            InteractionManager.Instance.RegisterVehicle(this, transform, "ui.interact_drive", true);
         }
 
         if (MotorEventManager.Instance != null)

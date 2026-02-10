@@ -1,12 +1,16 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.IO;
 using System.Collections.Generic;
 using System.Collections;
 using System;
+using UnityEngine.SceneManagement;
 
 public class SaveManager : MonoBehaviour
 {
     public static SaveManager Instance { get; private set; }
+    private static string pendingSaveToLoad;
+    private static bool pendingNewGame;
+    public static string LastLoadedSaveName { get; private set; }
 
     private List<ISaveable> saveableSystems = new List<ISaveable>();
     private GameData currentGameData;
@@ -31,6 +35,11 @@ public class SaveManager : MonoBehaviour
 
     private IEnumerator Start()
     {
+        if (SceneManager.GetActiveScene().buildIndex == (int)SceneList.MainMenu)
+        {
+            yield break;
+        }
+
         // FIXED: Give more time for systems to register
         yield return new WaitForEndOfFrame();
         yield return new WaitForSeconds(0.1f); // Additional delay
@@ -69,6 +78,21 @@ public class SaveManager : MonoBehaviour
         yield return new WaitUntil(() => saveableSystems.Count > 0);
 
         Debug.Log($"SaveManager Start completed. Registered systems: {saveableSystems.Count}");
+
+        if (pendingNewGame)
+        {
+            pendingNewGame = false;
+            ResetGameData();
+            yield break;
+        }
+
+        if (!string.IsNullOrEmpty(pendingSaveToLoad))
+        {
+            string saveName = pendingSaveToLoad;
+            pendingSaveToLoad = null;
+            LoadSpecificSave(saveName);
+            yield break;
+        }
 
         // Auto-load logic
         if (HasAnySaveData())
@@ -128,6 +152,28 @@ public class SaveManager : MonoBehaviour
             Debug.Log("No save files found");
         }
 
+    }
+
+    public void SetPendingLoad(string saveName)
+    {
+        pendingSaveToLoad = saveName;
+        pendingNewGame = false;
+    }
+
+    public void SetPendingNewGame()
+    {
+        pendingNewGame = true;
+        pendingSaveToLoad = null;
+    }
+
+    public string GetLastSaveFileNameSafe()
+    {
+        return GetLastSaveFileName();
+    }
+
+    public string GetPendingLoadName()
+    {
+        return pendingSaveToLoad;
     }
 
     private string GetLastSaveFileName()
@@ -227,6 +273,7 @@ public class SaveManager : MonoBehaviour
         {
             string json = File.ReadAllText(savePath);
             currentGameData = JsonUtility.FromJson<GameData>(json);
+            LastLoadedSaveName = saveName;
 
             Debug.Log($"Loading save: {saveName}");
             Debug.Log($"Loaded upgradePoints: {currentGameData.upgradePoints}");

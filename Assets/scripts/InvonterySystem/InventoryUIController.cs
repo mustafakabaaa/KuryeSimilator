@@ -47,22 +47,21 @@ public class InventoryUIController : MonoBehaviour
     {
         SwitchToPlayerInventory();
 
-        if (inventoryGameobject.activeSelf)
+        if (UIManager.Instance.IsAnyUIOpen())
         {
-            // Envanteri kapat
-            inventoryGameobject.SetActive(false);
-            UIManager.Instance.SetInventoryState(false);
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            // Tüm UI'ları kapat
+            PersistentMenuManager.Instance.CloseAllPanels();
+            CloseInventory();
         }
-        else if (!UIManager.Instance.IsAnyUIOpen())
+        else
         {
-            // Envanteri aç
+            // Sadece inventory'yi aç
             inventoryGameobject.SetActive(true);
             UIManager.Instance.SetInventoryState(true);
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
+        
         PersistentMenuManager.Instance.CheckPanels();
     }
 

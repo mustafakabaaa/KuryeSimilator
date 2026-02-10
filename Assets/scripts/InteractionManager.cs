@@ -7,6 +7,7 @@ using TMPro;
 /// </summary>
 public class InteractionManager : MonoBehaviour
 {
+    private const string UiTable = "UI";
     [Header("UI References")]
     [SerializeField] private TextMeshProUGUI interactText;
     
@@ -211,7 +212,7 @@ public class InteractionManager : MonoBehaviour
     {
         if (interactText != null && !string.IsNullOrEmpty(text))
         {
-            interactText.text = text;
+            interactText.text = LocalizationHelper.Localize(UiTable, text);
             interactText.gameObject.SetActive(true);
         }
     }

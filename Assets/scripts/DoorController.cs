@@ -17,7 +17,7 @@ public class DoorController : MonoBehaviour,Iinterectable
 
     public string GetInteractionText()
     {
-        return "AC";
+        return "ui.interact_open";
     }
 
     public void Interact()

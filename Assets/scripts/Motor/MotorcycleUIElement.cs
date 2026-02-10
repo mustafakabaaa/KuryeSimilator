@@ -4,6 +4,7 @@ using UnityEngine.UI;
 
 public class MotorcycleUIElement : MonoBehaviour
 {
+    private const string UiTable = "UI";
     [Header("UI References")]
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI priceText;
@@ -51,8 +52,10 @@ public class MotorcycleUIElement : MonoBehaviour
         bool canAfford = WalletManager.Instance.GetBalance() >= currentBike.price;
         buyButton.interactable = !currentBike.isPurchased && canAfford;
 
+        string ownedText = LocalizationHelper.Localize(UiTable, "ui.motor_owned");
+        string buyText = LocalizationHelper.Localize(UiTable, "ui.motor_buy");
         buyButton.GetComponentInChildren<TextMeshProUGUI>().text =
-            currentBike.isPurchased ? "OWNED" : "BUY";
+            currentBike.isPurchased ? ownedText : buyText;
 
         // Tamir butonu kontrolü
         UpdateTamirButton();
@@ -84,7 +87,9 @@ public class MotorcycleUIElement : MonoBehaviour
             bool tamirOdeyebilir = WalletManager.Instance.GetBalance() >= tamirMaliyeti;
             
             motorFixedButton.interactable = tamirOdeyebilir;
-            motorFixedButton.GetComponentInChildren<TextMeshProUGUI>().text = $"TAMİR ET - {tamirMaliyeti}";
+            string repairText = LocalizationHelper.Localize(UiTable, "ui.motor_repair");
+            motorFixedButton.GetComponentInChildren<TextMeshProUGUI>().text =
+                $"{repairText} - {tamirMaliyeti}";
             
             Debug.Log($"Tamir butonu aktif: {tamirMaliyeti}₺, Bakiye: {WalletManager.Instance.GetBalance()}₺, Ödeyebilir: {tamirOdeyebilir}");
         }
