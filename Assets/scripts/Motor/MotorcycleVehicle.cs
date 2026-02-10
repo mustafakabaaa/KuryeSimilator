@@ -23,7 +23,7 @@ public class MotorcycleVehicle : MonoBehaviour
     [Header("Engine Settings")]
     [SerializeField] float motorForce = 2000f;
     [SerializeField] float maxSpeed = 120f;
-    [SerializeField] float brakeForce = 300f;
+    [SerializeField] float brakeForce = 3000f;
     float currentbrakeForce;
 
     [Header("Steering Settings")]
