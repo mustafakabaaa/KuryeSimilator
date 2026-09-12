@@ -3,35 +3,35 @@ using System.Collections;
 
 public class BicycleController : MonoBehaviour, Iinterectable
 {
-    [Header("Bisiklet Temel Ayarlarý")]
-    [SerializeField] private float _maxSpeed = 10f; // Maksimum hareket hýzý
-    [SerializeField] private float _acceleration = 5f; // Hýzlanma gücü
+    [Header("Bisiklet Temel Ayarlarï¿½")]
+    [SerializeField] private float _maxSpeed = 10f; // Maksimum hareket hï¿½zï¿½
+    [SerializeField] private float _acceleration = 5f; // Hï¿½zlanma gï¿½cï¿½
 
 
-    [SerializeField] private float _gravity = -9.81f; // Yerçekimi kuvveti
+    [SerializeField] private float _gravity = -9.81f; // Yerï¿½ekimi kuvveti
     [SerializeField] private float _cameraSensitivity = 100f; // Kamera hassasiyeti
 
-    [Header("Dönüþ Ayarlarý")]
-    [SerializeField] private float _handlingThreshold = 3f; // Dönüþ hassasiyeti eþik deðeri
-    [SerializeField][Range(0.1f, 2f)] private float _minHandling = 0.5f; // Minimum dönüþ hassasiyeti
-    [SerializeField][Range(1f, 5f)] private float _maxHandling = 1.5f; // Maksimum dönüþ hassasiyeti
-    [SerializeField] private float _tiltAngleMultiplier = 30f; // Eðim açý çarpaný
+    [Header("Dï¿½nï¿½ï¿½ Ayarlarï¿½")]
+    [SerializeField] private float _handlingThreshold = 3f; // Dï¿½nï¿½ï¿½ hassasiyeti eï¿½ik deï¿½eri
+    [SerializeField][Range(0.1f, 2f)] private float _minHandling = 0.5f; // Minimum dï¿½nï¿½ï¿½ hassasiyeti
+    [SerializeField][Range(1f, 5f)] private float _maxHandling = 1.5f; // Maksimum dï¿½nï¿½ï¿½ hassasiyeti
+    [SerializeField] private float _tiltAngleMultiplier = 30f; // Eï¿½im aï¿½ï¿½ ï¿½arpanï¿½
 
     [Header("Referanslar")]
-    [SerializeField] private Transform _dropOfPoint; // Ýnme noktasý
-    [SerializeField] private GameObject _vehicleCamera; // Araç kamerasý
+    [SerializeField] private Transform _dropOfPoint; // ï¿½nme noktasï¿½
+    [SerializeField] private GameObject _vehicleCamera; // Araï¿½ kamerasï¿½
 
-    [Header("Serbest Bisiklet Fiziði")]
-    [SerializeField] private float _dragWhenAbandoned = 0.3f; // Sürtünme katsayýsý
-    [SerializeField] private float _angularDragWhenAbandoned = 0.1f; // Dönme sürtünmesi
+    [Header("Serbest Bisiklet Fiziï¿½i")]
+    [SerializeField] private float _dragWhenAbandoned = 0.3f; // Sï¿½rtï¿½nme katsayï¿½sï¿½
+    [SerializeField] private float _angularDragWhenAbandoned = 0.1f; // Dï¿½nme sï¿½rtï¿½nmesi
 
-    [Header("Bisiklet Düzeltme Ayarlarý")]
-    [SerializeField] private float _standUpSpeed = 2f; // Düzeltme hýzý
-    [SerializeField] private float _maxTiltAngleToMount = 30f; // Binilebilir maksimum eðim açýs
+    [Header("Bisiklet Dï¿½zeltme Ayarlarï¿½")]
+    [SerializeField] private float _standUpSpeed = 2f; // Dï¿½zeltme hï¿½zï¿½
+    [SerializeField] private float _maxTiltAngleToMount = 30f; // Binilebilir maksimum eï¿½im aï¿½ï¿½s
 
-    [Header("Collider Ayarlarý")]
-    [SerializeField] private float _groundContactOffset = 0.1f; // Collider'ýn zeminden yüksekliði
-    [SerializeField] private float _minGroundContact = 0.3f; // Minimum temas oraný (0.3 = %30)
+    [Header("Collider Ayarlarï¿½")]
+    [SerializeField] private float _groundContactOffset = 0.1f; // Collider'ï¿½n zeminden yï¿½ksekliï¿½i
+    [SerializeField] private float _minGroundContact = 0.3f; // Minimum temas oranï¿½ (0.3 = %30)
 
     private Rigidbody _rb;
     private float _currentSpeed = 0f;
@@ -40,40 +40,40 @@ public class BicycleController : MonoBehaviour, Iinterectable
     private bool _playerOnboard = false;
     private GameObject _player;
    
-    private bool _isStandingUp = false; // Bisiklet düzeltiliyor mu?
+    private bool _isStandingUp = false; // Bisiklet dï¿½zeltiliyor mu?
     [SerializeField] private MinimapCameraFollow minimapCameraFollow;
 
     private void Start()
     {
         _rb = GetComponent<Rigidbody>();
-        _rb.interpolation = RigidbodyInterpolation.Interpolate; // Yumuþak fizik hareketi
-        _rb.freezeRotation = true; // Fiziksel dönüþü kilitle
+        _rb.interpolation = RigidbodyInterpolation.Interpolate; // Yumuï¿½ak fizik hareketi
+        _rb.freezeRotation = true; // Fiziksel dï¿½nï¿½ï¿½ï¿½ kilitle
         _player = GameObject.FindGameObjectWithTag("Player");
-        _vehicleCamera.SetActive(false); // Baþlangýçta kamera kapalý
+        _vehicleCamera.SetActive(false); // Baï¿½langï¿½ï¿½ta kamera kapalï¿½
     }
 
     private void FixedUpdate()
     {
         if (!_playerOnboard)
         {
-            // Bisiklet terk edilmiþse, yavaþ yavaþ durmasýný saðla (sürtünme uygula)
-            _rb.drag = _dragWhenAbandoned; 
-            _rb.angularDrag = _angularDragWhenAbandoned; 
+            // Bisiklet terk edilmiï¿½se, yavaï¿½ yavaï¿½ durmasï¿½nï¿½ saï¿½la (sï¿½rtï¿½nme uygula)
+            _rb.linearDamping = _dragWhenAbandoned; 
+            _rb.angularDamping = _angularDragWhenAbandoned; 
         }
         else
         {
-            // Biniliyken sürtünmeyi sýfýrla (normal fizik kurallarý geçerli)
-            _rb.drag = 0f;
-            _rb.angularDrag = 0.05f;
+            // Biniliyken sï¿½rtï¿½nmeyi sï¿½fï¿½rla (normal fizik kurallarï¿½ geï¿½erli)
+            _rb.linearDamping = 0f;
+            _rb.angularDamping = 0.05f;
         }
     }
 
     public void Interact()
     {
-        // burada karakter bisiklette deðilse ve bisiklet düzeltme iþlemi yapýlmýyorsa bisiklete bin
-        if (!_playerOnboard && CanMountBicycle()) // bisikletin bulunduðu eðimin binmeye uygun olup olmadýðýný kontrol eden fonk
+        // burada karakter bisiklette deï¿½ilse ve bisiklet dï¿½zeltme iï¿½lemi yapï¿½lmï¿½yorsa bisiklete bin
+        if (!_playerOnboard && CanMountBicycle()) // bisikletin bulunduï¿½u eï¿½imin binmeye uygun olup olmadï¿½ï¿½ï¿½nï¿½ kontrol eden fonk
         {
-            EnterVehicle(); // þartlar saðlandýysa bin
+            EnterVehicle(); // ï¿½artlar saï¿½landï¿½ysa bin
         }
     }
 
@@ -83,23 +83,23 @@ public class BicycleController : MonoBehaviour, Iinterectable
         {
             HandleVehicleMovement(); // 
             HandleCameraLook();      // 
-            if (Input.GetKeyDown(KeyCode.E)) ExitVehicle(); // "keyCode" -> "KeyCode" düzeltildi
+            if (Input.GetKeyDown(KeyCode.E)) ExitVehicle(); // "keyCode" -> "KeyCode" dï¿½zeltildi
         }
         else
         {
-            // Bisiklet düzeltme kontrolü ama burada niye þartsýz koþulsuz düzeltme koyduk?
+            // Bisiklet dï¿½zeltme kontrolï¿½ ama burada niye ï¿½artsï¿½z koï¿½ulsuz dï¿½zeltme koyduk?
             if (Input.GetKeyDown(KeyCode.R)) // Eksik parantez eklendi
             {
-                StartCoroutine(StandUpBicycle()); // "StartCorouting" -> "StartCoroutine" düzeltildi
+                StartCoroutine(StandUpBicycle()); // "StartCorouting" -> "StartCoroutine" dï¿½zeltildi
             }
         }
 
-        Debug.Log("Dönüþ Hassasiyeti:" + _handling + "    Hýz:" + _currentSpeed); // Eksik string birleþtirme düzeltildi
+        Debug.Log("Dï¿½nï¿½ï¿½ Hassasiyeti:" + _handling + "    Hï¿½z:" + _currentSpeed); // Eksik string birleï¿½tirme dï¿½zeltildi
     }
 
     private bool CanMountBicycle()
     {
-        // Bisikletin eðim açýsýný kontrol et
+        // Bisikletin eï¿½im aï¿½ï¿½sï¿½nï¿½ kontrol et
         float tiltAngle = Mathf.Abs(transform.rotation.eulerAngles.z);
         tiltAngle = tiltAngle > 180f ? 360f - tiltAngle : tiltAngle;
 
@@ -109,7 +109,7 @@ public class BicycleController : MonoBehaviour, Iinterectable
     private IEnumerator StandUpBicycle()
     {
         _isStandingUp = true;
-        _rb.freezeRotation = false; // Düzeltme sýrasýnda rotasyon kilidini aç
+        _rb.freezeRotation = false; // Dï¿½zeltme sï¿½rasï¿½nda rotasyon kilidini aï¿½
 
         Quaternion startRot = transform.rotation;
         Quaternion targetRot = Quaternion.Euler(0, transform.eulerAngles.y, 0);
@@ -124,7 +124,7 @@ public class BicycleController : MonoBehaviour, Iinterectable
             yield return null;
         }
 
-        _rb.freezeRotation = true; // Ýþlem bitince tekrar kilitle
+        _rb.freezeRotation = true; // ï¿½ï¿½lem bitince tekrar kilitle
         _isStandingUp = false;
     }
 
@@ -132,7 +132,7 @@ public class BicycleController : MonoBehaviour, Iinterectable
     {
         bool isGrounded = IsGrounded();
 
-        // Yerçekimi uygula (daha gerçekçi)
+        // Yerï¿½ekimi uygula (daha gerï¿½ekï¿½i)
         if (!isGrounded)
         {
             _rb.AddForce(Vector3.down * _gravity * 2f, ForceMode.Acceleration);
@@ -142,14 +142,14 @@ public class BicycleController : MonoBehaviour, Iinterectable
         if (isGrounded)
         {
             float moveZ = Input.GetAxis("Vertical");
-            // ... (hýz hesaplamalarý ayný)
+            // ... (hï¿½z hesaplamalarï¿½ aynï¿½)
 
-            // Dönüþ için rigidbody kullan
+            // Dï¿½nï¿½ï¿½ iï¿½in rigidbody kullan
             float turn = Input.GetAxis("Horizontal") * _handling;
             _rb.AddTorque(transform.up * turn * 10f, ForceMode.Force);
         }
 
-        // Eðim efekti (optimize edilmiþ)
+        // Eï¿½im efekti (optimize edilmiï¿½)
         if (isGrounded && Mathf.Abs(_currentSpeed) > 0.1f)
         {
             float tilt = -Input.GetAxis("Horizontal") * _tiltAngleMultiplier;
@@ -185,10 +185,10 @@ public class BicycleController : MonoBehaviour, Iinterectable
 
     private void HandleCameraLook()
     {
-        // Fare giriþini al
+        // Fare giriï¿½ini al
         float mouseY = Input.GetAxis("Mouse Y") * _cameraSensitivity * Time.deltaTime;
 
-        // Dikey kamera hareketi (yukarý-aþaðý)
+        // Dikey kamera hareketi (yukarï¿½-aï¿½aï¿½ï¿½)
         _xRotation -= mouseY;
         _xRotation = Mathf.Clamp(_xRotation, -75f, 40f);
         _vehicleCamera.transform.localRotation = Quaternion.Euler(_xRotation, 0f, 0f);
@@ -199,16 +199,16 @@ public class BicycleController : MonoBehaviour, Iinterectable
         StartCoroutine(GroundBicycle());
         _playerOnboard = true;
 
-        // Tüm fiziksel kýsýtlamalarý kaldýr
+        // Tï¿½m fiziksel kï¿½sï¿½tlamalarï¿½ kaldï¿½r
         _rb.isKinematic = false;
         _rb.useGravity = true;
         _rb.freezeRotation = false;
 
-        // Hýz ve rotasyonu sýfýrla
-        _rb.velocity = Vector3.zero;
+        // Hï¿½z ve rotasyonu sï¿½fï¿½rla
+        _rb.linearVelocity = Vector3.zero;
         _rb.angularVelocity = Vector3.zero;
 
-        // Karakter ayarlarý
+        // Karakter ayarlarï¿½
         _player.transform.SetParent(_dropOfPoint);
         _player.transform.localPosition = Vector3.zero;
         _player.transform.localRotation = Quaternion.identity;
@@ -218,10 +218,10 @@ public class BicycleController : MonoBehaviour, Iinterectable
         _vehicleCamera.SetActive(true);
         _player.GetComponent<CharrController>().SetControlEnabled(false);
 
-        // Bisiklet rotasyonunu düzelt
+        // Bisiklet rotasyonunu dï¿½zelt
         transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, 0);
 
-        // Hareket deðiþkenlerini resetle
+        // Hareket deï¿½iï¿½kenlerini resetle
         _currentSpeed = 0f;
         _handling = _minHandling;
 
@@ -232,7 +232,7 @@ public class BicycleController : MonoBehaviour, Iinterectable
     {
         _playerOnboard = false;
 
-        // Karakteri ayýr
+        // Karakteri ayï¿½r
         _player.transform.SetParent(null);
         _player.transform.position = _dropOfPoint.position + transform.right * 2f;
         _player.transform.rotation = Quaternion.identity;
@@ -244,14 +244,14 @@ public class BicycleController : MonoBehaviour, Iinterectable
         _rb.useGravity = true;
         _rb.freezeRotation = false;
 
-        Debug.Log("Bisiklet serbest kaldý! Hýz: " + _rb.velocity.magnitude);
+        Debug.Log("Bisiklet serbest kaldï¿½! Hï¿½z: " + _rb.linearVelocity.magnitude);
     }
 
     private IEnumerator GroundBicycle()
     {
         yield return new WaitForFixedUpdate();
 
-        // Daha hassas zemin kontrolü
+        // Daha hassas zemin kontrolï¿½
         RaycastHit hit;
         if (Physics.Raycast(transform.position + Vector3.up * 0.5f, Vector3.down, out hit, 1.5f))
         {
@@ -278,10 +278,10 @@ public class BicycleController : MonoBehaviour, Iinterectable
 
     private void OnDrawGizmos()
     {
-        // Zemin kontrol ray'lerini göster
+        // Zemin kontrol ray'lerini gï¿½ster
         Gizmos.color = Color.green;
 
-        // Ray baþlangýç noktalarýný tanýmla (IsGrounded() fonksiyonuyla ayný olmalý)
+        // Ray baï¿½langï¿½ï¿½ noktalarï¿½nï¿½ tanï¿½mla (IsGrounded() fonksiyonuyla aynï¿½ olmalï¿½)
         Vector3[] rayOrigins = new Vector3[] {
         transform.position,
         transform.position + transform.forward * 0.3f,

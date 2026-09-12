@@ -22,6 +22,37 @@ public class InteractionManager : MonoBehaviour
     private List<VehicleData> nearbyVehicles = new List<VehicleData>();
     private VehicleData currentVehicle;
     private Transform playerTransform;
+
+    // Oyuncu aynı anda tek araca binebilir. Motor ve bisiklet F'yi ayrı dinlediği
+    // için yan yana durunca ikisi de binme sayılabiliyordu; bu kilit onu önler.
+    // Player may occupy only one vehicle. Bike and motorcycle both listen to F,
+    // so standing between them used to mount both; this lock prevents that.
+    private static MonoBehaviour occupiedVehicle;
+
+    /// <summary>Başka bir araçta oyuncu var mı? / Is any vehicle already occupied?</summary>
+    public static bool HasOccupiedVehicle => occupiedVehicle != null;
+
+    /// <summary>
+    /// Bu aracı "dolu" olarak işaretler. Başka araç doluysa false döner.
+    /// Claims this vehicle as occupied. Returns false if another vehicle is already claimed.
+    /// </summary>
+    public static bool TryClaimVehicle(MonoBehaviour vehicle)
+    {
+        if (vehicle == null) return false;
+        if (occupiedVehicle != null && occupiedVehicle != vehicle) return false;
+        occupiedVehicle = vehicle;
+        return true;
+    }
+
+    /// <summary>
+    /// İnerken kilidi açar, böylece başka bir araca binilebilir.
+    /// Releases the occupancy lock so another vehicle can be mounted.
+    /// </summary>
+    public static void ReleaseVehicle(MonoBehaviour vehicle)
+    {
+        if (occupiedVehicle == vehicle)
+            occupiedVehicle = null;
+    }
     
     [System.Serializable]
     private class VehicleData

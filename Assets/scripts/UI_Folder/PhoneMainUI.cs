@@ -45,10 +45,15 @@ public class PhoneMainUI : MonoBehaviour
     // ?? Phone tu�una bas�ld���nda
     private void OnPhoneKeyPressed(InputAction.CallbackContext ctx)
     {
-        // Eğer OrderUI açıksa, önce onu kapat ve Phone'u aç
+        // Sipariş listesi açıksa önce onu kapat, ana telefon menüsüne dön.
+        // Telefon ekranları arasında geçerken imleci kilitleme: aynı karede lock/unlock
+        // Unity'de OS imlecini kaybettirir.
+        // If orders are open, close them and return to the phone home screen.
+        // Do not lock the cursor while switching phone screens — lock+unlock in the
+        // same click frame can hide the OS cursor.
         if (OrderUI.Instance != null && UIManager.Instance.IsPhoneUIOpen())
         {
-            OrderUI.Instance.CloseUI();
+            OrderUI.Instance.CloseUI(hideCursor: false);
             Open();
         }
         else if (isOpen)
@@ -71,12 +76,29 @@ public class PhoneMainUI : MonoBehaviour
         SetCursor(true);
     }
 
+    /// <summary>
+    /// Telefonu tamamen kapatır ve imleci kilitler.
+    /// Closes the phone entirely and locks the cursor.
+    /// </summary>
     public void Close()
+    {
+        CloseInternal(hideCursor: true);
+    }
+
+    /// <summary>
+    /// Ana telefon panelini kapatır.
+    /// hideCursor true: oyuna dönülüyor, imleç kilitlenir.
+    /// hideCursor false: başka bir telefon ekranına geçiliyor, imleç açık kalır.
+    /// Closes the phone home panel. Pass hideCursor false when switching to another phone UI
+    /// so Unity does not hide the cursor in the same click frame.
+    /// </summary>
+    private void CloseInternal(bool hideCursor)
     {
         isOpen = false;
         mainPanel.SetActive(false);
         UIManager.Instance.SetPhoneMain(false);
-        SetCursor(false);
+        if (hideCursor)
+            SetCursor(false);
     }
 
     private void SetCursor(bool visible)
@@ -85,10 +107,14 @@ public class PhoneMainUI : MonoBehaviour
         Cursor.lockState = visible ? CursorLockMode.None : CursorLockMode.Locked;
     }
 
-    // ?? Order butonu
+    /// <summary>
+    /// Sipariş listesine geçer. Ana paneli kapatır ama imleci kilitlemez;
+    /// OrderUI.OpenUI imleci görünür tutar.
+    /// Opens the order list. Closes the home panel without locking the cursor.
+    /// </summary>
     private void OpenOrders()
     {
-        Close(); // Ana men�y� kapat
-        OrderUI.Instance.OpenUI(); // Order UI'yi a�
+        CloseInternal(hideCursor: false);
+        OrderUI.Instance.OpenUI();
     }
 }

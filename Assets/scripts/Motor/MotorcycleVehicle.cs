@@ -127,6 +127,14 @@ public class MotorcycleVehicle : MonoBehaviour
         controls.Motorcycle.Disable();
     }
 
+    void OnDestroy()
+    {
+        // Sahne kapanınca kilit asılı kalmasın.
+        // Release occupancy if this motorcycle is destroyed while occupied.
+        if (isPlayerOnBoard)
+            InteractionManager.ReleaseVehicle(this);
+    }
+
     void Start()
     {
         
@@ -174,7 +182,7 @@ public class MotorcycleVehicle : MonoBehaviour
         horizontalInput = moveInput.x;
         verticalInput = moveInput.y;
         braking = brakeInput;
-        currentSpeed = rb.velocity.magnitude * 3.6f;
+        currentSpeed = rb.linearVelocity.magnitude * 3.6f;
 
         CheckPlayerInRange();
         UpdateEngineSound();
@@ -207,19 +215,36 @@ public class MotorcycleVehicle : MonoBehaviour
 
     private void HandleInteraction()
     {
-        if (isPlayerInRange && !isPlayerOnBoard && currentPlayer != null)
-        {
-            MountMotorcycle();
-        }
-        else if (isPlayerOnBoard)
+        // Bu motordayken F = in.
+        // F while already on this motorcycle = dismount.
+        if (isPlayerOnBoard)
         {
             DismountMotorcycle();
+            return;
         }
+
+        if (!isPlayerInRange || currentPlayer == null) return;
+
+        // Bisiklet de aynı F'yi dinler. Yan yana iken ikisi birden binmesin.
+        // The bicycle listens to the same F key; don't mount both when they overlap.
+        if (InteractionManager.HasOccupiedVehicle) return;
+
+        // UI'daki en yakın araç bu değilse binme.
+        // Only the closest registered vehicle (shown in UI) should mount.
+        MonoBehaviour closest = InteractionManager.Instance != null
+            ? InteractionManager.Instance.GetCurrentVehicle()
+            : null;
+        if (closest != null && closest != this) return;
+
+        MountMotorcycle();
     }
 
     public void MountMotorcycle()
     {
         if (currentPlayer == null) return;
+        // İkinci araç aynı karede binmeye çalışırsa reddet.
+        // Reject a second vehicle trying to mount in the same frame.
+        if (!InteractionManager.TryClaimVehicle(this)) return;
 
         isPlayerOnBoard = true;
         _player = currentPlayer;
@@ -246,6 +271,9 @@ public class MotorcycleVehicle : MonoBehaviour
     public void DismountMotorcycle()
     {
         isPlayerOnBoard = false;
+        // Kilidi aç; diğer araca binilebilir.
+        // Free occupancy so another vehicle can be mounted.
+        InteractionManager.ReleaseVehicle(this);
 
         changeCamera();
         playerStatue();
@@ -355,28 +383,28 @@ public class MotorcycleVehicle : MonoBehaviour
         backWheel.motorTorque = 0f;
         frontWheel.motorTorque = 0f;
 
-        if (rb.velocity.magnitude > minSpeedThreshold)
+        if (rb.linearVelocity.magnitude > minSpeedThreshold)
         {
-            rb.drag = coastingDrag;
+            rb.linearDamping = coastingDrag;
             backWheel.brakeTorque = autoBrakeForce * 0.25f;
             frontWheel.brakeTorque = autoBrakeForce * 0.25f;
         }
         else
         {
-            rb.velocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
             backWheel.brakeTorque = brakeForce;
             frontWheel.brakeTorque = brakeForce;
         }
 
         if (!frontWheel.isGrounded && !backWheel.isGrounded)
         {
-            rb.drag = 0f;
+            rb.linearDamping = 0f;
         }
     }
 
     public void HandleEngine()
     {
-        currentSpeed = rb.velocity.magnitude * 3.6f;
+        currentSpeed = rb.linearVelocity.magnitude * 3.6f;
         engineRPM = Mathf.Lerp(idleRPM, maxRPM, currentSpeed / maxSpeed);
 
         if (braking)
@@ -386,7 +414,7 @@ public class MotorcycleVehicle : MonoBehaviour
 
             if (currentSpeed < 0.5f)
             {
-                rb.velocity = Vector3.zero;
+                rb.linearVelocity = Vector3.zero;
                 engineRPM = idleRPM;
             }
             return;
@@ -394,8 +422,8 @@ public class MotorcycleVehicle : MonoBehaviour
 
         if (verticalInput < -0.1f)
         {
-            float speed = rb.velocity.magnitude * 3.6f;
-            bool isMovingForward = Vector3.Dot(rb.velocity.normalized, transform.forward) > 0.1f;
+            float speed = rb.linearVelocity.magnitude * 3.6f;
+            bool isMovingForward = Vector3.Dot(rb.linearVelocity.normalized, transform.forward) > 0.1f;
 
             if (isMovingForward && speed > 1f)
             {
@@ -413,7 +441,7 @@ public class MotorcycleVehicle : MonoBehaviour
                 backWheel.motorTorque = 0f;
             }
 
-            rb.drag = normalDrag;
+            rb.linearDamping = normalDrag;
             ReleaseBraking();
             return;
         }
@@ -431,21 +459,21 @@ public class MotorcycleVehicle : MonoBehaviour
                 backWheel.motorTorque = 0f;
             }
 
-            rb.drag = normalDrag;
+            rb.linearDamping = normalDrag;
             ReleaseBraking();
         }
         else
         {
             backWheel.motorTorque = 0f;
 
-            if (rb.velocity.magnitude > minSpeedThreshold)
+            if (rb.linearVelocity.magnitude > minSpeedThreshold)
             {
-                rb.drag = coastingDrag;
+                rb.linearDamping = coastingDrag;
                 ApplyAutoBrake();
             }
             else
             {
-                rb.velocity = Vector3.zero;
+                rb.linearVelocity = Vector3.zero;
                 engineRPM = idleRPM;
             }
         }

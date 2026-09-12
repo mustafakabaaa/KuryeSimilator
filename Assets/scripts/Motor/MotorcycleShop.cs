@@ -440,7 +440,7 @@ public class MotorcycleShop : MonoBehaviour, ISaveable
         var rb = motor.GetComponent<Rigidbody>();
         if (rb != null)
         {
-            rb.velocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
     }

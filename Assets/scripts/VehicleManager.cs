@@ -274,7 +274,7 @@ public class VehicleManager : MonoBehaviour, ISaveable
             {
                 needsReset = true;
                 Rigidbody rb = motor.GetComponent<Rigidbody>();
-                float velocity = rb != null ? rb.velocity.magnitude : 0f;
+                float velocity = rb != null ? rb.linearVelocity.magnitude : 0f;
                 reason = $"Aşırı hız (Velocity: {velocity:F2} > {maxVelocity})";
             }
             // 5. Havada Kalma Süresi
@@ -330,7 +330,7 @@ public class VehicleManager : MonoBehaviour, ISaveable
         Rigidbody rb = motor.GetComponent<Rigidbody>();
         if (rb == null) return false;
         
-        return rb.velocity.magnitude > maxVelocity;
+        return rb.linearVelocity.magnitude > maxVelocity;
     }
 
     private bool IsStuckInAir(MotorcycleVehicle motor, VehicleTrackingData data)
@@ -387,7 +387,7 @@ public class VehicleManager : MonoBehaviour, ISaveable
         Rigidbody rb = motor.GetComponent<Rigidbody>();
         if (rb != null)
         {
-            rb.velocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
         
@@ -532,7 +532,7 @@ public class VehicleManager : MonoBehaviour, ISaveable
         Rigidbody rb = trackedBicycle.GetComponent<Rigidbody>();
         if (rb != null)
         {
-            rb.velocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
             rb.angularVelocity = Vector3.zero;
         }
 

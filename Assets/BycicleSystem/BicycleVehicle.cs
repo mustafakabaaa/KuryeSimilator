@@ -94,6 +94,14 @@ public class BicycleVehicle : MonoBehaviour
         controls.Bicycle.Disable();
     }
 
+    void OnDestroy()
+    {
+        // Sahne kapanınca kilit asılı kalmasın.
+        // Release occupancy if this bike is destroyed while occupied.
+        if (isPlayerOnBoard)
+            InteractionManager.ReleaseVehicle(this);
+    }
+
     void Start()
     {
         StopEmitTrail();
@@ -133,19 +141,36 @@ public class BicycleVehicle : MonoBehaviour
 
     private void HandleInteraction()
     {
-        if (isPlayerInRange && !isPlayerOnBoard && currentPlayer != null)
-        {
-            MountBicycle();
-        }
-        else if (isPlayerOnBoard)
+        // Bu bisikletteyken F = in.
+        // F while already on this bike = dismount.
+        if (isPlayerOnBoard)
         {
             DismountBicycle();
+            return;
         }
+
+        if (!isPlayerInRange || currentPlayer == null) return;
+
+        // Motor da aynı F'yi dinler. Yan yana iken ikisi birden binmesin.
+        // The motorcycle listens to the same F key; don't mount both when they overlap.
+        if (InteractionManager.HasOccupiedVehicle) return;
+
+        // UI'daki en yakın araç bu değilse binme.
+        // Only the closest registered vehicle (shown in UI) should mount.
+        MonoBehaviour closest = InteractionManager.Instance != null
+            ? InteractionManager.Instance.GetCurrentVehicle()
+            : null;
+        if (closest != null && closest != this) return;
+
+        MountBicycle();
     }
 
     public void MountBicycle()
     {
         if (currentPlayer == null) return;
+        // İkinci araç aynı karede binmeye çalışırsa reddet.
+        // Reject a second vehicle trying to mount in the same frame.
+        if (!InteractionManager.TryClaimVehicle(this)) return;
 
         isPlayerOnBoard = true;
         _player = currentPlayer;
@@ -165,6 +190,9 @@ public class BicycleVehicle : MonoBehaviour
     public void DismountBicycle()
     {
         isPlayerOnBoard = false;
+        // Kilidi aç; diğer araca binilebilir.
+        // Free occupancy so another vehicle can be mounted.
+        InteractionManager.ReleaseVehicle(this);
 
         changeCamera();
         playerStatue();
@@ -228,22 +256,22 @@ public class BicycleVehicle : MonoBehaviour
         backWheel.motorTorque = 0f;
         frontWheel.motorTorque = 0f;
 
-        if (rb.velocity.magnitude > minSpeedThreshold)
+        if (rb.linearVelocity.magnitude > minSpeedThreshold)
         {
-            rb.drag = coastingDrag;
+            rb.linearDamping = coastingDrag;
             backWheel.brakeTorque = autoBrakeForce * 0.25f;
             frontWheel.brakeTorque = autoBrakeForce * 0.25f;
         }
         else
         {
-            rb.velocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
             backWheel.brakeTorque = brakeForce;
             frontWheel.brakeTorque = brakeForce;
         }
 
         if (!frontWheel.isGrounded && !backWheel.isGrounded)
         {
-            rb.drag = 0f;
+            rb.linearDamping = 0f;
         }
     }
 
@@ -252,22 +280,22 @@ public class BicycleVehicle : MonoBehaviour
         if (Mathf.Abs(verticalInput) > 0.1f)
         {
             backWheel.motorTorque = verticalInput * motorforce;
-            rb.drag = normalDrag;
+            rb.linearDamping = normalDrag;
             ReleaseBrakibg();
         }
         else
         {
             backWheel.motorTorque = 0f;
 
-            if (rb.velocity.magnitude > minSpeedThreshold)
+            if (rb.linearVelocity.magnitude > minSpeedThreshold)
             {
-                rb.drag = coastingDrag;
+                rb.linearDamping = coastingDrag;
                 backWheel.brakeTorque = autoBrakeForce;
                 frontWheel.brakeTorque = autoBrakeForce;
             }
             else
             {
-                rb.velocity = Vector3.zero;
+                rb.linearVelocity = Vector3.zero;
                 backWheel.brakeTorque = brakeForce;
                 frontWheel.brakeTorque = brakeForce;
             }
@@ -293,7 +321,7 @@ public class BicycleVehicle : MonoBehaviour
 
     public void SpeedSteerinReductor()
     {
-        float speed = rb.velocity.magnitude;
+        float speed = rb.linearVelocity.magnitude;
 
         if (speed < 5)
             maxSteeringAngle = Mathf.Lerp(maxSteeringAngle, 50, speedteercontrolTime);
@@ -321,7 +349,7 @@ public class BicycleVehicle : MonoBehaviour
     {
         Vector3 currentRot = transform.rotation.eulerAngles;
 
-        if (rb.velocity.magnitude < 1)
+        if (rb.linearVelocity.magnitude < 1)
         {
             layingammount = Mathf.LerpAngle(layingammount, 0f, 0.05f);
             transform.rotation = Quaternion.Euler(currentRot.x, currentRot.y, layingammount);
@@ -345,9 +373,9 @@ public class BicycleVehicle : MonoBehaviour
     {
         Vector3 downforce = Vector3.down;
         float downpressure;
-        if (rb.velocity.magnitude > 5)
+        if (rb.linearVelocity.magnitude > 5)
         {
-            downpressure = rb.velocity.magnitude;
+            downpressure = rb.linearVelocity.magnitude;
             rb.AddForce(downforce * downpressure, ForceMode.Force);
         }
     }

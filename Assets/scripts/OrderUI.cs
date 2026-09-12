@@ -67,11 +67,11 @@ public class OrderUI : MonoBehaviour
     }
     private void OnBackButtonClicked()
     {
-        CloseUI(); // OrderUI'yi kapat
-        PhoneMainUI.Instance.Open(); // Ana telefon menüsünü aç
+        // Ana menüye geçerken imleci kilitleme; PhoneMainUI.Open() görünür bırakır.
+        // Keep the cursor visible while returning to the phone home screen.
+        CloseUI(hideCursor: false);
+        PhoneMainUI.Instance.Open();
     }
-
-
 
     public void OpenUI()
     {
@@ -87,13 +87,27 @@ public class OrderUI : MonoBehaviour
         LoadOrders();
     }
 
+    /// <summary>
+    /// Sipariş listesini kapatır ve varsayılan olarak imleci kilitler.
+    /// Closes the order list and locks the cursor by default.
+    /// </summary>
     public void CloseUI()
+    {
+        CloseUI(hideCursor: true);
+    }
+
+    /// <summary>
+    /// Sipariş panelini kapatır.
+    /// hideCursor false: telefon ana menüsüne geçiş; imleç kilitlenmez.
+    /// hideCursor false = switching to another phone screen, keep the cursor unlocked.
+    /// </summary>
+    public void CloseUI(bool hideCursor)
     {
         isUIOpen = false;
         orderUIPanel.SetActive(false);
         UIManager.Instance.SetPhoneUIState(false);
-        SetCursorState(false);
-        //FindAnyObjectByType<InfoPanelController>()?.HideOrderInfo();
+        if (hideCursor)
+            SetCursorState(false);
     }
 
     private void OnCancelOrderClicked()

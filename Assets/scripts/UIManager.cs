@@ -65,7 +65,8 @@ public class UIManager : MonoBehaviour
     {
         if (state && !CanOpenNewUI()) return;
         _isPhoneMain = state;
-        OnUIStateChanged.Invoke();
+        // Abone yokken NullReference olmas?n. Null-safe invoke when nobody is subscribed.
+        OnUIStateChanged?.Invoke();
     }
     public void SetLoadGamePanelState(bool state)
     {
